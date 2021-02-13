@@ -10,7 +10,6 @@
     include('../db.php');
 
     $sql = file_get_contents('ramses_scheme.sql');
-    $qr = $db->exec($sql);
 
-    echo "Ramses installed, you can now remove the <code>install</code> directory.";
+    echo "Ramses installed, you can now remove the <code>install</code> directory.<br />The default user is \"Admin\" with password \"password\".<br />Do not forget to change this name and password!";
 ?>
