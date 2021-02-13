@@ -31,7 +31,7 @@
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $db->prepare("SELECT password,firstName,lastName,uuid FROM " . $tablePrefix . "users WHERE username = :username ;");
+			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE shortName = :username ;");
 			$rep->execute(array('username' => $username));
 			$testPass = $rep->fetch();
 			$rep->closeCursor();
@@ -41,9 +41,11 @@
 			{
 				$_SESSION["login"] = true;
 				$content = array();
-				$content["firstName"] = $testPass["firstName"];
-				$content["lastName"] = $testPass["lastName"];
+				$content["name"] = $testPass["name"];
+				$content["shortName"] = $testPass["shortName"];
 				$content["uuid"] = $testPass["uuid"];
+				$content["folderPath"] = $testPass["folderPath"];
+                $content["role"] = $testPass["role"];
 				$reply["content"] = $content;
 				$reply["message"] = "Successful login. Welcome " . $username . "!";
 				$reply["success"] = true;
