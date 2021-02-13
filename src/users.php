@@ -63,17 +63,17 @@
             $rep->closeCursor();
 
             //hash current password
-            $current = hash(sha512, $uuid . $current);
+            $current = hash("sha3-512", $uuid . $current);
 
             //check password
             if ($testPass["password"] == $current)
             {
                 //hash new password
-                $new = hash(sha512, $uuid . $new);
+                $new = hash("sha3-512", $uuid . $new);
 
-                $qString = "UPDATE " . $tablePrefix . "users SET password= :new WHERE uuid= :uuid AND password= :current ;";
+                $qString = "UPDATE " . $tablePrefix . "users SET password= :new WHERE uuid= :uuid ;";
                 $rep = $db->prepare($qString);
-                $rep->execute(array('new' => $new, 'current' => $current, 'uuid' => $uuid));
+                $rep->execute(array('new' => $new, 'uuid' => $uuid));
                 $rep->closeCursor();
 
                 $reply["message"] = "Password succesfully updated.";

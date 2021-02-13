@@ -38,7 +38,7 @@
 
 			//check password
             //hash
-            $password = hash(sha512, $testPass["uuid"] . $password );
+            $password = hash("sha3-512", $testPass["uuid"] . $password );
 			if ($testPass["password"] == $password)
 			{
 				$_SESSION["login"] = true;
