@@ -43,5 +43,32 @@
         }
 
     }
+    else if ($reply["type"] == "getUsers")
+    {
+        $reply["accepted"] = true;
+        
+        $rep = $db->prepare("SELECT name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users ;");
+        $rep->execute();
+
+        $users = Array();
+
+        while ($user = $rep->fetch())
+        {
+            $u = Array();
+			$u['name'] = $user['name'];
+			$u['shortName'] = $user['shortName'];
+			$u['uuid'] = $user['uuid'];
+			$u['folderPath'] = $user['folderPath'];
+			$u['role'] = $user['role'];
+
+			$users[] = $u;
+        }
+
+        $rep->closeCursor();
+
+		$reply["content"] = $users;
+		$reply["message"] = "Users list retrieved.";
+		$reply["success"] = true;
+    }
 
 ?>
