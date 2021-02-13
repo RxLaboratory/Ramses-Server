@@ -62,11 +62,16 @@
             $testPass = $rep->fetch();
             $rep->closeCursor();
 
+            //hash current password
+            $current = hash(sha512, $uuid . $current);
+
             //check password
             if ($testPass["password"] == $current)
             {
-                $qString = "UPDATE " . $tablePrefix . "users SET password= :new WHERE uuid= :uuid AND password= :current ;";
+                //hash new password
+                $new = hash(sha512, $uuid . $new);
 
+                $qString = "UPDATE " . $tablePrefix . "users SET password= :new WHERE uuid= :uuid AND password= :current ;";
                 $rep = $db->prepare($qString);
                 $rep->execute(array('new' => $new, 'current' => $current, 'uuid' => $uuid));
                 $rep->closeCursor();
