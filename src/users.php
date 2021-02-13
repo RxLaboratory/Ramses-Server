@@ -29,7 +29,7 @@
         {
             $qString = "UPDATE " . $tablePrefix . "users SET userName= :userName ,firstName= :firstName ,lastName= :lastName ,password= :password WHERE uuid= :uuid ;";
 
-            $rep = $bdd->prepare($qString);
+            $rep = $db->prepare($qString);
             $rep->execute(array('userName' => $userName, 'firstName' => $firstName, 'lastName' => $lastName, 'password' => $password, 'uuid' => $uuid));
             $rep->closeCursor();
 

@@ -32,68 +32,77 @@
 	//add the _ after table prefix
 	if (strlen($tablePrefix) > 0) $tablePrefix = $tablePrefix . "_";
 
-	//result of the request
-	$reply = Array();
-	$reply["accepted"] = false;
-
-	//if a request type was specified only
-	if (isset($_GET["type"]))
+	//if it's not installed
+	if (file_exists("install/index.php"))
 	{
-		$reply["type"] = $_GET["type"];
-		$reply["success"] = false;
+		echo "Ramses Server is not ready yet.\nGo to <a href=\"install/index.php\">install/index.php</a> to install the database, and once you're done, remove the <code>install</code> folder from the server.";
+	}
+	else
+	{
+		//result of the request
+		$reply = Array();
+		$reply["accepted"] = false;
 
-		//connect to database
-		include('db.php');
-
-		//login
-		include ("login.php");
-
-		if ($reply["type"] != "login")
+		//if a request type was specified only
+		if (isset($_GET["type"]))
 		{
-			if (isset($_SESSION["login"]) AND $_SESSION["login"])//if logged in
-			{
-				//users
-				include ("users.php");
-				//statuses
-				include ("statuses.php");
-				//stages
-				include ("stages.php");
-				//projects
-				include ("projects.php");
-				//shots
-				include ("shots.php");
-				//assets
-				include("assets.php");
+			$reply["type"] = $_GET["type"];
+			$reply["success"] = false;
 
-				//if accepted display result
-				if ($reply["accepted"])
-				{
-					//Display the result of the request
-					echo json_encode($reply);
-				}
-				else//if nothing was accepted
-				{
-					$reply["message"] = "Unknown request";
-					$reply["accepted"] = false;
-					echo json_encode($reply);
-				}
-			}//if not logged in
-			else
+			//connect to database
+			include('db.php');
+
+			//login
+			include ("login.php");
+
+			if ($reply["type"] != "login")
 			{
-				$reply["message"] = "You have been logged out by the server.";
-				$reply["accepted"] = false;
-				session_destroy();
-				echo json_encode($reply);
+				if (isset($_SESSION["login"]) AND $_SESSION["login"])//if logged in
+				{
+					//users
+					include ("users.php");
+					//statuses
+					include ("statuses.php");
+					//stages
+					include ("stages.php");
+					//projects
+					include ("projects.php");
+					//shots
+					include ("shots.php");
+					//assets
+					include("assets.php");
+
+					//if accepted display result
+					if ($reply["accepted"])
+					{
+						//Display the result of the request
+						echo json_encode($reply);
+					}
+					else//if nothing was accepted
+					{
+						$reply["message"] = "Unknown request";
+						$reply["accepted"] = false;
+						echo json_encode($reply);
+					}
+				}//if not logged in
+				else
+				{
+					$reply["message"] = "You have been logged out by the server.";
+					$reply["accepted"] = false;
+					session_destroy();
+					echo json_encode($reply);
+				}
 			}
 		}
+		else //no request type
+		{
+			$reply["message"] = "Invalid request";
+			$reply["accepted"] = false;
+			$reply["type"] = "Unknown";
+			echo json_encode($reply);
+		}
 	}
-	else //no request type
-	{
-		$reply["message"] = "Invalid request";
-		$reply["accepted"] = false;
-		$reply["type"] = "Unknown";
-		echo json_encode($reply);
-	}
+
 
 
 

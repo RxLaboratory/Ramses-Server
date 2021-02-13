@@ -34,7 +34,7 @@
 				$values = array('name' => $name,'shortName' => $shortName);
 			}
 
-			$rep = $bdd->prepare($qString);
+			$rep = $db->prepare($qString);
 			$rep->execute($values);
 			$rep->closeCursor();
 
@@ -55,7 +55,7 @@
 		$reply["accepted"] = true;
 
 
-		$rep = $bdd->query("SELECT name,shortName,uuid FROM " . $tablePrefix . "stages ORDER BY shortName,name,id;");
+		$rep = $db->query("SELECT name,shortName,uuid FROM " . $tablePrefix . "stages ORDER BY shortName,name,id;");
 		$stages = Array();
 		while ($stage = $rep->fetch())
 		{
@@ -93,7 +93,7 @@
 		if (strlen($name) > 0 AND strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 
-			$rep = $bdd->prepare("UPDATE " . $tablePrefix . "stages SET name= :name ,shortName= :shortName WHERE uuid= :uuid ;");
+			$rep = $db->prepare("UPDATE " . $tablePrefix . "stages SET name= :name ,shortName= :shortName WHERE uuid= :uuid ;");
 			$rep->execute(array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid));
 			$rep->closeCursor();
 
@@ -123,7 +123,7 @@
 		if (strlen($uuid) > 0)
 		{
 
-			$rep = $bdd->prepare("DELETE " . $tablePrefix . "stages FROM " . $tablePrefix . "stages WHERE uuid= :uuid ;");
+			$rep = $db->prepare("DELETE " . $tablePrefix . "stages FROM " . $tablePrefix . "stages WHERE uuid= :uuid ;");
 			$rep->execute(array('uuid' => $uuid));
 			$rep->closeCursor();
 

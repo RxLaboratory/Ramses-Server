@@ -11,13 +11,13 @@
 	//host
 	$sqlHost = "localhost";
 	//database name
-	$sqlDBName = "ramtest";
+	$sqlDBName = "ramses";
 	//user
-	$sqlUser = "root";
+	$sqlUser = "ramses";
 	//password
-	$sqlpassword = "";
-	//table prefix
-	$tablePrefix = "";
+	$sqlpassword = "rZ63G4eW";
+	//table prefix DO NOT CHANGE THIS, not working yet
+	$tablePrefix = "ram";
 
 	//SESSION
 	//timeout (seconds)

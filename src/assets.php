@@ -60,7 +60,7 @@
 			}
 
 			//create asset
-			$repCreateAsset = $bdd->prepare($q);
+			$repCreateAsset = $db->prepare($q);
 			$repCreateAsset->execute($values);
 			$repCreateAsset->closeCursor();
 			$reply["message"] = "Asset added";
@@ -109,7 +109,7 @@
 			$q = $q . implode(",",$placeHolders);
 			$q = $q . " ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute($values);
 			$rep->closeCursor();
 			$reply["message"] = "Assets added.";
@@ -145,7 +145,7 @@
 				 ( SELECT id FROM " . $tablePrefix . "assets WHERE uuid = :assetId )
 				 ) ON DUPLICATE KEY UPDATE shotId = VALUES(shotId);";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('shotId' => $shotId , 'assetId' => $assetId));
 			$rep->closeCursor();
 			$reply["message"] = "Asset assigned.";
@@ -188,7 +188,7 @@
 			$q = $q . implode(",",$placeHolders);
 			$q = $q . " ON DUPLICATE KEY UPDATE shotId = VALUES(shotId);";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute($values);
 			$rep->closeCursor();
 			$reply["message"] = "Assets assigned.";
@@ -251,7 +251,7 @@
 			$qAssign = $qAssign . " ON DUPLICATE KEY UPDATE shotId = VALUES(shotId);";
 			$q = $qAdd . $qAssign;
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute($values);
 			$rep->closeCursor();
 			$reply["message"] = "Assets added and assigned.";
@@ -283,7 +283,7 @@
 		{
 			$q = "DELETE " . $tablePrefix . "assetstatuses FROM " . $tablePrefix . "assetstatuses WHERE shotId = ( SELECT id FROM " . $tablePrefix . "shots WHERE uuid = :shotId ) AND assetId = ( SELECT id FROM " . $tablePrefix . "assets WHERE uuid = :assetId ) ;";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('shotId' => $shotId , 'assetId' => $assetId));
 			$rep->closeCursor();
 			$reply["message"] = "Asset un-assigned.";
@@ -327,7 +327,7 @@
 		JOIN " . $tablePrefix . "assets ON " . $tablePrefix . "assetstatuses.assetId = " . $tablePrefix . "assets.id
 		WHERE " . $tablePrefix . "assetstatuses.assetId = :id";
 
-		$repAssets = $bdd->prepare($qAssets);
+		$repAssets = $db->prepare($qAssets);
 		$repAssets->execute(array('projectId' => $projectId));
 
 		$assets = Array();
@@ -342,7 +342,7 @@
 			$a['comment'] = $asset['comment'];
 			$a['projectId'] = $asset['projectId'];
 
-			$repAssign = $bdd->prepare($qAssign);
+			$repAssign = $db->prepare($qAssign);
 			$repAssign->execute(array('id' => $asset['id']));
 
 			$assignments = Array();
@@ -382,7 +382,7 @@
 		{
 			$q = "UPDATE " . $tablePrefix . "assets SET statusId= ( SELECT id FROM " . $tablePrefix . "status WHERE uuid = :statusId ) WHERE uuid= :assetId ;";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('statusId' => $statusId, 'assetId' => $assetId));
 			$rep->closeCursor();
 
@@ -420,7 +420,7 @@
 			$q = "UPDATE " . $tablePrefix . "assets SET name= :name , shortName = :shortName , comment = :comment WHERE uuid= :assetId ;";
 
 			//create asset
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('name' => $name , 'shortName' => $shortName , 'comment' => $comment , 'assetId' => $assetId ));
 			$rep->closeCursor();
 
@@ -451,7 +451,7 @@
 		{
 			$q = "DELETE " . $tablePrefix . "assets FROM " . $tablePrefix . "assets WHERE uuid = :assetId ;";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('assetId' => $assetId));
 			$rep->closeCursor();
 

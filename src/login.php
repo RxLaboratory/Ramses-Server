@@ -31,7 +31,7 @@
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $bdd->prepare("SELECT password,firstName,lastName,uuid FROM " . $tablePrefix . "users WHERE username = :username ;");
+			$rep = $db->prepare("SELECT password,firstName,lastName,uuid FROM " . $tablePrefix . "users WHERE username = :username ;");
 			$rep->execute(array('username' => $username));
 			$testPass = $rep->fetch();
 			$rep->closeCursor();

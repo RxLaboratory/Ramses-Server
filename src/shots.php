@@ -36,7 +36,7 @@
 			$qShots = $qShots . " ON DUPLICATE KEY UPDATE duration = VALUES(duration);\n";
 
 			//create shots
-			$rep = $bdd->prepare($qShots);
+			$rep = $db->prepare($qShots);
 			$rep->execute($values);
 			$rep->closeCursor();
 			$reply["message"] = "Shots inserted.";
@@ -75,7 +75,7 @@
 			AND " . $tablePrefix . "projectshot.projectId = (SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectId ) ;";
 
 			//update order
-			$repOrder = $bdd->prepare($qOrder);
+			$repOrder = $db->prepare($qOrder);
 			$repOrder->execute(array('shotsCount' => count($shots), 'shotOrder' => $shotOrder, 'projectId' => $projectId ));
 			$repOrder->closeCursor();
 
@@ -100,7 +100,7 @@
 				$q = $q . implode(",",$placeHolders);
 				$q = $q . " ON DUPLICATE KEY UPDATE shotOrder = VALUES(shotOrder);";
 
-				$rep = $bdd->prepare($q);
+				$rep = $db->prepare($q);
 				$rep->execute($values);
 				$rep->closeCursor();
 
@@ -141,7 +141,7 @@
 			AND " . $tablePrefix . "projectshot.projectId = (SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectId ) ;";
 
 			//create shots
-			$repOrder = $bdd->prepare($qOrder);
+			$repOrder = $db->prepare($qOrder);
 			$repOrder->execute(array('shotsCount' => count($shots), 'shotOrder' => $shotOrder, 'projectId' => $projectId ));
 			$repOrder->closeCursor();
 
@@ -178,7 +178,7 @@
 			$qInsert = $qInsert . " ON DUPLICATE KEY UPDATE shotOrder = VALUES(shotOrder);";
 			$q = $qShots . $qInsert;
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute($values);
 			$rep->closeCursor();
 
@@ -213,7 +213,7 @@
 		ORDER BY " . $tablePrefix . "projectshot.shotOrder," . $tablePrefix . "shots.name;";
 
 		//get shots
-		$rep = $bdd->prepare($q);
+		$rep = $db->prepare($q);
 		$rep->execute(array('projectId' => $projectId));
 
 		$shots = Array();
@@ -257,7 +257,7 @@
 		{
 			$q = "UPDATE " . $tablePrefix . "shots SET name= :name ,duration= :duration WHERE uuid= :uuid ;";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('name' => $name, 'duration' => $duration, 'uuid' => $uuid));
 			$rep->closeCursor();
 
@@ -304,7 +304,7 @@
 			$qShots = $qShots . " ON DUPLICATE KEY UPDATE duration = VALUES(duration), name = VALUES(name);\n";
 
 			//update shots
-			$rep = $bdd->prepare($qShots);
+			$rep = $db->prepare($qShots);
 			$rep->execute($values);
 			$rep->closeCursor();
 			$reply["message"] = "Shots inserted.";
@@ -350,7 +350,7 @@
 			$values[] = $projectId;
 
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute($values);
 			$rep->closeCursor();
 
@@ -391,7 +391,7 @@
 			}
 
 
-			$rep = $bdd->prepare(implode("\n",$queries));
+			$rep = $db->prepare(implode("\n",$queries));
 			$rep->execute($values);
 			$rep->closeCursor();
 

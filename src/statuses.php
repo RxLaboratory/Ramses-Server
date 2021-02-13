@@ -42,7 +42,7 @@
 			}
 
 
-			$rep = $bdd->prepare($qString);
+			$rep = $db->prepare($qString);
 			$rep->execute($values);
 			$rep->closeCursor();
 
@@ -62,7 +62,7 @@
 	{
 		$reply["accepted"] = true;
 
-		$rep = $bdd->query("SELECT name,shortName,color,description,uuid FROM " . $tablePrefix . "status ORDER BY shortName;");
+		$rep = $db->query("SELECT name,shortName,color,description,uuid FROM " . $tablePrefix . "status ORDER BY shortName;");
 		$statuses = Array();
 		while ($status = $rep->fetch())
 		{
@@ -109,7 +109,7 @@
 			if (strlen($color) == 6) $color = "#" . $color;
 			$qString = "UPDATE " . $tablePrefix . "status SET name= :name ,shortName= :shortName ,color= :color ,description= :description WHERE uuid= :uuid ;";
 
-			$rep = $bdd->prepare($qString);
+			$rep = $db->prepare($qString);
 			$rep->execute(array('name' => $name, 'shortName' => $shortName, 'color' => $color, 'description' => $description, 'uuid' => $uuid));
 			$rep->closeCursor();
 
@@ -138,7 +138,7 @@
 		if (strlen($uuid) > 0)
 		{
 
-			$rep = $bdd->prepare("DELETE " . $tablePrefix . "status FROM " . $tablePrefix . "status WHERE uuid= :uuid ;");
+			$rep = $db->prepare("DELETE " . $tablePrefix . "status FROM " . $tablePrefix . "status WHERE uuid= :uuid ;");
 			$rep->execute(array('uuid' => $uuid));
 			$rep->closeCursor();
 

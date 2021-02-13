@@ -33,7 +33,7 @@
 				$values = array('name' => $name, 'shortName' => $shortName);
 			}
 
-			$rep = $bdd->prepare($qString);
+			$rep = $db->prepare($qString);
 			$rep->execute($values);
 			$rep->closeCursor();
 
@@ -54,7 +54,7 @@
 		$reply["accepted"] = true;
 
 
-		$rep = $bdd->query("SELECT name,shortName,uuid,id FROM " . $tablePrefix . "projects ORDER BY shortName;");
+		$rep = $db->query("SELECT name,shortName,uuid,id FROM " . $tablePrefix . "projects ORDER BY shortName;");
 		$projects = Array();
 		while ($project = $rep->fetch())
 		{
@@ -64,7 +64,7 @@
 			$proj['uuid'] = $project['uuid'];
 			//get stages
 			$projectStages = Array();
-			$repS = $bdd->query("SELECT " . $tablePrefix . "stages.uuid as stageId FROM " . $tablePrefix . "projectstage JOIN " . $tablePrefix . "stages ON " . $tablePrefix . "stages.id = " . $tablePrefix . "projectstage.stageId WHERE projectId=" . $project['id'] . " ORDER BY " . $tablePrefix . "stages.shortName;");
+			$repS = $db->query("SELECT " . $tablePrefix . "stages.uuid as stageId FROM " . $tablePrefix . "projectstage JOIN " . $tablePrefix . "stages ON " . $tablePrefix . "stages.id = " . $tablePrefix . "projectstage.stageId WHERE projectId=" . $project['id'] . " ORDER BY " . $tablePrefix . "stages.shortName;");
 			while ($projectStage = $repS->fetch())
 			{
 				$projectStages[] = $projectStage['stageId'];
@@ -72,7 +72,7 @@
 			$proj['stages'] = $projectStages;
 			//get shots
 			$projectShots = Array();
-			$repShots = $bdd->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
+			$repShots = $db->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
 			while ($projectShot = $repShots->fetch())
 			{
 				$projectShots[] = $projectShot['shotId'];
@@ -107,7 +107,7 @@
 		if (strlen($name) > 0 AND strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 
-			$rep = $bdd->prepare("UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName WHERE uuid= :uuid ;");
+			$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName WHERE uuid= :uuid ;");
 			$rep->execute(array('name' => $name,'shortName' => $shortName,'uuid' => $uuid));
 			$rep->closeCursor();
 
@@ -137,7 +137,7 @@
 		if (strlen($uuid) > 0)
 		{
 
-			$rep = $bdd->prepare("DELETE " . $tablePrefix . "projects FROM " . $tablePrefix . "projects WHERE uuid= :uuid ;");
+			$rep = $db->prepare("DELETE " . $tablePrefix . "projects FROM " . $tablePrefix . "projects WHERE uuid= :uuid ;");
 			$rep->execute(array('uuid' => $uuid));
 			$rep->closeCursor();
 
@@ -175,7 +175,7 @@
 			( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectId )
 			) ON DUPLICATE KEY UPDATE " . $tablePrefix . "projectstage.id = " . $tablePrefix . "projectstage.id ;";
 
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('stageId' => $stageId,'projectId' => $projectId));
 			$rep->closeCursor();
 
@@ -210,7 +210,7 @@
 			AND
 			projectId= ( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectId )
 			;";
-			$rep = $bdd->prepare($q);
+			$rep = $db->prepare($q);
 			$rep->execute(array('stageId' => $stageId,'projectId' => $projectId));
 			$rep->closeCursor();
 
