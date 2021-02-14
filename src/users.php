@@ -129,5 +129,71 @@
 		$reply["message"] = "Users list retrieved.";
 		$reply["success"] = true;
     }
+    else if (isset($_GET["createUser"]))
+    {
+        $reply["accepted"] = true;
+        $reply["query"] = "createUser";
+
+        $name = "";
+        $shortName = "";
+        $uuid = "";
+        $password = "";
+
+        if (isset($_GET["name"])) $name = $_GET["name"];
+        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
+        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+        if (isset($_GET["password"])) $password = $_GET["password"];
+
+        if (strlen($shortName) > 0 and strlen($password) > 0)
+        {
+            if (strlen($uuid) > 0)
+			{
+				$qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , :uuid, :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password);
+			}
+			else
+			{
+				$qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , uuid(), :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+				$values = array('name' => $name,'shortName' => $shortName, 'password' => $password);
+			}
+
+            $rep = $db->prepare($qString);
+            echo $qString;
+			$rep->execute($values);
+			$rep->closeCursor();         
+
+            $reply["message"] = "User \"" . $shortName . "\" created.";
+            $reply["success"] = true;
+        }
+        else
+        {
+            $reply["message"] = "Invalid request, missing values";
+            $reply["success"] = false;
+        }
+    }
+    else if (isset($_GET["removeUser"]))
+    {
+        $reply["accepted"] = true;
+        $reply["query"] = "createUser";
+
+        $uuid = "";
+
+        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+
+        if (strlen($uuid) > 0)
+        {
+            $rep = $db->prepare("DELETE " . $tablePrefix . "users FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
+			$rep->execute(array('uuid' => $uuid));
+			$rep->closeCursor();
+
+			$reply["message"] = "User " . $uuid . " removed.";
+			$reply["success"] = true;
+        }
+        else
+        {
+            $reply["message"] = "Invalid request, missing values";
+            $reply["success"] = false;
+        }
+    }
 
 ?>

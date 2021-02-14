@@ -54,7 +54,7 @@
 
 			//check password
             //hash password (official ramses client side)
-            $password = hash(sha3-512, $password . $username );
+            $password = hash("sha3-512", $password . "H6BuYLsW" );
             //hash (server side)
 			$uuid = $testPass["uuid"];
             $password = hashPassword( $password, $uuid );
