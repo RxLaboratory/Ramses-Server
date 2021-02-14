@@ -44,7 +44,7 @@
 		//secured operations, check token first
 		$token = "";
 		if (isset($_GET["token"])) $token = $_GET["token"];
-		if ( $_SESSION["token"] != "" and $token = $_SESSION["token"] )
+		if ( $_SESSION["sessionToken"] != "" and $token == $_SESSION["sessionToken"] )
 		{
 			include ("users.php");
 		}

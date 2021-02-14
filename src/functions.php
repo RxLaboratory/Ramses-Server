@@ -6,9 +6,8 @@
 	{
 		$_SESSION["login"] = true;
 		//Generate token
-		$token = bin2hex(random_bytes(20));
-		$_SESSION["token"] = $token;
-		return $token;
+		$_SESSION["sessionToken"] = bin2hex(random_bytes(20));
+		return $_SESSION["sessionToken"];
 	}
 
     /**
@@ -17,7 +16,7 @@
     function logout()
     {
         $_SESSION["login"] = false;
-        $_SESSION["token"] = "";
+        $_SESSION["sessionToken"] = "";
         session_destroy();
     }
 
