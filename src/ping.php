@@ -1,4 +1,5 @@
 <?php
+    
     /*
 		Ramses: Rx Asset Management System
         
@@ -21,30 +22,22 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	// Edit this configuration file before running the install script at /install/index.php
-
-	// ==== SQL SETTINGS ====
-
-	// Host URL
-	$sqlHost = "localhost";
-	// Database name
-	$sqlDBName = "ramses";
-	// User
-	$sqlUser = "ramses";
-	// Password
-	$sqlpassword = "rZ63G4eW";
-	// Table prefix
-	// DO NOT CHANGE THIS, not working yet
-	$tablePrefix = "ram";
-
-	// ==== SESSION SETTINGS ====
-
-	// Session timeout (seconds)
-	$sessionTimeout = 1200;
-
-	// ==== SECURITY ====
-
-	// This key is used for password and other sensible data encryption.
-	// It should be a random and unique string to your server instance.
-	$serverKey = "BkDgj2dqLJbZY4US";
+    if (isset($_GET["ping"]))
+    {
+        $reply["accepted"] = true;
+        $reply["query"] = "ping";
+        $reply["content"]["version"] = $ramsesVersion;
+        if ($installed)
+        {
+            $reply["content"]["installed"] = true;
+            $reply["success"] = true;
+            $reply["message"] = "Server ready.";
+        }
+        else
+        {
+            $reply["content"]["installed"] = false;
+            $reply["success"] = false;
+            $reply["message"] = "The server is not installed!";
+        }
+    }
 ?>

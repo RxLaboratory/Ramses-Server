@@ -1,32 +1,37 @@
 <?php
 
-	/*
-		Rainbox Asset Manager
-		Handles login requests
+    /*
+		Ramses: Rx Asset Management System
+        
+        This program is licensed under the GNU General Public License.
+
+        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+
+        This program is free software;
+        you can redistribute it and/or modify it
+        under the terms of the GNU General Public License
+        as published by the Free Software Foundation;
+        either version 3 of the License, or (at your option) any later version.
+
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the GNU General Public License for more details.
+
+        You should have received a copy of the *GNU General Public License* along with this program.
+        If not, see http://www.gnu.org/licenses/.
 	*/
 
-	if ($reply["type"] == "login")
+	if (isset($_GET["login"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "login";
 
 		$username = "";
 		$password = "";
 
-        $data = file_get_contents('php://input');
-        if (isset($data["username"]) and isset($data["password"]))
-        {
-            $username = $data["username"];
-			$password = $data["password"];
-        }
-        else
-        {
-            $data = json_decode(file_get_contents('php://input'));
-            if ($data)
-            {
-                if (isset($data->{'username'})) $username = $data->{'username'};
-				if (isset($data->{'password'})) $password = $data->{'password'};
-            }
-        }
+		if (isset($_GET["username"])) $username = $_GET["username"];
+		if (isset($_GET["password"])) $password = $_GET["password"];
 
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
@@ -38,37 +43,35 @@
 
 			//check password
             //hash
-            $password = hash("sha3-512", $testPass["uuid"] . $password );
+			$uuid = $testPass["uuid"];
+            $password = hashPassword( $password, $uuid );
+
 			if ($testPass["password"] == $password)
 			{
-				$_SESSION["login"] = true;
+				$token = login();
 				$content = array();
 				$content["name"] = $testPass["name"];
 				$content["shortName"] = $testPass["shortName"];
-				$content["uuid"] = $testPass["uuid"];
+				$content["uuid"] = $uuid;
 				$content["folderPath"] = $testPass["folderPath"];
                 $content["role"] = $testPass["role"];
+                $content["token"] = $token;
 				$reply["content"] = $content;
-				$reply["message"] = "Successful login. Welcome " . $username . "!";
+				$reply["message"] = "Successful login. Welcome " . $testPass["name"] . "!";
 				$reply["success"] = true;
-				echo json_encode($reply);
 			}
 			else
 			{
-				$_SESSION["login"] = false;
 				$reply["message"] = "Invalid username or password";
 				$reply["success"] = false;
-				session_destroy();
-				echo json_encode($reply);
+				logout();
 			}
 		}
 		else
 		{
-			$_SESSION["login"] = false;
 			$reply["message"] = "Invalid request, missing username or password";
 			$reply["success"] = false;
-			session_destroy();
-			echo json_encode($reply);
+			logout();
 		}
 	}
 ?>

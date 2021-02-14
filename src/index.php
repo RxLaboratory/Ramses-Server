@@ -1,47 +1,57 @@
 <?php
+    
+    /*
+		Ramses: Rx Asset Management System
+        
+        This program is licensed under the GNU General Public License.
 
-	/*
-		Server for Rainbox Asset Manager
+        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+
+        This program is free software;
+        you can redistribute it and/or modify it
+        under the terms of the GNU General Public License
+        as published by the Free Software Foundation;
+        either version 3 of the License, or (at your option) any later version.
+
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the GNU General Public License for more details.
+
+        You should have received a copy of the *GNU General Public License* along with this program.
+        If not, see http://www.gnu.org/licenses/.
 	*/
 
-	//configuration
+	//configuration and init
 	include ("config.php");
+	include ("init.php");
+	include ("functions.php");
 
-	// server should keep session data for AT LEAST  sessionTimeout
-	ini_set('session.gc_maxlifetime', $sessionTimeout);
+	//prepare reply
+	include ("reply.php");
 
-	// each client should remember their session id for EXACTLY sessionTimeout
-	session_set_cookie_params($sessionTimeout);
-
-	session_start();
-
-	$now = time();
-	if (isset($_SESSION['discard_after']) && $now > $_SESSION['discard_after'])
+	//ping
+	include ("ping.php");
+	//queries
+	if ($installed)
 	{
-		// this session has worn out its welcome; kill it and start a brand new one
-		session_unset();
-		session_destroy();
-		session_start();
-	}
-	else
-	{
-		// either new or old, it should live at most for sessionTimeout
-		$_SESSION['discard_after'] = $now + $sessionTimeout;
-	}
+		//connect to database
+		include('db.php');
 
-	//add the _ after table prefix
-	if (strlen($tablePrefix) > 0) $tablePrefix = $tablePrefix . "_";
+		//login first
+		include ("login.php");
 
-	//if it's not installed
-	if (file_exists("install/index.php"))
-	{
-		echo "Ramses Server is not ready yet.\nGo to <a href=\"install/index.php\">install/index.php</a> to install the database, and once you're done, remove the <code>install</code> folder from the server.";
-	}
-	else
-	{
-		//result of the request
-		$reply = Array();
-		$reply["accepted"] = false;
+		//secured operations, check token first
+		$token = "";
+		if (isset($_GET["token"])) $token = $_GET["token"];
+		if ( $_SESSION["token"] != "" and $token = $_SESSION["token"] )
+		{
+			include ("users.php");
+		}
+		else 
+		{
+			$reply["message"] = "Invalid token. Are you logged in?";
+		}
 
 		//if a request type was specified only
 		if (isset($_GET["type"]))
@@ -49,18 +59,10 @@
 			$reply["type"] = $_GET["type"];
 			$reply["success"] = false;
 
-			//connect to database
-			include('db.php');
-
-			//login
-			include ("login.php");
-
 			if ($reply["type"] != "login")
 			{
 				if (isset($_SESSION["login"]) AND $_SESSION["login"])//if logged in
 				{
-					//users
-					include ("users.php");
 					//statuses
 					include ("statuses.php");
 					//stages
@@ -94,16 +96,14 @@
 				}
 			}
 		}
-		else //no request type
+	}
+	else
+	{
+		if ($reply["type"] != "ping")
 		{
-			$reply["message"] = "Invalid request";
-			$reply["accepted"] = false;
-			$reply["type"] = "Unknown";
-			echo json_encode($reply);
+			$reply["message"] = "This Ramses server is not installed yet.";
 		}
 	}
-
-
-
+	echo json_encode($reply);
 
 ?>
