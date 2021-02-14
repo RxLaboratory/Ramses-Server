@@ -61,8 +61,8 @@
         $uuid = "";
 
         if (isset($_GET["current"])) $current = $_GET["current"];
-        if (isset($_GET["new"])) $shortName = $_GET["new"];
-        if (isset($_GET["uuid"])) $name = $_GET["uuid"];
+        if (isset($_GET["new"])) $new = $_GET["new"];
+        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
 
         if (strlen($new) > 0 AND strlen($current) > 0 AND strlen($uuid) > 0)
         {

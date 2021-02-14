@@ -20,10 +20,10 @@
         $rep->closeCursor();
 
         //hash password (official ramses client side)
-        $password = hash(sha3-512, $password . $username );
+        $clientPassword = hash("sha3-512", $password . "H6BuYLsW" );
         //hash password (server side)
         $uuid = $testPass["uuid"];
-        $password = hashPassword( $password, $uuid );
+        $password = hashPassword( $clientPassword, $uuid );
 
         //set in the database
         $rep = $db->prepare("UPDATE " . $tablePrefix . "users SET password = :password WHERE uuid= :uuid ;" );
@@ -33,7 +33,8 @@
 
         //echo the new hashed password
         echo "UUID: " . $uuid . "<br />";
-        echo $password;
+        echo "Server password: " . $password;
+        echo "<br />Client password: " . $clientPassword;
     }
     else if (isset($_GET["login"]))
     {

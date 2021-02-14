@@ -48,7 +48,7 @@
 		{
 			include ("users.php");
 		}
-		else 
+		else if (!$reply["accepted"])
 		{
 			$reply["message"] = "Invalid token. Are you logged in?";
 		}
@@ -104,6 +104,6 @@
 			$reply["message"] = "This Ramses server is not installed yet.";
 		}
 	}
-	echo json_encode($reply);
 
+	echo json_encode($reply);
 ?>
