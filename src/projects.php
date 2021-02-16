@@ -80,7 +80,7 @@
 		$reply["query"] = "getProjects";
 
 
-		$rep = $db->query("SELECT name,shortName,uuid,folderPath,id FROM " . $tablePrefix . "projects ORDER BY shortName;");
+		$rep = $db->query("SELECT name,shortName,uuid,folderPath,id FROM " . $tablePrefix . "projects ORDER BY shortName,name;");
 		$projects = Array();
 
 		while ($project = $rep->fetch())
@@ -120,7 +120,6 @@
 		$reply["content"] = $projects;
 		$reply["message"] = "Projects list retrieved";
 		$reply["success"] = true;
-
 	}
 
 	// ========= UPDATE PROJECT ==========
