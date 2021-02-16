@@ -29,20 +29,49 @@
         $name = "";
         $shortName = "";
         $uuid = "";
+        $role = "";
+        $folderPath = "";
 
         if (isset($_GET["name"])) $name = $_GET["name"];
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+        if (isset($_GET["role"])) $role = $_GET["role"];
+        if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
 
         if (strlen($shortName) > 0 AND strlen($uuid) > 0)
         {
-            $qString = "UPDATE " . $tablePrefix . "users SET shortName= :shortName ,name= :name WHERE uuid= :uuid ;";
-            $rep = $db->prepare($qString);
-            $rep->execute(array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid));
-            $rep->closeCursor();
+            // Only if self or admin
+            if ( isSelf($uuid) || isAdmin() )
+            {
+                $qString = "UPDATE " . $tablePrefix . "users SET shortName= :shortName ,name= :name";
+                $values = array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid);
 
-            $reply["message"] = "User \"" . $shortName . "\" updated.";
-            $reply["success"] = true;
+                if (strlen($role) > 0)
+                {
+                    $qString = $qString . ", role= :role";
+                    $values["role"] = $role;
+                }
+
+                if (strlen($folderPath) > 0)
+                {
+                    $qString = $qString . ", folderPath= :folderPath";
+                    $values["folderPath"] = $folderPath;
+                }
+
+                $qString = $qString . " WHERE uuid= :uuid ;";
+
+                $rep = $db->prepare($qString);
+                $rep->execute($values);
+                $rep->closeCursor();
+
+                $reply["message"] = "User \"" . $shortName . "\" updated.";
+                $reply["success"] = true;
+            }
+            else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to update other users.";
+                $reply["success"] = false;
+            }
         }
         else
         {
@@ -64,19 +93,46 @@
         if (isset($_GET["new"])) $new = $_GET["new"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
 
-        if (strlen($new) > 0 AND strlen($current) > 0 AND strlen($uuid) > 0)
+        if (strlen($new) > 0 AND strlen($uuid) > 0)
         {
-            //check password
-            $rep = $db->prepare("SELECT password FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
-            $rep->execute(array('uuid' => $uuid));
-            $testPass = $rep->fetch();
-            $rep->closeCursor();
+            $ok = false;
+            //if self, we need to check the current password
+            if ( isSelf($uuid) && strlen($current) > 0 )
+            {
+                //check password
+                $rep = $db->prepare("SELECT password FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
+                $rep->execute(array('uuid' => $uuid));
+                $testPass = $rep->fetch();
+                $rep->closeCursor();
 
-            //hash current password
-            $current = hashPassword( $current, $uuid );
+                //hash current password
+                $current = hashPassword( $current, $uuid );
 
-            //check password
-            if ($testPass["password"] == $current)
+                $ok = $testPass["password"] == $current;
+                
+                if (!$ok)
+                {
+                    $reply["message"] = "Wrong current password.";
+                    $reply["success"] = false;
+                }
+            }
+            else if ( isSelf($uuid) ) // if self and no current password
+            {
+                $reply["message"] = "Missing current password.";
+                $reply["success"] = false;
+            }
+            else if ( isAdmin() ) // if admin, no need for current password
+            {
+                $ok = true;
+            }
+            else // not self, not admin
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to change other users' passwords.";
+                $reply["success"] = false;
+            }      
+
+            //update password
+            if ($ok)
             {
                 //hash new password
                 $new = hashPassword( $new, $uuid );
@@ -88,11 +144,6 @@
 
                 $reply["message"] = "Password succesfully updated.";
                 $reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Wrong current password.";
-                $reply["success"] = false;
             }
         }
         else
@@ -146,24 +197,36 @@
 
         if (strlen($shortName) > 0 and strlen($password) > 0)
         {
-            if (strlen($uuid) > 0)
-			{
-				$qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , :uuid, :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password);
-			}
-			else
-			{
-				$qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , uuid(), :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-				$values = array('name' => $name,'shortName' => $shortName, 'password' => $password);
-			}
+            // Only if admin
+            if ( isAdmin() )
+            {
+                $password = hashPassword($password, $uuid);
 
-            $rep = $db->prepare($qString);
-            echo $qString;
-			$rep->execute($values);
-			$rep->closeCursor();         
+                if (strlen($uuid) > 0)
+                {
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , :uuid, :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password);
+                }
+                else
+                {
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , uuid(), :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+                    $values = array('name' => $name,'shortName' => $shortName, 'password' => $password);
+                }
+    
+                $rep = $db->prepare($qString);
+                $rep->execute($values);
+                $rep->closeCursor();         
+    
+                $reply["message"] = "User \"" . $shortName . "\" created.";
+                $reply["success"] = true;
+            }
+            else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to create users.";
+                $reply["success"] = false;
+            }
 
-            $reply["message"] = "User \"" . $shortName . "\" created.";
-            $reply["success"] = true;
+            
         }
         else
         {
@@ -182,12 +245,22 @@
 
         if (strlen($uuid) > 0)
         {
-            $rep = $db->prepare("DELETE " . $tablePrefix . "users FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
-			$rep->execute(array('uuid' => $uuid));
-			$rep->closeCursor();
-
-			$reply["message"] = "User " . $uuid . " removed.";
-			$reply["success"] = true;
+            //only if admin
+            if (isAdmin())
+            {
+                $rep = $db->prepare("DELETE " . $tablePrefix . "users FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
+                $rep->execute(array('uuid' => $uuid));
+                $rep->closeCursor();
+    
+                $reply["message"] = "User " . $uuid . " removed.";
+                $reply["success"] = true;
+            }
+            else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to remove users.";
+                $reply["success"] = false;
+            }
+            
         }
         else
         {

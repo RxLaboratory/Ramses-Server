@@ -16,6 +16,9 @@
 	{
 		// this session has worn out its welcome; kill it and start a brand new one
 		$_SESSION["sessionToken"] = "";
+		$_SESSION["userRole"] = "standard";
+		$_SESSION["userUuid"] = "";
+		$_SESSION["login"] = false;
 		session_unset();
 		session_destroy();
 		session_start();
@@ -26,6 +29,6 @@
 		$_SESSION['discard_after'] = $now + $sessionTimeout;
 	}
 
-	//add the _ after table prefix
-	if (strlen($tablePrefix) > 0) $tablePrefix = $tablePrefix . "_";
+	//add the "_" after table prefix if needed
+	if (strlen($tablePrefix) > 0 && !endsWith($tablePrefix, "_")) $tablePrefix = $tablePrefix . "_";
 ?>

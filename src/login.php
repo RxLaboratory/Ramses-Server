@@ -48,13 +48,16 @@
 
 			if ($testPass["password"] == $password)
 			{
-				$token = login();
+				//login
+				$role = $testPass["role"];
+				$token = login($uuid, $role);
+				//reply content
 				$content = array();
 				$content["name"] = $testPass["name"];
 				$content["shortName"] = $testPass["shortName"];
 				$content["uuid"] = $uuid;
 				$content["folderPath"] = $testPass["folderPath"];
-                $content["role"] = $testPass["role"];
+                $content["role"] = $role;
                 $content["token"] = $token;
 				$reply["content"] = $content;
 				$reply["message"] = "Successful login. Welcome " . $testPass["name"] . "!";

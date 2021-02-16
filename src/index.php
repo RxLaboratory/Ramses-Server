@@ -23,9 +23,9 @@
 	*/
 
 	//configuration and init
+	include ("functions.php");
 	include ("config.php");
 	include ("init.php");
-	include ("functions.php");
 
 	//prepare reply
 	include ("reply.php");
