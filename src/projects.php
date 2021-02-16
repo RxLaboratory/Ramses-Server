@@ -73,6 +73,7 @@
 	}
 
 	// ========= GET PROJECTS ==========
+	//TODO only projects assigned to the user (if not admin)
 	else if (isset($_GET["getProjects"]))
 	{
 		$reply["accepted"] = true;
@@ -104,6 +105,7 @@
 			{
 				$projectShots[] = $projectShot['shotId'];
 			}
+			$proj['shots'] = $projectShots;
 			$projects[] = $proj;
 		}
 		$rep->closeCursor();
