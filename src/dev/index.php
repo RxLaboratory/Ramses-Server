@@ -1,8 +1,8 @@
 <?php
 	//configuration and init
 	include ("../config.php");
+    include ("../functions.php");
 	include ("../init.php");
-	include ("../functions.php");
 
     //connect to database
     include('../db.php');
@@ -61,7 +61,7 @@
 
 			if ($testPass["password"] == $password)
 			{
-				$token = login();
+				$token = login($uuid, $testPass["role"]);
 				echo "token:<br />" . $token;
 			}
 			else

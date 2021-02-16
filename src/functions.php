@@ -54,6 +54,7 @@
      */
     function hashPassword($p, $u)
     {
+        GLOBAL $serverKey;
         return hash( "sha3-512", $u . $p . $serverKey );
     }
 
@@ -73,7 +74,7 @@
        if( !$length ) {
            return true;
        }
-       return substr( $string, -$substring ) === $substring;
+       return substr( $string, -$length ) === $substring;
    }
    
 ?>

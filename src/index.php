@@ -23,8 +23,8 @@
 	*/
 
 	//configuration and init
-	include ("functions.php");
 	include ("config.php");
+	include ("functions.php");
 	include ("init.php");
 
 	//prepare reply
@@ -47,6 +47,7 @@
 		if ( $_SESSION["sessionToken"] != "" and $token == $_SESSION["sessionToken"] )
 		{
 			include ("users.php");
+			include ("projects.php");
 		}
 		else if (!$reply["accepted"])
 		{
@@ -67,8 +68,6 @@
 					include ("statuses.php");
 					//stages
 					include ("stages.php");
-					//projects
-					include ("projects.php");
 					//shots
 					include ("shots.php");
 					//assets
