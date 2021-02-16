@@ -48,6 +48,7 @@
 		{
 			include ("users.php");
 			include ("projects.php");
+			include ("steps.php");
 		}
 		else if (!$reply["accepted"])
 		{
@@ -66,8 +67,6 @@
 				{
 					//statuses
 					include ("statuses.php");
-					//stages
-					include ("stages.php");
 					//shots
 					include ("shots.php");
 					//assets
