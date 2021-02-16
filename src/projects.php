@@ -218,7 +218,7 @@
 				$rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
 				$rep->closeCursor();
 
-				$reply["message"] = "Stage " . $stepUuid . " associated with project " . $projectUuid . ".";
+				$reply["message"] = "Step " . $stepUuid . " associated with project " . $projectUuid . ".";
 				$reply["success"] = true;
 			}
 			else
