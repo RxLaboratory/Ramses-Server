@@ -1,45 +1,69 @@
 <?php
-/*
-		Rainbox Asset Manager
-		Projects management
+    /*
+		Ramses: Rx Asset Management System
+        
+        This program is licensed under the GNU General Public License.
+
+        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+
+        This program is free software;
+        you can redistribute it and/or modify it
+        under the terms of the GNU General Public License
+        as published by the Free Software Foundation;
+        either version 3 of the License, or (at your option) any later version.
+
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the GNU General Public License for more details.
+
+        You should have received a copy of the *GNU General Public License* along with this program.
+        If not, see http://www.gnu.org/licenses/.
 	*/
-	// ========= ADD PROJECT ==========
-	if ($reply["type"] == "addProject")
+
+	// ========= CREATE PROJECT ==========
+	if (isset($_GET["createProject"]))
 	{
 		$reply["accepted"] = true;
+        $reply["query"] = "createProject";
 
 		$name = "";
 		$shortName = "";
 		$uuid = "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'name'})) $name = $data->{'name'};
-			if (isset($data->{'shortName'})) $shortName = $data->{'shortName'};
-			if (isset($data->{'uuid'})) $uuid = $data->{'uuid'};
-		}
+		if (isset($_GET["name"])) $name = $_GET["name"];
+        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
+        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
 
-		if (strlen($name) > 0 AND strlen($shortName) > 0)
+		if (strlen($shortName) > 0)
 		{
-			if (strlen($uuid) > 0)
-			{
-				$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE name = VALUES(name) , shortName = VALUES(shortName);";
-				$values = array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid);
+			// Only if admin
+            if ( isAdmin() )
+            {
+				if (strlen($uuid) > 0)
+				{
+					$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE name = VALUES(name) , shortName = VALUES(shortName);";
+					$values = array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid);
+				}
+				else
+				{
+					$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , uuid() );";
+					$values = array('name' => $name, 'shortName' => $shortName);
+				}
+
+				$rep = $db->prepare($qString);
+				$rep->execute($values);
+				$rep->closeCursor();
+
+				$reply["message"] = "Project " . $shortName . " created.";
+				$reply["success"] = true;
+
 			}
 			else
-			{
-				$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , uuid() );";
-				$values = array('name' => $name, 'shortName' => $shortName);
-			}
-
-			$rep = $db->prepare($qString);
-			$rep->execute($values);
-			$rep->closeCursor();
-
-			$reply["message"] = "Project " . $shortName . " added.";
-			$reply["success"] = true;
-
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to create projects.";
+                $reply["success"] = false;
+            }
 		}
 		else
 		{
@@ -49,27 +73,30 @@
 	}
 
 	// ========= GET PROJECTS ==========
-	if ($reply["type"] == "getProjects")
+	else if (isset($_GET["getProjects"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "getProjects";
 
 
-		$rep = $db->query("SELECT name,shortName,uuid,id FROM " . $tablePrefix . "projects ORDER BY shortName;");
+		$rep = $db->query("SELECT name,shortName,uuid,folderPath,id FROM " . $tablePrefix . "projects ORDER BY shortName;");
 		$projects = Array();
+
 		while ($project = $rep->fetch())
 		{
 			$proj = Array();
 			$proj['name'] = $project['name'];
 			$proj['shortName'] = $project['shortName'];
+			$proj['folderPath'] = $project['folderPath'];
 			$proj['uuid'] = $project['uuid'];
-			//get stages
-			$projectStages = Array();
-			$repS = $db->query("SELECT " . $tablePrefix . "stages.uuid as stageId FROM " . $tablePrefix . "projectstage JOIN " . $tablePrefix . "stages ON " . $tablePrefix . "stages.id = " . $tablePrefix . "projectstage.stageId WHERE projectId=" . $project['id'] . " ORDER BY " . $tablePrefix . "stages.shortName;");
-			while ($projectStage = $repS->fetch())
+			//get steps
+			$projectSteps = Array();
+			$repSteps = $db->query("SELECT " . $tablePrefix . "steps.uuid as stepId FROM " . $tablePrefix . "projectstep JOIN " . $tablePrefix . "steps ON " . $tablePrefix . "steps.id = " . $tablePrefix . "projectstep.stepId WHERE projectId=" . $project['id'] . " ORDER BY " . $tablePrefix . "steps.shortName;");
+			while ($projectStep = $repSteps->fetch())
 			{
-				$projectStages[] = $projectStage['stageId'];
+				$projectSteps[] = $projectStep['stepId'];
 			}
-			$proj['stages'] = $projectStages;
+			$proj['steps'] = $projectSteps;
 			//get shots
 			$projectShots = Array();
 			$repShots = $db->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
@@ -88,32 +115,38 @@
 	}
 
 	// ========= UPDATE PROJECT ==========
-	if ($reply["type"] == "updateProject")
+	else if (isset($_GET["updateProject"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "updateProject";
 
 		$name = "";
 		$shortName = "";
 		$uuid = "";
+		$folderPath = "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
+		if (isset($_GET["name"])) $name = $_GET["name"];
+        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
+        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+        if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
+
+		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
-			if (isset($data->{'name'})) $name = $data->{'name'};
-			if (isset($data->{'shortName'})) $shortName = $data->{'shortName'};
-			if (isset($data->{'uuid'})) $uuid = $data->{'uuid'};
-		}
+			// Only if admin
+            if ( isAdmin() )
+            {
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName, folderPath= :folderPath WHERE uuid= :uuid ;");
+				$rep->execute(array('name' => $name,'shortName' => $shortName, 'folderPath' => $folderPath, 'uuid' => $uuid));
+				$rep->closeCursor();
 
-		if (strlen($name) > 0 AND strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-
-			$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName WHERE uuid= :uuid ;");
-			$rep->execute(array('name' => $name,'shortName' => $shortName,'uuid' => $uuid));
-			$rep->closeCursor();
-
-			$reply["message"] = "Project " . $shortName . " (" . $uuid . ") updated.";
-			$reply["success"] = true;
-
+				$reply["message"] = "Project \"" . $shortName . "\" updated.";
+				$reply["success"] = true;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to update project information.";
+                $reply["success"] = false;
+            }
 		}
 		else
 		{
@@ -124,25 +157,32 @@
 	}
 
 	// ========= REMOVE PROJECT ==========
-	if ($reply["type"] == "removeProject")
+	else if (isset($_GET["removeProject"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "removeProject";
+
 		$uuid = "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'uuid'})) $uuid = $data->{'uuid'};
-		}
+		if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+
 		if (strlen($uuid) > 0)
 		{
+			//only if admin
+			if (isAdmin())
+			{
+				$rep = $db->prepare("DELETE " . $tablePrefix . "projects FROM " . $tablePrefix . "projects WHERE uuid= :uuid ;");
+				$rep->execute(array('uuid' => $uuid));
+				$rep->closeCursor();
 
-			$rep = $db->prepare("DELETE " . $tablePrefix . "projects FROM " . $tablePrefix . "projects WHERE uuid= :uuid ;");
-			$rep->execute(array('uuid' => $uuid));
-			$rep->closeCursor();
-
-			$reply["message"] = "Project " . $uuid . " removed.";
-			$reply["success"] = true;
+				$reply["message"] = "Project " . $uuid . " removed.";
+				$reply["success"] = true;
+			}
+            else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to remove projects.";
+                $reply["success"] = false;
+            }
 
 		}
 		else
@@ -153,35 +193,39 @@
 	}
 
 	// ========= ASSOCIATE STAGE WITH PROJECT ==========
-	if ($reply["type"] == "addProjectStage")
+	else if (isset($_GET["assignStep"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "assignStep";
 
-		$stageId = "";
-		$projectId = "";
+		$stepUuid = "";
+		$projectUuid = "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
+		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
+		if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
+
+		if (strlen($stepUuid) > 0 AND strlen($projectUuid) > 0)
 		{
-			if (isset($data->{'stageId'})) $stageId = $data->{'stageId'};
-			if (isset($data->{'projectId'})) $projectId = $data->{'projectId'};
-		}
+			if (isAdmin())
+			{
+				$q = "INSERT INTO " . $tablePrefix . "projectstep (stepId,projectId) VALUES (
+				( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
+				,
+				( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectUuid )
+				) ON DUPLICATE KEY UPDATE " . $tablePrefix . "projectstep.id = " . $tablePrefix . "projectstep.id ;";
 
-		if (strlen($stageId) > 0 AND strlen($projectId) > 0)
-		{
-			$q = "INSERT INTO " . $tablePrefix . "projectstage (stageId,projectId) VALUES (
-			( SELECT " . $tablePrefix . "stages.id FROM " . $tablePrefix . "stages WHERE " . $tablePrefix . "stages.uuid = :stageId )
-			,
-			( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectId )
-			) ON DUPLICATE KEY UPDATE " . $tablePrefix . "projectstage.id = " . $tablePrefix . "projectstage.id ;";
+				$rep = $db->prepare($q);
+				$rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
+				$rep->closeCursor();
 
-			$rep = $db->prepare($q);
-			$rep->execute(array('stageId' => $stageId,'projectId' => $projectId));
-			$rep->closeCursor();
-
-			$reply["message"] = "Stage " . $stageId . " associated with project " . $projectId . ".";
-			$reply["success"] = true;
-
+				$reply["message"] = "Stage " . $stepUuid . " associated with project " . $projectUuid . ".";
+				$reply["success"] = true;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to assign steps to projects.";
+                $reply["success"] = false;
+            }
 		}
 		else
 		{
@@ -191,31 +235,37 @@
 	}
 
 	// ========= REMOVE STAGE FROM PROJECT ==========
-	if ($reply["type"] == "removeProjectStage")
+	else if (isset($_GET["unassignStep"]))
 	{
 		$reply["accepted"] = true;
-		$stageId = "";
-		$projectId = "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'stageId'})) $stageId = $data->{'stageId'};
-			if (isset($data->{'projectId'})) $projectId = $data->{'projectId'};
-		}
-		if (strlen($projectId) > 0 AND strlen($stageId) > 0)
-		{
-			$q = "DELETE " . $tablePrefix . "projectstage FROM " . $tablePrefix . "projectstage WHERE
-			stageId= ( SELECT " . $tablePrefix . "stages.id FROM " . $tablePrefix . "stages WHERE " . $tablePrefix . "stages.uuid = :stageId )
-			AND
-			projectId= ( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectId )
-			;";
-			$rep = $db->prepare($q);
-			$rep->execute(array('stageId' => $stageId,'projectId' => $projectId));
-			$rep->closeCursor();
+		$stepUuid = "";
+		$projectUuid = "";
 
-			$reply["message"] = "Stage " . $stageId . " removed from project " . $projectId . ".";
-			$reply["success"] = true;
+		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
+		if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
+
+		if (strlen($stepUuid) > 0 AND strlen($projectUuid) > 0)
+		{
+			if (isAdmin())
+			{
+				$q = "DELETE " . $tablePrefix . "projectstep FROM " . $tablePrefix . "projectstep WHERE
+				stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
+				AND
+				projectId= ( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectUuid )
+				;";
+				$rep = $db->prepare($q);
+				$rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
+				$rep->closeCursor();
+	
+				$reply["message"] = "Stage " . $stepUuid . " removed from project " . $projectUuid . ".";
+				$reply["success"] = true;	
+			}
+			else 
+			{
+				$reply["message"] = "Insufficient rights, you need to be Admin to unassign steps from projects.";
+                $reply["success"] = false;
+			}
 
 		}
 		else
