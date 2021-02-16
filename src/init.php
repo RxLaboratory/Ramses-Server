@@ -2,6 +2,11 @@
     $ramsesVersion = "0.0.1-dev";
 	$installed = !file_exists("install/index.php");
 
+	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
+	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
+	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
+	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
+
 
 	// server should keep session data for AT LEAST  sessionTimeout
 	ini_set('session.gc_maxlifetime', $sessionTimeout);
