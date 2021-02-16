@@ -105,7 +105,14 @@
 			{
 				$projectShots[] = $projectShot['shotId'];
 			}
-			$proj['shots'] = $projectShots;
+			//get asset groups
+			$projectAssetGroups = Array();
+			$repAssetGroups = $db->query("SELECT " . $tablePrefix . "assetgroups.uuid as assetgroupId FROM " . $tablePrefix . "projectassetgroup JOIN " . $tablePrefix . "assetgroups ON " . $tablePrefix . "assetgroups.id = " . $tablePrefix . "projectassetgroup.assetgroupId WHERE projectId=" . $project['id'] . ";");
+			while ($projectAssetGroup = $repAssetGroups->fetch())
+			{
+				$projectAssetGroups[] = $projectAssetGroup['assetgroupId'];
+			}
+			$proj['assetGroups'] = $projectAssetGroups;
 			$projects[] = $proj;
 		}
 		$rep->closeCursor();
