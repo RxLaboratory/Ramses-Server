@@ -49,6 +49,7 @@
 			include ("users.php");
 			include ("projects.php");
 			include ("steps.php");
+			include ("templatesteps.php");
 		}
 		else if (!$reply["accepted"])
 		{
