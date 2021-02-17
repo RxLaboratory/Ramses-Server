@@ -153,7 +153,7 @@
 	else if (isset($_GET["removeTemplateStep"]))
 	{
 		$reply["accepted"] = true;
-		$reply["query"] = "removeStep";
+		$reply["query"] = "removeTemplateStep";
 
 		$uuid = "";
 
@@ -164,7 +164,7 @@
 			//only if admin
 			if (isAdmin())
 			{
-				$rep = $db->prepare("DELETE " . $tablePrefix . "templatesteps FROM " . $tablePrefix . "steps WHERE uuid= :uuid ;");
+				$rep = $db->prepare("DELETE " . $tablePrefix . "templatesteps FROM " . $tablePrefix . "templatesteps WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 
