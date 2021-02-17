@@ -78,7 +78,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getTemplateSteps";
 
-		$rep = $db->query("SELECT name,shortName,uuid,type,role FROM " . $tablePrefix . "templatesteps ORDER BY shortName,name;");
+		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templatesteps ORDER BY shortName,name;");
 		$steps = Array();
 		while ($step = $rep->fetch())
 		{
@@ -86,7 +86,6 @@
 			$s['name'] = $step['name'];
 			$s['shortName'] = $step['shortName'];
 			$s['type'] = $step['type'];
-			$s['role'] = $step['role'];
 			$s['uuid'] = $step['uuid'];
 			$steps[] = $s;
 		}
@@ -107,13 +106,11 @@
 		$shortName = "";
 		$uuid = "";
 		$type = "";
-		$role = "";
 
 		if (isset($_GET["name"])) $name = $_GET["name"];
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
 		if (isset($_GET["type"])) $type = $_GET["type"];
-		if (isset($_GET["role"])) $role = $_GET["role"];
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -127,12 +124,6 @@
 				{
 					$qString = $qString . ", type= :type";
                     $values["type"] = $type;
-				}
-
-				if (strlen($role) > 0)
-				{
-					$qString = $qString . ", role= :role";
-                    $values["role"] = $role;
 				}
 
 				$qString = $qString . " WHERE uuid= :uuid ;";
