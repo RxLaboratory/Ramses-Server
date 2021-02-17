@@ -78,14 +78,14 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getTemplateSteps";
 
-		$rep = $db->query("SELECT name,shortName,uuid,folderPath FROM " . $tablePrefix . "templatesteps ORDER BY shortName,name;");
+		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templatesteps ORDER BY shortName,name;");
 		$steps = Array();
 		while ($step = $rep->fetch())
 		{
 			$s = Array();
 			$s['name'] = $step['name'];
 			$s['shortName'] = $step['shortName'];
-			$s['folderPath'] = $step['folderPath'];
+			$s['type'] = $step['type'];
 			$s['uuid'] = $step['uuid'];
 			$steps[] = $s;
 		}
@@ -105,23 +105,32 @@
 		$name = "";
 		$shortName = "";
 		$uuid = "";
-		$folderPath = "";
+		$type = "";
 
 		if (isset($_GET["name"])) $name = $_GET["name"];
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
-        if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
-
-		if (strlen($folderPath) == 0) $folderPath = "auto";
+		if (isset($_GET["type"])) $type = $_GET["type"];
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isAdmin() )
             {
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "templatesteps SET name= :name ,shortName= :shortName, folderPath= :folderPath WHERE uuid= :uuid ;");
-				$rep->execute(array('name' => $name,'shortName' => $shortName, 'folderPath' => $folderPath, 'uuid' => $uuid));
-				$rep->closeCursor();
+				$qString = "UPDATE " . $tablePrefix . "templatesteps SET name= :name ,shortName= :shortName";
+				$values = array('name' => $name,'shortName' => $shortName, 'folderPath' => $folderPath, 'uuid' => $uuid);
+				
+				if (strlen($type) > 0)
+				{
+					$qString = $qString . ", type= :type";
+                    $values["type"] = $type;
+				}
+
+				$qString = $qString . " WHERE uuid= :uuid ;";
+				
+				$rep = $db->prepare($qString);
+                $rep->execute($values);
+                $rep->closeCursor();
 
 				$reply["message"] = "Step \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
