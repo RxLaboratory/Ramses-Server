@@ -145,7 +145,6 @@
             {
 				$qString = "UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName";
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
-				$rep->closeCursor();
 
 				if (strlen($folderPath) > 0)
                 {
