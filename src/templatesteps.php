@@ -118,7 +118,7 @@
             if ( isAdmin() )
             {
 				$qString = "UPDATE " . $tablePrefix . "templatesteps SET name= :name ,shortName= :shortName";
-				$values = array('name' => $name,'shortName' => $shortName, 'folderPath' => $folderPath, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
 				
 				if (strlen($type) > 0)
 				{
