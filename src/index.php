@@ -55,46 +55,6 @@
 		{
 			$reply["message"] = "Invalid token. Are you logged in?";
 		}
-
-		//if a request type was specified only
-		if (isset($_GET["type"]))
-		{
-			$reply["type"] = $_GET["type"];
-			$reply["success"] = false;
-
-			if ($reply["type"] != "login")
-			{
-				if (isset($_SESSION["login"]) AND $_SESSION["login"])//if logged in
-				{
-					//statuses
-					include ("statuses.php");
-					//shots
-					include ("shots.php");
-					//assets
-					include("assets.php");
-
-					//if accepted display result
-					if ($reply["accepted"])
-					{
-						//Display the result of the request
-						echo json_encode($reply);
-					}
-					else//if nothing was accepted
-					{
-						$reply["message"] = "Unknown request";
-						$reply["accepted"] = false;
-						echo json_encode($reply);
-					}
-				}//if not logged in
-				else
-				{
-					$reply["message"] = "You have been logged out by the server.";
-					$reply["accepted"] = false;
-					session_destroy();
-					echo json_encode($reply);
-				}
-			}
-		}
 	}
 	else
 	{
