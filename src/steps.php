@@ -22,6 +22,7 @@
 	*/
 
 	// ========= CREATE STEP ==========
+	//TODO assign to a project on creation
 	if (isset($_GET["createStep"]))
 	{
 		$reply["accepted"] = true;
@@ -111,6 +112,8 @@
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
         if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
+
+		if (strlen($folderPath) == 0) $folderPath = "auto";
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
