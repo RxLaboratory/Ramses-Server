@@ -50,6 +50,7 @@
 			include ("projects.php");
 			include ("steps.php");
 			include ("templatesteps.php");
+			include ("states.php");
 		}
 		else if (!$reply["accepted"])
 		{
