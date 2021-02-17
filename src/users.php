@@ -38,8 +38,6 @@
         if (isset($_GET["role"])) $role = $_GET["role"];
         if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
 
-        if (strlen($folderPath) == 0) $folderPath = "auto";
-
         if (strlen($shortName) > 0 AND strlen($uuid) > 0)
         {
             // Only if self or admin

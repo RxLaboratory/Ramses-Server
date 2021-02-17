@@ -138,16 +138,26 @@
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
         if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
 
-		if (strlen($folderPath) == 0) $folderPath = "auto";
-
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isAdmin() )
             {
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName, folderPath= :folderPath WHERE uuid= :uuid ;");
-				$rep->execute(array('name' => $name,'shortName' => $shortName, 'folderPath' => $folderPath, 'uuid' => $uuid));
+				$qString = "UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName";
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
 				$rep->closeCursor();
+
+				if (strlen($folderPath) > 0)
+                {
+                    $qString = $qString . ", folderPath= :folderPath";
+                    $values["folderPath"] = $folderPath;
+                }
+
+				$qString = $qString . " WHERE uuid= :uuid ;";
+
+                $rep = $db->prepare($qString);
+                $rep->execute($values);
+                $rep->closeCursor();
 
 				$reply["message"] = "Project \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
