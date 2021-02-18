@@ -87,7 +87,7 @@
 			$stat['name'] = $state['name'];
 			$stat['shortName'] = $state['shortName'];
 			$stat['color'] = $state['color'];
-			$stat['completionRatio'] = $state['completionRatio'];
+			$stat['completionRatio'] = (int) $state['completionRatio'];
 			$stat['uuid'] = $state['uuid'];
 			$states[] = $stat;
 		}
