@@ -92,7 +92,9 @@
 			$proj['uuid'] = $project['uuid'];
 			//get steps
 			$projectSteps = Array();
-			$repSteps = $db->query("SELECT " . $tablePrefix . "steps.uuid as stepId FROM " . $tablePrefix . "projectstep JOIN " . $tablePrefix . "steps ON " . $tablePrefix . "steps.id = " . $tablePrefix . "projectstep.stepId WHERE projectId=" . $project['id'] . " ORDER BY " . $tablePrefix . "steps.shortName;");
+			$repSteps = $db->query("SELECT " . $tablePrefix . "steps.uuid as stepId FROM " . $tablePrefix . "steps
+				JOIN " . $tablePrefix . "projects ON " . $tablePrefix . "projects.id = " . $tablePrefix . "steps.projectId
+				WHERE projectId=" . $project['id'] . " ORDER BY " . $tablePrefix . "steps.shortName;");
 			while ($projectStep = $repSteps->fetch())
 			{
 				$projectSteps[] = $projectStep['stepId'];
@@ -211,7 +213,7 @@
 		}
 	}
 
-	// ========= ASSOCIATE STAGE WITH PROJECT ==========
+	// ========= ASSOCIATE STEP WITH PROJECT ==========
 	else if (isset($_GET["assignStep"]))
 	{
 		$reply["accepted"] = true;
@@ -227,65 +229,28 @@
 		{
 			if (isAdmin())
 			{
-				$q = "INSERT INTO " . $tablePrefix . "projectstep (stepId,projectId) VALUES (
-				( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
-				,
+				$q = "INSERT INTO " . $tablePrefix . "steps (name,shortName,autoCreateAssets,type,projectId) VALUES (
+				( SELECT " . $tablePrefix . "templatesteps.name FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
+				( SELECT " . $tablePrefix . "templatesteps.shortName FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
+				( SELECT " . $tablePrefix . "templatesteps.autoCreateAssets FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
+				( SELECT " . $tablePrefix . "templatesteps.type FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
 				( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectUuid )
-				) ON DUPLICATE KEY UPDATE " . $tablePrefix . "projectstep.id = " . $tablePrefix . "projectstep.id ;";
+				) ON DUPLICATE KEY UPDATE " . $tablePrefix . "steps.id = " . $tablePrefix . "steps.id ;";
 
 				$rep = $db->prepare($q);
-				$rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
+				$ok = $rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
 				$rep->closeCursor();
 
-				$reply["message"] = "Step " . $stepUuid . " associated with project " . $projectUuid . ".";
-				$reply["success"] = true;
+				if ($ok) $reply["message"] = "Step associated with project.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
 			}
 			else
             {
                 $reply["message"] = "Insufficient rights, you need to be Admin to assign steps to projects.";
                 $reply["success"] = false;
             }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-	}
-
-	// ========= REMOVE STAGE FROM PROJECT ==========
-	else if (isset($_GET["unassignStep"]))
-	{
-		$reply["accepted"] = true;
-
-		$stepUuid = "";
-		$projectUuid = "";
-
-		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
-		if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
-
-		if (strlen($stepUuid) > 0 AND strlen($projectUuid) > 0)
-		{
-			if (isAdmin())
-			{
-				$q = "DELETE " . $tablePrefix . "projectstep FROM " . $tablePrefix . "projectstep WHERE
-				stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
-				AND
-				projectId= ( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectUuid )
-				;";
-				$rep = $db->prepare($q);
-				$rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
-				$rep->closeCursor();
-	
-				$reply["message"] = "Stage " . $stepUuid . " removed from project " . $projectUuid . ".";
-				$reply["success"] = true;	
-			}
-			else 
-			{
-				$reply["message"] = "Insufficient rights, you need to be Admin to unassign steps from projects.";
-                $reply["success"] = false;
-			}
-
 		}
 		else
 		{
