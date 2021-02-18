@@ -22,7 +22,6 @@
 	*/
 
 	// ========= CREATE STEP ==========
-	//TODO assign to a project on creation
 	if (isset($_GET["createStep"]))
 	{
 		$reply["accepted"] = true;
@@ -30,35 +29,48 @@
 
 		$name = "";
 		$shortName = "";
+		$projectUuid = "";
 		$uuid = "";
 
 		if (isset($_GET["name"])) $name = $_GET["name"];
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
+        if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
 
-		if (strlen($shortName) > 0)
+		if (strlen($shortName) > 0 && strlen(projectUuid) > 0)
 		{
 			// Only if admin
             if ( isAdmin() )
             {
+				// Create step
+				$qString = "INSERT INTO " . $tablePrefix . "steps (name,shortName,projectId,uuid) 
+				VALUES (
+					:name,
+					:shortName , 
+					(SELECT id FROM " . $tablePrefix . "projects WHERE uuid = projectUuid ),";
+
+				$values = array('name' => $name,'shortName' => $shortName);
+				
 				if (strlen($uuid) > 0)
 				{
-					$qString = "INSERT INTO " . $tablePrefix . "steps (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-					$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+					$qString = $qString . ":uuid ";
+					$values['uuid'] = $uuid;
 				}
 				else
 				{
-					$qString = "INSERT INTO " . $tablePrefix . "steps (name,shortName,uuid) VALUES ( :name , :shortName , uuid() ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-					$values = array('name' => $name,'shortName' => $shortName);
+					$qString = $qString . "uuid() ";
 				}
 
+				$qString = $qString . ") ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+
 				$rep = $db->prepare($qString);
-				$rep->execute($values);
+				$ok = $rep->execute($values);
 				$rep->closeCursor();
 
-				$reply["message"] = "Step " . $shortName . " added.";
-				$reply["success"] = true;
+				if ($ok) $reply["message"] = "Step \"" . $shortName . "\" added.";
+				else $reply["message"] = $rep->errorInfo();
 
+				$reply["success"] = $ok;
 			}
 			else
             {
@@ -179,6 +191,93 @@
             }
 		}
 		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= ASSIGN USER ==========
+	else if (isset($_GET["assignUser"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "assignUser";
+
+		$userUuid = "";
+		$stepUuid = "";
+
+		if (isset($_GET["userUuid"])) $userUuid = $_GET["userUuid"];
+		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
+
+		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
+		{
+			//only if lead
+			if (isLead())
+			{
+				$qString = "INSERT INTO " . $tablePrefix . "stepuser (stepId, userId) VALUES (
+					( SELECT " . $tablePrefix . "steps.id FROM steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid ),
+					( SELECT " . $tablePrefix . "users.id FROM users WHERE " . $tablePrefix . "users.uuid = :userUuid )
+					) ON DUPLICATE KEY UPDATE " . $tablePrefix . "stepuser.id = " . $tablePrefix . "stepuser.id ;";
+
+				$rep = $db.prepare($qString);
+				$ok = $rep.execute( array('stepUuid' => $stepUuid, 'userUuid' => $userUuid) );
+				$rep.closeCursor();
+
+				if ($ok) $reply["message"] = "User assigned to step.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Lead to assign users.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= REMOVE USER ==========
+	else if (isset($_GET["unassignUser"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "assignUser";
+
+		$userUuid = "";
+		$stepUuid = "";
+
+		if (isset($_GET["userUuid"])) $userUuid = $_GET["userUuid"];
+		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
+
+		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
+		{
+			//only if lead
+			if (isLead())
+			{
+				$q = "DELETE " . $tablePrefix . "stepuser FROM " . $tablePrefix . "stepuser WHERE
+				stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
+				AND
+				userId= ( SELECT " . $tablePrefix . "users.id FROM " . $tablePrefix . "users WHERE " . $tablePrefix . "users.uuid = :userUuid )
+				;";
+				$rep = $db->prepare($q);
+				$ok = $rep->execute(array('stepUuid' => $stepUuid,'userUuid' => $userUuid));
+				$rep->closeCursor();
+	
+				$reply["message"] = "User unassigned from step.";
+				$reply["success"] = true;	
+			}
+			else
+            {
+                if ($ok) $reply["message"] = "Insufficient rights, you need to be Lead to assign users.";
+				else $reply["message"] = $rep->errorInfo();
+                $reply["success"] = false;
+            }
+		}
+		else 
 		{
 			$reply["message"] = "Invalid request, missing values";
 			$reply["success"] = false;
