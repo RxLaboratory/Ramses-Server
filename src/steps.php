@@ -37,7 +37,7 @@
         if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
 
-		if (strlen($shortName) > 0 && strlen(projectUuid) > 0)
+		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
 			// Only if admin
             if ( isAdmin() )
@@ -47,9 +47,9 @@
 				VALUES (
 					:name,
 					:shortName , 
-					(SELECT id FROM " . $tablePrefix . "projects WHERE uuid = projectUuid ),";
+					(SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE uuid = :projectUuid ),";
 
-				$values = array('name' => $name,'shortName' => $shortName);
+				$values = array('name' => $name,'shortName' => $shortName, 'projectUuid' => $projectUuid);
 				
 				if (strlen($uuid) > 0)
 				{
@@ -83,30 +83,6 @@
 			$reply["message"] = "Invalid request, missing values";
 			$reply["success"] = false;
 		}
-	}
-
-	// ========= GET STEPS ==========
-	else if (isset($_GET["getSteps"]))
-	{
-		$reply["accepted"] = true;
-		$reply["query"] = "getSteps";
-
-		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "steps ORDER BY shortName,name;");
-		$steps = Array();
-		while ($step = $rep->fetch())
-		{
-			$s = Array();
-			$s['name'] = $step['name'];
-			$s['shortName'] = $step['shortName'];
-			$s['type'] = $step['type'];
-			$s['uuid'] = $step['uuid'];
-			$steps[] = $s;
-		}
-		$rep->closeCursor();
-
-		$reply["content"] = $steps;
-		$reply["message"] = "Steps list retreived";
-		$reply["success"] = true;
 	}
 
 	// ========= UPDATE STEP ==========
