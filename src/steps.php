@@ -40,7 +40,7 @@
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isProjectAdmin() )
             {
 				// Create step
 				$qString = "INSERT INTO " . $tablePrefix . "steps (name,shortName,projectId,uuid) 
@@ -106,7 +106,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isProjectAdmin() )
             {
 				$qString = "UPDATE " . $tablePrefix . "steps SET `name`= :name ,`shortName`= :shortName";
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
@@ -160,7 +160,7 @@
 		if (strlen($uuid) > 0)
 		{
 			//only if admin
-			if (isAdmin())
+			if (isProjectAdmin())
 			{
 				$rep = $db->prepare("DELETE " . $tablePrefix . "steps FROM " . $tablePrefix . "steps WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
@@ -197,7 +197,7 @@
 		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
 		{
 			//only if lead
-			if (isLead())
+			if (isProjectAdmin())
 			{
 				$qString = "INSERT INTO " . $tablePrefix . "stepuser (stepId, userId) VALUES (
 					( SELECT " . $tablePrefix . "steps.id FROM steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid ),
@@ -241,7 +241,7 @@
 		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
 		{
 			//only if lead
-			if (isLead())
+			if (isProjectAdmin())
 			{
 				$q = "DELETE " . $tablePrefix . "stepuser FROM " . $tablePrefix . "stepuser WHERE
 				stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )

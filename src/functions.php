@@ -34,11 +34,19 @@
     }
 
     /**
+     * Checks if the current user has project admin rights
+     */
+    function isProjectAdmin()
+    {
+        return $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "project";
+    }
+
+    /**
      * Checks if the current user has lead rights
      */
     function isLead()
     {
-        return $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead";
+        return $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead" || $_SESSION["userRole"] == "project";
     }
 
     /**
