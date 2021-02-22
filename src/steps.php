@@ -108,24 +108,25 @@
 			// Only if admin
             if ( isAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "steps SET name= :name ,shortName= :shortName";
+				$qString = "UPDATE " . $tablePrefix . "steps SET `name`= :name ,`shortName`= :shortName";
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
 				
 				if (strlen($type) > 0)
 				{
-					$qString = $qString . ", type= :type";
+					$qString = $qString . ", `type`= :type";
                     $values["type"] = $type;
 				}
 
 				if (strlen($order) > 0)
 				{
-					$qString = $qString . ", order= :order";
-                    $values["order"] = $order;
+					$qString = $qString . ", `order`= :order";
+                    $values["order"] = (int) $order;
 				}
 
 				$qString = $qString . " WHERE uuid= :uuid ;";
-				
+			
 				$rep = $db->prepare($qString);
+				
                 $rep->execute($values);
                 $rep->closeCursor();
 

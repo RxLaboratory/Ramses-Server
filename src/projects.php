@@ -80,7 +80,7 @@
 		$reply["query"] = "getProjects";
 
 
-		$rep = $db->query("SELECT name,shortName,uuid,folderPath,id FROM " . $tablePrefix . "projects ORDER BY shortName,name;");
+		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects ORDER BY `shortName`,`name`;");
 
 		$projects = Array();
 
@@ -95,16 +95,16 @@
 			//get steps
 			$projectSteps = Array();
 			$qString = "SELECT 
-						" . $tablePrefix . "steps.uuid,
-						" . $tablePrefix . "steps.shortName,
-						" . $tablePrefix . "steps.name,
-						" . $tablePrefix . "steps.type,
-						" . $tablePrefix . "steps.order
+						" . $tablePrefix . "steps.`uuid`,
+						" . $tablePrefix . "steps.`shortName`,
+						" . $tablePrefix . "steps.`name`,
+						" . $tablePrefix . "steps.`type`,
+						" . $tablePrefix . "steps.`order`
 					FROM " . $tablePrefix . "steps
 					JOIN " . $tablePrefix . "projects
-					ON " . $tablePrefix . "projects.id = " . $tablePrefix . "steps.projectId
+					ON " . $tablePrefix . "projects.`id` = " . $tablePrefix . "steps.`projectId`
 					WHERE projectId=" . $project['id'] . " 
-					ORDER BY " . $tablePrefix . "steps.order, steps.shortName;";
+					ORDER BY " . $tablePrefix . "steps.`order`, " . $tablePrefix . "steps.`shortName`;";
 			$repSteps = $db->query( $qString );
 			while ($projectStep = $repSteps->fetch())
 			{
