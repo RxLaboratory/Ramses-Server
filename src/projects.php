@@ -99,6 +99,7 @@
 						" . $tablePrefix . "steps.`shortName`,
 						" . $tablePrefix . "steps.`name`,
 						" . $tablePrefix . "steps.`type`,
+						" . $tablePrefix . "steps.`id`,
 						" . $tablePrefix . "steps.`order`
 					FROM " . $tablePrefix . "steps
 					JOIN " . $tablePrefix . "projects
@@ -114,6 +115,21 @@
 				$step['name'] = $projectStep['name'];
 				$step['type'] = $projectStep['type'];
 				$step['order'] = (int) $projectStep['order'];
+				//get users
+				$qString = "SELECT 
+					" . $tablePrefix . "users.`uuid`
+					FROM " . $tablePrefix . "stepuser
+					JOIN " . $tablePrefix . "users
+					ON " . $tablePrefix . "stepuser.`userId` = " . $tablePrefix . "users.`id`
+					WHERE stepId=" . $projectStep['id'] . " 
+					ORDER BY " . $tablePrefix . "users.`name`, " . $tablePrefix . "users.`shortName`;";
+				$repUsers = $db->query( $qString );
+				$users = Array();
+				while ($user = $repUsers->fetch())
+				{
+					$users[] = $user['uuid'];
+				}
+				$step['users'] = $users;
 				$projectSteps[] = $step;
 			}
 			$proj['steps'] = $projectSteps;

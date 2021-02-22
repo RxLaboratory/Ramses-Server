@@ -199,14 +199,15 @@
 			//only if lead
 			if (isProjectAdmin())
 			{
-				$qString = "INSERT INTO " . $tablePrefix . "stepuser (stepId, userId) VALUES (
-					( SELECT " . $tablePrefix . "steps.id FROM steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid ),
-					( SELECT " . $tablePrefix . "users.id FROM users WHERE " . $tablePrefix . "users.uuid = :userUuid )
-					) ON DUPLICATE KEY UPDATE " . $tablePrefix . "stepuser.id = " . $tablePrefix . "stepuser.id ;";
+				$qString = "INSERT INTO " . $tablePrefix . "stepuser (`stepId`, `userId`) VALUES (
+					( SELECT " . $tablePrefix . "steps.`id` FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.`uuid` = :stepUuid ),
+					( SELECT " . $tablePrefix . "users.`id` FROM " . $tablePrefix . "users WHERE " . $tablePrefix . "users.`uuid` = :userUuid )
+					) ON DUPLICATE KEY UPDATE " . $tablePrefix . "stepuser.`id` = " . $tablePrefix . "stepuser.`id` ;";
 
-				$rep = $db.prepare($qString);
-				$ok = $rep.execute( array('stepUuid' => $stepUuid, 'userUuid' => $userUuid) );
-				$rep.closeCursor();
+				$rep = $db->prepare($qString);
+
+				$ok = $rep->execute( array('stepUuid' => $stepUuid, 'userUuid' => $userUuid) );
+				$rep->closeCursor();
 
 				if ($ok) $reply["message"] = "User assigned to step.";
 				else $reply["message"] = $rep->errorInfo();
