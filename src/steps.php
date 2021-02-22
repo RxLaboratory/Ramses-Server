@@ -95,11 +95,13 @@
 		$shortName = "";
 		$uuid = "";
 		$type = "";
+		$order = "";
 
 		if (isset($_GET["name"])) $name = $_GET["name"];
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
         if (isset($_GET["type"])) $type = $_GET["type"];
+        if (isset($_GET["order"])) $order = $_GET["order"];
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -113,6 +115,12 @@
 				{
 					$qString = $qString . ", type= :type";
                     $values["type"] = $type;
+				}
+
+				if (strlen($order) > 0)
+				{
+					$qString = $qString . ", order= :order";
+                    $values["order"] = $order;
 				}
 
 				$qString = $qString . " WHERE uuid= :uuid ;";

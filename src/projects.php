@@ -98,12 +98,13 @@
 						" . $tablePrefix . "steps.uuid,
 						" . $tablePrefix . "steps.shortName,
 						" . $tablePrefix . "steps.name,
-						" . $tablePrefix . "steps.type
+						" . $tablePrefix . "steps.type,
+						" . $tablePrefix . "steps.order
 					FROM " . $tablePrefix . "steps
 					JOIN " . $tablePrefix . "projects
 					ON " . $tablePrefix . "projects.id = " . $tablePrefix . "steps.projectId
 					WHERE projectId=" . $project['id'] . " 
-					ORDER BY " . $tablePrefix . "steps.shortName;";
+					ORDER BY " . $tablePrefix . "steps.order, steps.shortName;";
 			$repSteps = $db->query( $qString );
 			while ($projectStep = $repSteps->fetch())
 			{
@@ -112,6 +113,7 @@
 				$step['shortName'] = $projectStep['shortName'];
 				$step['name'] = $projectStep['name'];
 				$step['type'] = $projectStep['type'];
+				$step['order'] = (int) $projectStep['order'];
 				$projectSteps[] = $step;
 			}
 			$proj['steps'] = $projectSteps;
