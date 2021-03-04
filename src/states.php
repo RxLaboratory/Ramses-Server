@@ -79,7 +79,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getStates";
 
-		$rep = $db->query("SELECT name,shortName,color,completionRatio,uuid FROM " . $tablePrefix . "states ORDER BY shortName, name;");
+		$rep = $db->query("SELECT name,shortName,color,completionRatio,uuid FROM " . $tablePrefix . "states WHERE removed = 0 ORDER BY shortName, name;");
 		$states = Array();
 		while ($state = $rep->fetch())
 		{
@@ -177,7 +177,7 @@
 			//only if admin
 			if (isAdmin())
 			{
-				$rep = $db->prepare("DELETE " . $tablePrefix . "states FROM " . $tablePrefix . "states WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "states SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

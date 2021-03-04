@@ -80,7 +80,7 @@
 		$reply["query"] = "getProjects";
 
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects ORDER BY `shortName`,`name`;");
+		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE removed = 0 ORDER BY `shortName`,`name`;");
 
 		$projects = Array();
 
@@ -104,7 +104,7 @@
 					FROM " . $tablePrefix . "steps
 					JOIN " . $tablePrefix . "projects
 					ON " . $tablePrefix . "projects.`id` = " . $tablePrefix . "steps.`projectId`
-					WHERE projectId=" . $project['id'] . " 
+					WHERE projectId=" . $project['id'] . " AND " . $tablePrefix . "steps.`removed` = 0 
 					ORDER BY " . $tablePrefix . "steps.`order`, " . $tablePrefix . "steps.`shortName`;";
 			$repSteps = $db->query( $qString );
 			while ($projectStep = $repSteps->fetch())
@@ -121,7 +121,7 @@
 					FROM " . $tablePrefix . "stepuser
 					JOIN " . $tablePrefix . "users
 					ON " . $tablePrefix . "stepuser.`userId` = " . $tablePrefix . "users.`id`
-					WHERE stepId=" . $projectStep['id'] . " 
+					WHERE stepId=" . $projectStep['id'] . " AND " . $tablePrefix . "users.`removed` = 0 
 					ORDER BY " . $tablePrefix . "users.`name`, " . $tablePrefix . "users.`shortName`;";
 				$repUsers = $db->query( $qString );
 				$users = Array();
@@ -225,7 +225,7 @@
 			//only if admin
 			if (isAdmin())
 			{
-				$rep = $db->prepare("DELETE " . $tablePrefix . "projects FROM " . $tablePrefix . "projects WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

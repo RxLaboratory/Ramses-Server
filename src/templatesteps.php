@@ -78,7 +78,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getTemplateSteps";
 
-		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templatesteps ORDER BY shortName,name;");
+		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templatesteps WHERE removed = 0 ORDER BY shortName,name;");
 		$steps = Array();
 		while ($step = $rep->fetch())
 		{
@@ -164,7 +164,7 @@
 			//only if admin
 			if (isAdmin())
 			{
-				$rep = $db->prepare("DELETE " . $tablePrefix . "templatesteps FROM " . $tablePrefix . "templatesteps WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "templatesteps SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

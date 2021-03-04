@@ -27,49 +27,55 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "login";
 
-		$username = "";
-		$password = "";
-
-		if (isset($_GET["username"])) $username = $_GET["username"];
-		if (isset($_GET["password"])) $password = $_GET["password"];
+		$username = $_GET["username"] ?? "";
+		$password = $_GET["password"] ?? "";
 
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE shortName = :username ;");
+			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE shortName = :username AND removed = 0;");
 			$rep->execute(array('username' => $username));
 			$testPass = $rep->fetch();
 			$rep->closeCursor();
 
-			//check password
-            //hash
-			$uuid = $testPass["uuid"];
-            $password = hashPassword( $password, $uuid );
+			if (isset($testPass["uuid"]))
+			{
+				//check password
+				//hash
+				$uuid = $testPass["uuid"];
+				$password = hashPassword( $password, $uuid );
 
-			if ($testPass["password"] == $password)
-			{
-				//login
-				$role = $testPass["role"];
-				$token = login($uuid, $role);
-				//reply content
-				$content = array();
-				$content["name"] = $testPass["name"];
-				$content["shortName"] = $testPass["shortName"];
-				$content["uuid"] = $uuid;
-				$content["folderPath"] = $testPass["folderPath"];
-                $content["role"] = $role;
-                $content["token"] = $token;
-				$reply["content"] = $content;
-				$reply["message"] = "Successful login. Welcome " . $testPass["name"] . "!";
-				$reply["success"] = true;
+				if ($testPass["password"] == $password)
+				{
+					//login
+					$role = $testPass["role"];
+					$token = login($uuid, $role);
+					//reply content
+					$content = array();
+					$content["name"] = $testPass["name"];
+					$content["shortName"] = $testPass["shortName"];
+					$content["uuid"] = $uuid;
+					$content["folderPath"] = $testPass["folderPath"];
+					$content["role"] = $role;
+					$content["token"] = $token;
+					$reply["content"] = $content;
+					$reply["message"] = "Successful login. Welcome " . $testPass["name"] . "!";
+					$reply["success"] = true;
+				}
+				else
+				{
+					$reply["message"] = "Invalid password";
+					$reply["success"] = false;
+					logout();
+				}
 			}
-			else
+			else 
 			{
-				$reply["message"] = "Invalid username or password";
+				$reply["message"] = "Invalid username";
 				$reply["success"] = false;
 				logout();
 			}
-		}
+		}			
 		else
 		{
 			$reply["message"] = "Invalid request, missing username or password";

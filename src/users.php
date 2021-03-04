@@ -157,7 +157,7 @@
         $reply["accepted"] = true;
         $reply["query"] = "getUsers";
         
-        $rep = $db->prepare("SELECT name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users ;");
+        $rep = $db->prepare("SELECT name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE removed = 0;");
         $rep->execute();
 
         $users = Array();
@@ -248,7 +248,7 @@
             //only if admin
             if (isAdmin())
             {
-                $rep = $db->prepare("DELETE " . $tablePrefix . "users FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
+                $rep = $db->prepare("UPDATE " . $tablePrefix . "users SET removed = 1 WHERE uuid= :uuid ;");
                 $rep->execute(array('uuid' => $uuid));
                 $rep->closeCursor();
     

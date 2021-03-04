@@ -162,7 +162,7 @@
 			//only if admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("DELETE " . $tablePrefix . "steps FROM " . $tablePrefix . "steps WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "steps SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 
