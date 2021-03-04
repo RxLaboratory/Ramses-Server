@@ -59,7 +59,7 @@
 	}
 	else
 	{
-		if ($reply["type"] != "ping")
+		if ($reply["query"] != "ping")
 		{
 			$reply["message"] = "This Ramses server is not installed yet.";
 		}
