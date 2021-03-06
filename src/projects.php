@@ -140,7 +140,7 @@
 			{
 				$projectShots[] = $projectShot['shotId'];
 			}
-			//get asset groups
+			//get asset groups TODO Copy from get steps above (and move before get shots)
 			$projectAssetGroups = Array();
 			$repAssetGroups = $db->query("SELECT " . $tablePrefix . "assetgroups.uuid as assetgroupId FROM " . $tablePrefix . "projectassetgroup JOIN " . $tablePrefix . "assetgroups ON " . $tablePrefix . "assetgroups.id = " . $tablePrefix . "projectassetgroup.assetgroupId WHERE projectId=" . $project['id'] . ";");
 			while ($projectAssetGroup = $repAssetGroups->fetch())

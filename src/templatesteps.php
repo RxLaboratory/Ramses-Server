@@ -31,9 +31,9 @@
 		$shortName = "";
 		$uuid = "";
 
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$name = $_GET["name"] ?? "";
+		$shortName = $_GET["shortName"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
 
 		if (strlen($shortName) > 0)
 		{
