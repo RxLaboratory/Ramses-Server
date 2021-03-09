@@ -173,9 +173,9 @@
 					$asset['shortName'] = $a['shortName'];
 					$asset['name'] = $a['name'];
 					$asset['tags'] = $a['tags'];
-					$asset['assetGroup'] = $assetGroup['uuid'];
+					$asset['assetGroupUuid'] = $assetGroup['uuid'];
 					
-					$assetGroup['assets'][] = $a;
+					$assetGroup['assets'][] = $asset;
 				}
 
 				$project['assetGroups'][] = $assetGroup;

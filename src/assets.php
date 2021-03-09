@@ -56,7 +56,7 @@
 					$qString = $qString . "uuid() ";
 				}
 
-				$qString = $qString . ") ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), tags = VALUES(tags);";
+				$qString = $qString . ") ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), tags = VALUES(tags), removed = 0;";
 
 				$rep = $db->prepare($qString);
 				$ok = $rep->execute($values);
@@ -95,7 +95,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if lead
-            if ( isProjectLead() )
+            if ( isLead() )
             {
 				$qString = "UPDATE " . $tablePrefix . "assets
 				SET
@@ -140,7 +140,7 @@
 		if (strlen($uuid) > 0)
 		{
 			//only if admin
-			if (isProjectAdmin())
+			if (isLead())
 			{
 				$rep = $db->prepare("UPDATE " . $tablePrefix . "assets SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
