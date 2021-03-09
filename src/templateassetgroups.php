@@ -72,25 +72,24 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getTemplateAssetGroups";
 
-		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
-		$steps = Array();
-		while ($step = $rep->fetch())
+		$rep = $db->query("SELECT `name`,`shortName`,`uuid` FROM " . $tablePrefix . "templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
+		$assetGroups = Array();
+		while ($assetGroup = $rep->fetch())
 		{
-			$s = Array();
-			$s['name'] = $step['name'];
-			$s['shortName'] = $step['shortName'];
-			$s['type'] = $step['type'];
-			$s['uuid'] = $step['uuid'];
-			$steps[] = $s;
+			$ag = Array();
+			$ag['name'] = $assetGroup['name'];
+			$ag['shortName'] = $assetGroup['shortName'];
+			$ag['uuid'] = $assetGroup['uuid'];
+			$assetGroups[] = $ag;
 		}
 		$rep->closeCursor();
 
-		$reply["content"] = $steps;
+		$reply["content"] = $assetGroups;
 		$reply["message"] = "Asset groups list retreived";
 		$reply["success"] = true;
 	}
 
-	// ========= UPDATE STEP ==========
+	// ========= UPDATE ASSET GROUP ==========
 	else if (isset($_GET["updateTemplateAssetGroup"]))
 	{
 		$reply["accepted"] = true;
@@ -129,7 +128,7 @@
 
 	}
 
-	// ========= REMOVE STEP ==========
+	// ========= REMOVE ASSET GROUP ==========
 	else if (isset($_GET["removeTemplateAssetGroup"]))
 	{
 		$reply["accepted"] = true;

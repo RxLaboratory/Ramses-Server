@@ -133,19 +133,33 @@
 				$projectSteps[] = $step;
 			}
 			$proj['steps'] = $projectSteps;
+			//get asset groups
+			$projectAssetGroups = Array();
+			$qString = "SELECT 
+						" . $tablePrefix . "assetgroups.`uuid`,
+						" . $tablePrefix . "assetgroups.`shortName`,
+						" . $tablePrefix . "assetgroups.`name`
+					FROM " . $tablePrefix . "assetgroups
+					JOIN " . $tablePrefix . "projects
+					ON " . $tablePrefix . "projects.`id` = " . $tablePrefix . "assetgroups.`projectId`
+					WHERE projectId=" . $project['id'] . " AND " . $tablePrefix . "assetgroups.`removed` = 0 
+					ORDER BY " . $tablePrefix . "assetgroups.`shortName`, " . $tablePrefix . "assetgroups.`name`;";
+			$repAssetGroups = $db->query( $qString );
+			while($projectAssetGroup = $repAssetGroups->fetch())
+			{
+				$assetGroup = array();
+				$assetGroup['uuid'] = $projectAssetGroup['uuid'];
+				$assetGroup['shortName'] = $projectAssetGroup['shortName'];
+				$assetGroup['name'] = $projectAssetGroup['name'];
+				$projectAssetGroups[] = $assetGroup;
+			}
+			$proj['assetGroups'] = $projectAssetGroups;
 			//get shots
 			$projectShots = Array();
 			$repShots = $db->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
 			while ($projectShot = $repShots->fetch())
 			{
 				$projectShots[] = $projectShot['shotId'];
-			}
-			//get asset groups TODO Copy from get steps above (and move before get shots)
-			$projectAssetGroups = Array();
-			$repAssetGroups = $db->query("SELECT " . $tablePrefix . "assetgroups.uuid as assetgroupId FROM " . $tablePrefix . "projectassetgroup JOIN " . $tablePrefix . "assetgroups ON " . $tablePrefix . "assetgroups.id = " . $tablePrefix . "projectassetgroup.assetgroupId WHERE projectId=" . $project['id'] . ";");
-			while ($projectAssetGroup = $repAssetGroups->fetch())
-			{
-				$projectAssetGroups[] = $projectAssetGroup['assetgroupId'];
 			}
 			$proj['assetGroups'] = $projectAssetGroups;
 			$projects[] = $proj;
