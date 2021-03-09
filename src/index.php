@@ -52,6 +52,7 @@
 			include ("templatesteps.php");
 			include ("states.php");
 			include ("templateassetgroups.php");
+			include ("assetgroups.php");
 		}
 		else if (!$reply["accepted"])
 		{

@@ -100,7 +100,8 @@
 						" . $tablePrefix . "steps.`name`,
 						" . $tablePrefix . "steps.`type`,
 						" . $tablePrefix . "steps.`id`,
-						" . $tablePrefix . "steps.`order`
+						" . $tablePrefix . "steps.`order`,
+						" . $tablePrefix . "projects.`uuid` AS `projectUuid`
 					FROM " . $tablePrefix . "steps
 					JOIN " . $tablePrefix . "projects
 					ON " . $tablePrefix . "projects.`id` = " . $tablePrefix . "steps.`projectId`
@@ -115,6 +116,7 @@
 				$step['name'] = $projectStep['name'];
 				$step['type'] = $projectStep['type'];
 				$step['order'] = (int) $projectStep['order'];
+				$step['projectUuid'] = $projectStep['projectUuid'];
 				//get users
 				$qString = "SELECT 
 					" . $tablePrefix . "users.`uuid`
@@ -138,7 +140,8 @@
 			$qString = "SELECT 
 						" . $tablePrefix . "assetgroups.`uuid`,
 						" . $tablePrefix . "assetgroups.`shortName`,
-						" . $tablePrefix . "assetgroups.`name`
+						" . $tablePrefix . "assetgroups.`name`,
+						" . $tablePrefix . "projects.`uuid` AS `projectUuid`
 					FROM " . $tablePrefix . "assetgroups
 					JOIN " . $tablePrefix . "projects
 					ON " . $tablePrefix . "projects.`id` = " . $tablePrefix . "assetgroups.`projectId`
@@ -151,6 +154,7 @@
 				$assetGroup['uuid'] = $projectAssetGroup['uuid'];
 				$assetGroup['shortName'] = $projectAssetGroup['shortName'];
 				$assetGroup['name'] = $projectAssetGroup['name'];
+				$assetGroup['projectUuid'] = $projectAssetGroup['projectUuid'];
 				$projectAssetGroups[] = $assetGroup;
 			}
 			$proj['assetGroups'] = $projectAssetGroups;
