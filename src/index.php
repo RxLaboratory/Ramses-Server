@@ -53,6 +53,7 @@
 			include ("states.php");
 			include ("templateassetgroups.php");
 			include ("assetgroups.php");
+			include ("assets.php");
 		}
 		else if (!$reply["accepted"])
 		{

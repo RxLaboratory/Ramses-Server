@@ -1,70 +1,77 @@
 <?php
-/*
-		Rainbox Asset Manager
-		Shots management
+    /*
+		Ramses: Rx Asset Management System
+        
+        This program is licensed under the GNU General Public License.
+
+        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+
+        This program is free software;
+        you can redistribute it and/or modify it
+        under the terms of the GNU General Public License
+        as published by the Free Software Foundation;
+        either version 3 of the License, or (at your option) any later version.
+
+        This program is distributed in the hope that it will be useful,
+        but WITHOUT ANY WARRANTY; without even the implied warranty of
+        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+        See the GNU General Public License for more details.
+
+        You should have received a copy of the *GNU General Public License* along with this program.
+        If not, see http://www.gnu.org/licenses/.
 	*/
 
-	if ($reply["type"] == "addAsset")
+	// ========= CREATE ASSET ==========
+	if (isset($_GET["createAsset"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "createAsset";
 
-		$name = "";
-		$shortName = "";
-		$statusId = "";
-		$stageId = "";
-		$comment = "";
-		$uuid = "";
+		$name = $_GET["name"] ?? "";
+		$shortName = $_GET["shortName"] ?? "";
+		$assetGroupUuid = $_GET["assetGroupUuid"] ?? "";
+		$tags = $_GET["tags"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
+		if (strlen($shortName) > 0)
 		{
-			if (isset($data->{'name'})) $name = $data->{'name'};
-			if (isset($data->{'shortName'})) $shortName = $data->{'shortName'};
-			if (isset($data->{'statusId'})) $statusId = $data->{'statusId'};
-			if (isset($data->{'stageId'})) $stageId = $data->{'stageId'};
-			if (isset($data->{'comment'})) $comment = $data->{'comment'};
-			if (isset($data->{'uuid'})) $uuid = $data->{'uuid'};
-		}
-
-		if (strlen($name) > 0 AND strlen($shortName) > 0 AND strlen($statusId) > 0 AND strlen($stageId) > 0)
-		{
-			if (strlen($uuid) > 0)
-			{
-				//construct add asset query
-				$q = "INSERT INTO " . $tablePrefix . "assets (name,shortName,statusId,stageId,comment,uuid)
+			// Only if lead
+            if ( isLead() )
+            {
+				$qString = "INSERT INTO " . $tablePrefix . "assets (name, shortName, assetGroupId, tags, uuid)
 				VALUES (
-					:name ,
-					:shortName ,
-					( SELECT id FROM " . $tablePrefix . "status WHERE uuid = :statusId ) ,
-					( SELECT id FROM " . $tablePrefix . "stages WHERE uuid = :stageId ) ,
-					:comment ,
-					:uuid
-					) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name) ;";
-				//VALUES
-				$values = array('name' => $name , 'shortName' => $shortName , 'statusId' => $statusId , 'stageId' => $stageId , 'comment' => $comment , 'uuid' => $uuid);
+					:name,
+					:shortName,
+					(SELECT " . $tablePrefix . "assetgroups.id FROM " . $tablePrefix . "assetgroups WHERE uuid = :assetGroupUuid ),
+					:tags,";
+				$values = array( 'name' => $name,'shortName' => $shortName, 'assetGroupUuid' => $assetGroupUuid, 'tags' => $tags);
+
+				if (strlen($uuid) > 0)
+				{
+					$qString = $qString . ":uuid ";
+					$values['uuid'] = $uuid;
+				}
+				else
+				{
+					$qString = $qString . "uuid() ";
+				}
+
+				$qString = $qString . ") ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), tags = VALUES(tags);";
+
+				$rep = $db->prepare($qString);
+				$ok = $rep->execute($values);
+				$rep->closeCursor();
+
+				if ($ok) $reply["message"] = "Asset \"" . $shortName . "\" added.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
 			}
 			else
-			{
-				//construct add asset query
-				$q = "INSERT INTO " . $tablePrefix . "assets (name,shortName,statusId,stageId,comment,uuid)
-				VALUES (
-					:name ,
-					:shortName ,
-					( SELECT id FROM " . $tablePrefix . "status WHERE uuid = :statusId ) ,
-					( SELECT id FROM " . $tablePrefix . "stages WHERE uuid = :stageId ) ,
-					:comment ,
-					uuid()
-					) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name) ;";
-				//VALUES
-				$values = array('name' => $name , 'shortName' => $shortName , 'statusId' => $statusId , 'stageId' => $stageId  , 'comment' => $comment);
-			}
-
-			//create asset
-			$repCreateAsset = $db->prepare($q);
-			$repCreateAsset->execute($values);
-			$repCreateAsset->closeCursor();
-			$reply["message"] = "Asset added";
-			$reply["success"] = true;
+            {
+                $reply["message"] = "Insufficient rights, you need to be Lead to create assets.";
+                $reply["success"] = false;
+            }
 		}
 		else
 		{
@@ -72,49 +79,81 @@
 			$reply["success"] = false;
 		}
 	}
-
-	if ($reply["type"] == "addAssets")
+	
+	// ========= UPDATE ASSET ==========
+	else if (isset($_GET["updateAsset"]))
 	{
 		$reply["accepted"] = true;
+		$reply["query"] = "updateAsset";
 
-		$assets = array();
-		$stageId = "";
+		$name = $_GET["name"] ?? "";
+		$shortName = $_GET["shortName"] ?? "";
+		$tags = $_GET["tags"] ?? "";
+		$assetGroupUuid = $_GET["assetGroupUuid"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
 
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
+		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
-			if (isset($data->{'assets'})) $projectId = $data->{'projectId'};
-			if (isset($data->{'stageId'})) $stageId = $data->{'stageId'};
+			// Only if lead
+            if ( isProjectLead() )
+            {
+				$qString = "UPDATE " . $tablePrefix . "assets
+				SET
+					`name`= :name ,
+					`shortName`= :shortName,
+					`tags` = :tags,
+					`assetGroupId` = (SELECT " . $tablePrefix . "assetgroups.id FROM " . $tablePrefix . "assetgroups WHERE uuid = :assetGroupUuid )
+				WHERE
+					uuid= :uuid ;";
+				$values = array('name' => $name,'shortName' => $shortName, 'tags' => $tags, 'assetGroupUuid' => $assetGroupUuid, 'uuid' => $uuid);
+
+                $rep = $db->prepare($qString);
+				
+                $rep->execute($values);
+                $rep->closeCursor();
+
+				$reply["message"] = "Asset \"" . $shortName . "\" updated.";
+				$reply["success"] = true;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Lead to update asset information.";
+                $reply["success"] = false;
+            }
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
 		}
 
-		if (strlen($projectId) > 0 AND strlen($stageId) > 0 AND count($assets) > 0)
+	}
+
+	// ========= REMOVE ASSET ==========
+	else if (isset($_GET["removeAsset"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "removeAsset";
+
+		$uuid = $_GET["uuid"] ?? "";
+
+		if (strlen($uuid) > 0)
 		{
-			$q = "INSERT INTO " . $tablePrefix . "assets (name,shortName,statusId,comment,uuid,stageId) VALUES ";
-			$placeHolder = "(?,?,( SELECT id FROM " . $tablePrefix . "status WHERE uuid = ? ),?,?,( SELECT id FROM " . $tablePrefix . "stages WHERE uuid = ? ))";
-
-			$placeHolders = array();
-			$values = array();
-			foreach($assets as $asset)
+			//only if admin
+			if (isProjectAdmin())
 			{
-				$placeHolders[] = $placeHolder;
-				$values[] = $asset->{'name'};
-				$values[] = $asset->{'shortName'};
-				$values[] = $asset->{'statusId'};
-				$values[] = $asset->{'comment'};
-				$values[] = $asset->{'uuid'};
-				$values[] = $stageId;
-				$values[] = $projectId;
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "assets SET removed = 1 WHERE uuid= :uuid ;");
+				$rep->execute(array('uuid' => $uuid));
+				$rep->closeCursor();
+
+				$reply["message"] = "Asset " . $uuid . " removed.";
+				$reply["success"] = true;
 			}
-
-			$q = $q . implode(",",$placeHolders);
-			$q = $q . " ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-
-			$rep = $db->prepare($q);
-			$rep->execute($values);
-			$rep->closeCursor();
-			$reply["message"] = "Assets added.";
-			$reply["success"] = true;
-
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Lead to remove assets.";
+                $reply["success"] = false;
+            }
 		}
 		else
 		{
@@ -122,7 +161,8 @@
 			$reply["success"] = false;
 		}
 	}
-
+/*
+	// TODO shot - Asset assignment
 	if ($reply["type"] == "assignAsset")
 	{
 		$reply["accepted"] = true;
@@ -300,70 +340,7 @@
 
 	}
 
-	if ($reply["type"] == "getAssets")
-	{
-		$reply["accepted"] = true;
-
-		$projectId = "";
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			$projectId = $data->{'projectId'};
-		}
-
-		//get assets
-		$qAssets = "SELECT " . $tablePrefix . "assets.id," . $tablePrefix . "assets.uuid," . $tablePrefix . "assets.name," . $tablePrefix . "assets.shortName," . $tablePrefix . "status.uuid as statusId," . $tablePrefix . "assets.comment," . $tablePrefix . "stages.uuid as stageId," . $tablePrefix . "projects.uuid as projectId
-		FROM " . $tablePrefix . "assets
-		JOIN " . $tablePrefix . "status ON " . $tablePrefix . "assets.statusId = " . $tablePrefix . "status.id
-		JOIN " . $tablePrefix . "stages ON " . $tablePrefix . "assets.stageId = " . $tablePrefix . "stages.id
-		JOIN " . $tablePrefix . "projectstage ON " . $tablePrefix . "assets.stageId = " . $tablePrefix . "projectstage.stageId
-		JOIN " . $tablePrefix . "projects ON " . $tablePrefix . "projectstage.projectId = " . $tablePrefix . "projects.id
-		WHERE " . $tablePrefix . "projects.uuid = :projectId";
-
-		//get assignments
-		$qAssign = "SELECT " . $tablePrefix . "shots.uuid as shotId
-		FROM " . $tablePrefix . "assetstatuses
-		JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "assetstatuses.shotId
-		JOIN " . $tablePrefix . "assets ON " . $tablePrefix . "assetstatuses.assetId = " . $tablePrefix . "assets.id
-		WHERE " . $tablePrefix . "assetstatuses.assetId = :id";
-
-		$repAssets = $db->prepare($qAssets);
-		$repAssets->execute(array('projectId' => $projectId));
-
-		$assets = Array();
-		while ($asset = $repAssets->fetch())
-		{
-			$a = Array();
-			$a['uuid'] = $asset['uuid'];
-			$a['name'] = $asset['name'];
-			$a['shortName'] = $asset['shortName'];
-			$a['statusId'] = $asset['statusId'];
-			$a['stageId'] = $asset['stageId'];
-			$a['comment'] = $asset['comment'];
-			$a['projectId'] = $asset['projectId'];
-
-			$repAssign = $db->prepare($qAssign);
-			$repAssign->execute(array('id' => $asset['id']));
-
-			$assignments = Array();
-			while ($assignment = $repAssign->fetch())
-			{
-				$as = $assignment['shotId'];
-				$assignments[] = $as;
-			}
-			$repAssign->closeCursor();
-
-			$a['assignments'] = $assignments;
-
-			$assets[] = $a;
-		}
-		$repAssets->closeCursor();
-
-		$reply["content"] = $assets;
-		$reply["message"] = "Assets list retrieved ";
-		$reply["success"] = true;
-	}
-
+	// TODO Asset statuses
 	if ($reply["type"] == "setAssetStatus")
 	{
 		$reply["accepted"] = true;
@@ -395,76 +372,5 @@
 			$reply["message"] = "Invalid request, missing values.";
 			$reply["success"] = false;
 		}
-	}
-
-	if ($reply["type"] == "updateAsset")
-	{
-		$reply["accepted"] = true;
-
-		$assetId = "";
-		$name = "";
-		$shortName = "";
-		$comment = "";
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'assetId'})) $assetId = $data->{'assetId'};
-			if (isset($data->{'name'})) $name = $data->{'name'};
-			if (isset($data->{'shortName'})) $shortName = $data->{'shortName'};
-			if (isset($data->{'comment'})) $comment = $data->{'comment'};
-		}
-
-		if (strlen($assetId) > 0)
-		{
-			$q = "UPDATE " . $tablePrefix . "assets SET name= :name , shortName = :shortName , comment = :comment WHERE uuid= :assetId ;";
-
-			//create asset
-			$rep = $db->prepare($q);
-			$rep->execute(array('name' => $name , 'shortName' => $shortName , 'comment' => $comment , 'assetId' => $assetId ));
-			$rep->closeCursor();
-
-			$reply["message"] = "Status for the asset (id:" . $assetId . ") has been updated.";
-			$reply["success"] = true;
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values.";
-			$reply["success"] = false;
-		}
-	}
-
-	if ($reply["type"] == "removeAsset")
-	{
-		$reply["accepted"] = true;
-
-		$assetId = "";
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'assetId'})) $assetId = $data->{'assetId'};
-		}
-
-		if (strlen($assetId) > 0)
-		{
-			$q = "DELETE " . $tablePrefix . "assets FROM " . $tablePrefix . "assets WHERE uuid = :assetId ;";
-
-			$rep = $db->prepare($q);
-			$rep->execute(array('assetId' => $assetId));
-			$rep->closeCursor();
-
-			$reply["message"] = "Asset removed.";
-			$reply["success"] = true;
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
-	}
-
+	}*/
 ?>

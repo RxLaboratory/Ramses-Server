@@ -84,5 +84,4 @@
        }
        return substr( $string, -$length ) === $substring;
    }
-   
 ?>

@@ -80,7 +80,7 @@
 		}
 	}
 
-	// ========= UPDATE STEP ==========
+	// ========= UPDATE ASSET GROUP ==========
 	else if (isset($_GET["updateAssetGroup"]))
 	{
 		$reply["accepted"] = true;
@@ -120,7 +120,7 @@
 
 	}
 
-	// ========= REMOVE STEP ==========
+	// ========= REMOVE ASSET GROUP ==========
 	else if (isset($_GET["removeAssetGroup"]))
 	{
 		$reply["accepted"] = true;
