@@ -196,9 +196,9 @@
 			{
 				$sequence = array();
 
-				$sequence['uuid'] = $ag['uuid'];
-				$sequence['shortName'] = $ag['shortName'];
-				$sequence['name'] = $ag['name'];
+				$sequence['uuid'] = $s['uuid'];
+				$sequence['shortName'] = $s['shortName'];
+				$sequence['name'] = $s['name'];
 				$sequence['projectUuid'] = $project['uuid'];
 
 				$sequence['shots'] = array();
