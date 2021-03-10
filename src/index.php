@@ -22,7 +22,7 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	//configuration and init
+	//configuration and init 
 	include ("config.php");
 	include ("functions.php");
 	include ("init.php");
@@ -54,6 +54,7 @@
 			include ("templateassetgroups.php");
 			include ("assetgroups.php");
 			include ("assets.php");
+			include ("sequences.php");
 		}
 		else if (!$reply["accepted"])
 		{

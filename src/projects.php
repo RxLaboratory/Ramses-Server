@@ -94,6 +94,7 @@
 
 			$project['steps'] = array();
 			$project['assetGroups'] = array();
+			$project['sequences'] = array();
 
 			//get steps
 			$qString = "SELECT 
@@ -179,6 +180,32 @@
 				}
 
 				$project['assetGroups'][] = $assetGroup;
+			}
+
+			//get sequences
+			$qString = "SELECT 
+						" . $tablePrefix . "sequences.`id`,
+						" . $tablePrefix . "sequences.`uuid`,
+						" . $tablePrefix . "sequences.`shortName`,
+						" . $tablePrefix . "sequences.`name`
+					FROM " . $tablePrefix . "sequences
+					WHERE projectId=" . $p['id'] . " AND removed = 0 
+					ORDER BY " . $tablePrefix . "sequences.`shortName`, " . $tablePrefix . "sequences.`name`;";
+			$repSequences = $db->query( $qString );
+			while($s = $repSequences->fetch())
+			{
+				$sequence = array();
+
+				$sequence['uuid'] = $ag['uuid'];
+				$sequence['shortName'] = $ag['shortName'];
+				$sequence['name'] = $ag['name'];
+				$sequence['projectUuid'] = $project['uuid'];
+
+				$sequence['shots'] = array();
+
+				//TODO get shots
+
+				$project['sequences'][] = $sequence;
 			}
 
 			// TODO get shots
