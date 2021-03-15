@@ -24,7 +24,9 @@
 	// ========= Functions ===============
 	function getSteps( $pid, $puuid )
 	{
-		$steps = arrayt();
+		global $tablePrefix, $db;
+
+		$steps = array();
 		//get steps
 		$qString = "SELECT 
 				" . $tablePrefix . "steps.`uuid`,
@@ -45,7 +47,7 @@
 			$step['name'] = $s['name'];
 			$step['type'] = $s['type'];
 			$step['order'] = (int) $s['order'];
-			$step['projectUuid'] = puuid;
+			$step['projectUuid'] = $puuid;
 
 			$step['users'] = array();
 
@@ -70,6 +72,8 @@
 
 	function getAssetGroups( $pid, $puuid )
 	{
+		global $tablePrefix, $db;
+
 		$assetGroups = array();
 
 		$qString = "SELECT 
@@ -99,6 +103,8 @@
 
 	function getAssets( $aid, $auuid )
 	{
+		global $tablePrefix, $db;
+
 		$assets = array();
 		$qString = "SELECT
 				" . $tablePrefix . "assets.`uuid`,
@@ -126,6 +132,8 @@
 
 	function getSequences($pid, $puuid)
 	{
+		global $tablePrefix, $db;
+
 		$sequences = array();
 		$qString = "SELECT 
 					" . $tablePrefix . "sequences.`id`,
@@ -157,6 +165,8 @@
 
 	function getProject( $sqlRep )
 	{
+		global $tablePrefix, $db;
+
 		$project = Array();
 		$project['name'] = $sqlRep['name'];
 		$project['shortName'] = $sqlRep['shortName'];
@@ -256,7 +266,7 @@
 
 		$uuid = $_GET["uuid"] ?? "";
 	
-		$qString = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE `uuid` = :uuid ORDER BY `shortName`,`name`;");
+		$rep = $db->prepare("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE `uuid` = :uuid ;");
 		$rep->execute( array('uuid' => $uuid) );
 		$p = $rep->fetch();
 		$rep->closeCursor();
