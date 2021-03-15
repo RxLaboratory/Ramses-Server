@@ -21,6 +21,164 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+	// ========= Functions ===============
+	function getSteps( $pid, $puuid )
+	{
+		$steps = arrayt();
+		//get steps
+		$qString = "SELECT 
+				" . $tablePrefix . "steps.`uuid`,
+				" . $tablePrefix . "steps.`shortName`,
+				" . $tablePrefix . "steps.`name`,
+				" . $tablePrefix . "steps.`type`,
+				" . $tablePrefix . "steps.`id`,
+				" . $tablePrefix . "steps.`order`
+			FROM " . $tablePrefix . "steps
+			WHERE projectId=" . $pid . " AND removed = 0 
+			ORDER BY `order`, `shortName`, `name`;";
+		$repSteps = $db->query( $qString );
+		while ($s = $repSteps->fetch())
+		{
+			$step = array();
+			$step['uuid'] = $s['uuid'];
+			$step['shortName'] = $s['shortName'];
+			$step['name'] = $s['name'];
+			$step['type'] = $s['type'];
+			$step['order'] = (int) $s['order'];
+			$step['projectUuid'] = puuid;
+
+			$step['users'] = array();
+
+			//get users
+			$qString = "SELECT 
+			" . $tablePrefix . "users.`uuid`
+			FROM " . $tablePrefix . "stepuser
+			JOIN " . $tablePrefix . "users
+			ON " . $tablePrefix . "stepuser.`userId` = " . $tablePrefix . "users.`id`
+			WHERE stepId=" . $s['id'] . " AND " . $tablePrefix . "users.`removed` = 0 
+			ORDER BY " . $tablePrefix . "users.`name`, " . $tablePrefix . "users.`shortName`;";
+			$repUsers = $db->query( $qString );
+			while ($u = $repUsers->fetch())
+			{
+				$step['users'][] = $u['uuid'];
+			}
+
+			$steps[] = $step;
+		}
+		return $steps;
+	}
+
+	function getAssetGroups( $pid, $puuid )
+	{
+		$assetGroups = array();
+
+		$qString = "SELECT 
+				" . $tablePrefix . "assetgroups.`id`,
+				" . $tablePrefix . "assetgroups.`uuid`,
+				" . $tablePrefix . "assetgroups.`shortName`,
+				" . $tablePrefix . "assetgroups.`name`
+			FROM " . $tablePrefix . "assetgroups
+			WHERE projectId=" . $pid . " AND removed = 0 
+			ORDER BY " . $tablePrefix . "assetgroups.`shortName`, " . $tablePrefix . "assetgroups.`name`;";
+		$repAssetGroups = $db->query( $qString );
+		while($ag = $repAssetGroups->fetch())
+		{
+			$assetGroup = array();
+			$assetGroup['uuid'] = $ag['uuid'];
+			$assetGroup['shortName'] = $ag['shortName'];
+			$assetGroup['name'] = $ag['name'];
+			$assetGroup['projectUuid'] = $puuid;
+
+			$assetGroup['assets'] = getAssets($ag['id'], $assetGroup['uuid'] );
+
+			$assetGroups[] = $assetGroup;
+		}
+
+		return $assetGroups;
+	}
+
+	function getAssets( $aid, $auuid )
+	{
+		$assets = array();
+		$qString = "SELECT
+				" . $tablePrefix . "assets.`uuid`,
+				" . $tablePrefix . "assets.`name`,
+				" . $tablePrefix . "assets.`shortName`,
+				" . $tablePrefix . "assets.`tags`
+			FROM " . $tablePrefix . "assets
+			WHERE `assetGroupId`=" . $aid . " AND `removed` = 0
+			ORDER BY `shortName`, `name`;";
+		$repAssets = $db->query( $qString );
+		while ($a = $repAssets->fetch())
+		{
+			$asset = array();
+			$asset['uuid'] = $a['uuid'];
+			$asset['shortName'] = $a['shortName'];
+			$asset['name'] = $a['name'];
+			$asset['tags'] = $a['tags'];
+			$asset['assetGroupUuid'] = $auuid;
+			
+			$assets[] = $asset;
+		}
+
+		return $assets;
+	}
+
+	function getSequences($pid, $puuid)
+	{
+		$sequences = array();
+		$qString = "SELECT 
+					" . $tablePrefix . "sequences.`id`,
+					" . $tablePrefix . "sequences.`uuid`,
+					" . $tablePrefix . "sequences.`shortName`,
+					" . $tablePrefix . "sequences.`name`
+				FROM " . $tablePrefix . "sequences
+				WHERE projectId=" . $pid . " AND removed = 0 
+				ORDER BY " . $tablePrefix . "sequences.`shortName`, " . $tablePrefix . "sequences.`name`;";
+		$repSequences = $db->query( $qString );
+		while($s = $repSequences->fetch())
+		{
+			$sequence = array();
+
+			$sequence['uuid'] = $s['uuid'];
+			$sequence['shortName'] = $s['shortName'];
+			$sequence['name'] = $s['name'];
+			$sequence['projectUuid'] = $puuid;
+
+			$sequence['shots'] = array();
+
+			//TODO get shots
+
+			$sequences[] = $sequence;
+		}
+
+		return $sequences;
+	}
+
+	function getProject( $sqlRep )
+	{
+		$project = Array();
+		$project['name'] = $sqlRep['name'];
+		$project['shortName'] = $sqlRep['shortName'];
+		$project['folderPath'] = $sqlRep['folderPath'];
+		$project['uuid'] = $sqlRep['uuid'];
+
+		$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
+		$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
+		$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
+
+		// TODO get shots
+		/*$projectShots = Array();
+		$repShots = $db->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
+		while ($projectShot = $repShots->fetch())
+		{
+			$projectShots[] = $projectShot['shotId'];
+		}
+		$proj['assetGroups'] = $projectAssetGroups;*/
+
+		return $project;
+	}
+
 	// ========= CREATE PROJECT ==========
 	if (isset($_GET["createProject"]))
 	{
@@ -73,158 +231,38 @@
 	}
 
 	// ========= GET PROJECTS ==========
-	//TODO only projects assigned to the user (if not admin)
 	else if (isset($_GET["getProjects"]))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "getProjects";
 
-
 		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE removed = 0 ORDER BY `shortName`,`name`;");
 
 		$projects = array();
-
-		while ($p = $rep->fetch())
-		{
-			$project = Array();
-			$project['name'] = $p['name'];
-			$project['shortName'] = $p['shortName'];
-			$project['folderPath'] = $p['folderPath'];
-			$project['uuid'] = $p['uuid'];
-
-			$project['steps'] = array();
-			$project['assetGroups'] = array();
-			$project['sequences'] = array();
-
-			//get steps
-			$qString = "SELECT 
-						" . $tablePrefix . "steps.`uuid`,
-						" . $tablePrefix . "steps.`shortName`,
-						" . $tablePrefix . "steps.`name`,
-						" . $tablePrefix . "steps.`type`,
-						" . $tablePrefix . "steps.`id`,
-						" . $tablePrefix . "steps.`order`
-					FROM " . $tablePrefix . "steps
-					WHERE projectId=" . $p['id'] . " AND removed = 0 
-					ORDER BY `order`, `shortName`, `name`;";
-			$repSteps = $db->query( $qString );
-			while ($s = $repSteps->fetch())
-			{
-				$step = array();
-				$step['uuid'] = $s['uuid'];
-				$step['shortName'] = $s['shortName'];
-				$step['name'] = $s['name'];
-				$step['type'] = $s['type'];
-				$step['order'] = (int) $s['order'];
-				$step['projectUuid'] = $project['uuid'];
-				
-				$step['users'] = array();
-
-				//get users
-				$qString = "SELECT 
-					" . $tablePrefix . "users.`uuid`
-					FROM " . $tablePrefix . "stepuser
-					JOIN " . $tablePrefix . "users
-					ON " . $tablePrefix . "stepuser.`userId` = " . $tablePrefix . "users.`id`
-					WHERE stepId=" . $s['id'] . " AND " . $tablePrefix . "users.`removed` = 0 
-					ORDER BY " . $tablePrefix . "users.`name`, " . $tablePrefix . "users.`shortName`;";
-				$repUsers = $db->query( $qString );
-				while ($u = $repUsers->fetch())
-				{
-					$step['users'][] = $u['uuid'];
-				}
-
-				$project['steps'][] = $step;
-			}
-
-			//get asset groups
-			$qString = "SELECT 
-						" . $tablePrefix . "assetgroups.`id`,
-						" . $tablePrefix . "assetgroups.`uuid`,
-						" . $tablePrefix . "assetgroups.`shortName`,
-						" . $tablePrefix . "assetgroups.`name`
-					FROM " . $tablePrefix . "assetgroups
-					WHERE projectId=" . $p['id'] . " AND removed = 0 
-					ORDER BY " . $tablePrefix . "assetgroups.`shortName`, " . $tablePrefix . "assetgroups.`name`;";
-			$repAssetGroups = $db->query( $qString );
-			while($ag = $repAssetGroups->fetch())
-			{
-				$assetGroup = array();
-				$assetGroup['uuid'] = $ag['uuid'];
-				$assetGroup['shortName'] = $ag['shortName'];
-				$assetGroup['name'] = $ag['name'];
-				$assetGroup['projectUuid'] = $project['uuid'];
-
-				$assetGroup['assets'] = array();
-
-				//get assets
-				$qString = "SELECT
-						" . $tablePrefix . "assets.`uuid`,
-						" . $tablePrefix . "assets.`name`,
-						" . $tablePrefix . "assets.`shortName`,
-						" . $tablePrefix . "assets.`tags`
-					FROM " . $tablePrefix . "assets
-					WHERE `assetGroupId`=" . $ag['id'] . " AND `removed` = 0
-					ORDER BY `shortName`, `name`;";
-				$repAssets = $db->query( $qString );
-				while ($a = $repAssets->fetch())
-				{
-					$asset = array();
-					$asset['uuid'] = $a['uuid'];
-					$asset['shortName'] = $a['shortName'];
-					$asset['name'] = $a['name'];
-					$asset['tags'] = $a['tags'];
-					$asset['assetGroupUuid'] = $assetGroup['uuid'];
-					
-					$assetGroup['assets'][] = $asset;
-				}
-
-				$project['assetGroups'][] = $assetGroup;
-			}
-
-			//get sequences
-			$qString = "SELECT 
-						" . $tablePrefix . "sequences.`id`,
-						" . $tablePrefix . "sequences.`uuid`,
-						" . $tablePrefix . "sequences.`shortName`,
-						" . $tablePrefix . "sequences.`name`
-					FROM " . $tablePrefix . "sequences
-					WHERE projectId=" . $p['id'] . " AND removed = 0 
-					ORDER BY " . $tablePrefix . "sequences.`shortName`, " . $tablePrefix . "sequences.`name`;";
-			$repSequences = $db->query( $qString );
-			while($s = $repSequences->fetch())
-			{
-				$sequence = array();
-
-				$sequence['uuid'] = $s['uuid'];
-				$sequence['shortName'] = $s['shortName'];
-				$sequence['name'] = $s['name'];
-				$sequence['projectUuid'] = $project['uuid'];
-
-				$sequence['shots'] = array();
-
-				//TODO get shots
-
-				$project['sequences'][] = $sequence;
-			}
-
-			// TODO get shots
-			/*$projectShots = Array();
-			$repShots = $db->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
-			while ($projectShot = $repShots->fetch())
-			{
-				$projectShots[] = $projectShot['shotId'];
-			}
-			$proj['assetGroups'] = $projectAssetGroups;*/
-
-
-			$projects[] = $project;
-		}
+		while ($p = $rep->fetch()) $projects[] = getProject( $p );
 
 		$rep->closeCursor();
 
 		$reply["content"] = $projects;
 		$reply["message"] = "Projects list retrieved";
+		$reply["success"] = true;
+	}
+
+	// ========= GET SINGLE PROJECT ========
+	else if (isset($_GET["getProject"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "getProject";
+
+		$uuid = $_GET["uuid"] ?? "";
+	
+		$qString = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE `uuid` = :uuid ORDER BY `shortName`,`name`;");
+		$rep->execute( array('uuid' => $uuid) );
+		$p = $rep->fetch();
+		$rep->closeCursor();
+
+		$reply["content"] = getProject( $p );
+		$reply["message"] = "Project retrieved";
 		$reply["success"] = true;
 	}
 
