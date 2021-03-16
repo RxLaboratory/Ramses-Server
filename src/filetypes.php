@@ -81,6 +81,7 @@
 		$name = $_GET["name"] ?? "";
 		$shortName = $_GET["shortName"] ?? "";
         $extensions = $_GET["extensions"] ?? "";
+        $previewable = $_GET["previewable"] ?? "";
 		$uuid = $_GET["uuid"] ?? "";
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
@@ -92,10 +93,11 @@
 				SET
 					`name`= :name ,
 					`shortName`= :shortName,
-                    `extensions`= :extensions
+                    `extensions`= :extensions,
+                    `previewable` = :previewable
 				WHERE
 					uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName,'extensions' => $extensions, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName,'extensions' => $extensions, 'previewable' => $previewable, 'uuid' => $uuid);
 
                 $rep = $db->prepare($qString);
 				
@@ -157,7 +159,7 @@
         $reply["accepted"] = true;
         $reply["query"] = "getFileTypes";
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`extensions`,`uuid` FROM " . $tablePrefix . "filetypes WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`extensions`,`previewable`,`uuid` FROM " . $tablePrefix . "filetypes WHERE removed = 0;");
         $rep->execute();
 
         $filetypes = Array();
@@ -169,6 +171,7 @@
 			$filetype['shortName'] = $f['shortName'];
 			$filetype['uuid'] = $f['uuid'];
 			$filetype['extensions'] = $f['extensions'];
+			$filetype['previewable'] = (int) $f['previewable'];
 
 			$filetypes[] = $filetype;
         }
