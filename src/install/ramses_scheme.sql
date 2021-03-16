@@ -16,23 +16,25 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `ram_assetgroupasset`
+-- Table structure for table `ram_applications`
 --
 
-DROP TABLE IF EXISTS `ram_assetgroupasset`;
+DROP TABLE IF EXISTS `ram_applications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ram_assetgroupasset` (
+CREATE TABLE `ram_applications` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `assetId` int NOT NULL,
-  `assetgroupId` int NOT NULL,
+  `uuid` varchar(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `shortName` varchar(15) NOT NULL,
+  `executableFilePath` varchar(255) DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
-  KEY `fk_assetgroupId_idx` (`assetgroupId`),
-  KEY `fk_assetId_idx` (`assetId`),
-  CONSTRAINT `fk_assetgroupId_assetgroupasset` FOREIGN KEY (`assetgroupId`) REFERENCES `ram_assetgroups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_assetId_assetgroupasset` FOREIGN KEY (`assetId`) REFERENCES `ram_assets` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  UNIQUE KEY `name_unique` (`name`,`shortName`),
+  UNIQUE KEY `exec_unique` (`executableFilePath`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -48,11 +50,15 @@ CREATE TABLE `ram_assetgroups` (
   `uuid` varchar(36) NOT NULL,
   `name` varchar(255) NOT NULL,
   `shortName` varchar(15) NOT NULL,
+  `projectId` int NOT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   UNIQUE KEY `id_UNIQUE` (`id`),
-  UNIQUE KEY `shortName_UNIQUE` (`shortName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  KEY `fk_assetgroups_projectid_idx` (`projectId`),
+  CONSTRAINT `fk_assetgroups_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -67,18 +73,17 @@ CREATE TABLE `ram_assets` (
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `shortName` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `stageId` int NOT NULL,
-  `statusId` int DEFAULT NULL,
-  `projectId` int DEFAULT NULL,
-  `comment` mediumtext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `tags` text COLLATE utf8_unicode_ci,
+  `assetGroupId` int NOT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
-  UNIQUE KEY `assetName` (`name`,`shortName`,`projectId`),
-  KEY `statusId` (`statusId`),
-  KEY `stageId` (`stageId`),
-  KEY `projectId` (`projectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  UNIQUE KEY `assetName` (`name`,`shortName`,`assetGroupId`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `fk_assets_assgroup_idx` (`assetGroupId`),
+  CONSTRAINT `fk_assets_assgroup` FOREIGN KEY (`assetGroupId`) REFERENCES `ram_assetgroups` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -93,10 +98,33 @@ CREATE TABLE `ram_assetstatuses` (
   `assetId` int NOT NULL,
   `shotId` int NOT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `assetId` (`assetId`,`shotId`) USING BTREE,
   KEY `shotId` (`shotId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ram_filetypes`
+--
+
+DROP TABLE IF EXISTS `ram_filetypes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ram_filetypes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `shortName` varchar(15) NOT NULL,
+  `extensions` varchar(255) NOT NULL DEFAULT '',
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  UNIQUE KEY `filetypeName` (`name`,`shortName`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -111,11 +139,12 @@ CREATE TABLE `ram_projectassetgroup` (
   `projectId` int NOT NULL,
   `assetgroupId` int NOT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_projectId_idx` (`projectId`),
   KEY `fk_assetgroupId_idx` (`assetgroupId`),
-  CONSTRAINT `fk_assetgroupId_projectassetgroup` FOREIGN KEY (`assetgroupId`) REFERENCES `ram_assetgroups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_assetgroupId_projectassetgroup` FOREIGN KEY (`assetgroupId`) REFERENCES `ram_templateassetgroups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_projectId_projectassetgroup` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -132,8 +161,9 @@ CREATE TABLE `ram_projects` (
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `shortName` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `folderPath` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'auto',
+  `folderPath` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'auto',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`,`shortName`),
   UNIQUE KEY `uuid` (`uuid`),
@@ -154,10 +184,34 @@ CREATE TABLE `ram_projectshot` (
   `projectId` int NOT NULL,
   `shotOrder` int NOT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `shotId` (`shotId`,`projectId`),
   KEY `projectId` (`projectId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ram_sequences`
+--
+
+DROP TABLE IF EXISTS `ram_sequences`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ram_sequences` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `shortName` varchar(15) NOT NULL,
+  `projectId` int NOT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  KEY `fk_sequences_projectid_idx` (`projectId`),
+  CONSTRAINT `fk_sequences_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -173,6 +227,7 @@ CREATE TABLE `ram_shots` (
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `duration` float NOT NULL DEFAULT '0',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -193,10 +248,11 @@ CREATE TABLE `ram_states` (
   `color` varchar(7) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '#434343',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `completionRatio` tinyint(1) NOT NULL DEFAULT '50',
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`,`shortName`),
   UNIQUE KEY `uuid` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -212,10 +268,11 @@ CREATE TABLE `ram_steps` (
   `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `shortName` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `autoCreateAssets` tinyint(1) NOT NULL DEFAULT '0',
-  `type` enum('pre','asset','shot','post') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'asset',
+  `type` enum('pre','asset','shot','post') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'asset',
   `projectId` int NOT NULL,
   `order` int NOT NULL DEFAULT '0',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uuid` (`uuid`),
   KEY `fk_steps_projectId_idx` (`projectId`),
@@ -235,6 +292,7 @@ CREATE TABLE `ram_stepuser` (
   `stepId` int NOT NULL,
   `userId` int NOT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `unique_stepuser` (`stepId`,`userId`),
@@ -242,7 +300,28 @@ CREATE TABLE `ram_stepuser` (
   KEY `fk_stepuser_userId_idx` (`userId`),
   CONSTRAINT `fk_stepuser_stepId` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_stepuser_userId` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ram_templateassetgroups`
+--
+
+DROP TABLE IF EXISTS `ram_templateassetgroups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ram_templateassetgroups` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `shortName` varchar(15) NOT NULL,
+  `latestUpdate` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `shortName_UNIQUE` (`shortName`,`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -260,6 +339,7 @@ CREATE TABLE `ram_templatesteps` (
   `autoCreateAssets` tinyint(1) NOT NULL DEFAULT '0',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `type` enum('pre','asset','shot','post') NOT NULL DEFAULT 'asset',
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`)
@@ -280,8 +360,9 @@ CREATE TABLE `ram_users` (
   `shortName` varchar(10) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `password` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `folderPath` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'auto',
-  `role` enum('admin','project','lead','standard') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'standard',
+  `folderPath` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'auto',
+  `role` enum('admin','project','lead','standard') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'standard',
+  `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `userName` (`shortName`),
   UNIQUE KEY `uuid` (`uuid`)
@@ -305,4 +386,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-04 11:10:51
+-- Dump completed on 2021-03-16 17:05:18

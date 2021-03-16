@@ -22,14 +22,14 @@
 	*/
 
     // ========= CREATE ==========
-    if (isset($_GET["createFileType"]))
+    if (isset($_GET["createApplication"]))
     {
         $reply["accepted"] = true;
-        $reply["query"] = "createFileType";
+        $reply["query"] = "createApplication";
 
         $name = $_GET["name"] ?? "";
 		$shortName = $_GET["shortName"] ?? "";
-        $extensions = $_GET["extensions"] ?? "";
+        $executableFilePath = $_GET["executableFilePath"] ?? "";
 		$uuid = $_GET["uuid"] ?? "";
 
         if (strlen($shortName) > 0)
@@ -37,8 +37,8 @@
             // Only if admin
             if ( isProjectAdmin() )
             {
-                $qString = "INSERT INTO " . $tablePrefix . "filetypes (`name`,`shortName`,`extensions`,`uuid`) VALUES ( :name , :shortName , :extensions , ";
-                $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'extensions' => $extensions);
+                $qString = "INSERT INTO " . $tablePrefix . "applications (`name`,`shortName`,`executableFilePath`,`uuid`) VALUES ( :name , :shortName , :executableFilePath , ";
+                $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'executableFilePath' => $executableFilePath);
 
                 if (strlen($uuid) > 0)
                 {
@@ -50,18 +50,18 @@
                     $qString = $qString . "uuid()";
                 }
 
-                $qString = $qString . " ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), extensions = VALUES(extensions), removed = 0;";
+                $qString = $qString . " ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), extensions = VALUES(extensions), executableFilePath = VALUES(executableFilePath), removed = 0;";
 
                 $rep = $db->prepare($qString);
                 $rep->execute($values);
                 $rep->closeCursor();         
     
-                $reply["message"] = "File type \"" . $shortName . "\" created.";
+                $reply["message"] = "Application \"" . $shortName . "\" created.";
                 $reply["success"] = true;
             }
             else
             {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to create file types.";
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to create applications.";
                 $reply["success"] = false;
             }
         }
@@ -73,14 +73,14 @@
     }
 
     // ========= UPDATE ==========
-	else if (isset($_GET["updateFileType"]))
+	else if (isset($_GET["updateApplication"]))
 	{
 		$reply["accepted"] = true;
-		$reply["query"] = "updateFileType";
+		$reply["query"] = "updateApplication";
 
 		$name = $_GET["name"] ?? "";
 		$shortName = $_GET["shortName"] ?? "";
-        $extensions = $_GET["extensions"] ?? "";
+        $executableFilePath = $_GET["executableFilePath"] ?? "";
 		$uuid = $_GET["uuid"] ?? "";
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
@@ -88,26 +88,26 @@
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "filetypes
+				$qString = "UPDATE " . $tablePrefix . "applications
 				SET
 					`name`= :name ,
 					`shortName`= :shortName,
-                    `extensions`= :extensions
+                    `executableFilePath`= :executableFilePath
 				WHERE
 					uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName,'extensions' => $extensions, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName,'executableFilePath' => $executableFilePath, 'uuid' => $uuid);
 
                 $rep = $db->prepare($qString);
 				
                 $rep->execute($values);
                 $rep->closeCursor();
 
-				$reply["message"] = "File type \"" . $shortName . "\" updated.";
+				$reply["message"] = "Application \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
 			else
             {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update file type information.";
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to update application information.";
                 $reply["success"] = false;
             }
 		}
@@ -119,10 +119,10 @@
 	}
 
 	// ========= REMOVE ==========
-	else if (isset($_GET["removeFileType"]))
+	else if (isset($_GET["removeApplication"]))
 	{
 		$reply["accepted"] = true;
-		$reply["query"] = "removeFileType";
+		$reply["query"] = "removeApplication";
 
 		$uuid = $_GET["uuid"] ?? "";
 
@@ -131,16 +131,16 @@
 			//only if project admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "filetypes SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE " . $tablePrefix . "applications SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 
-				$reply["message"] = "File type " . $uuid . " removed.";
+				$reply["message"] = "Application " . $uuid . " removed.";
 				$reply["success"] = true;
 			}
 			else
             {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to remove file types.";
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to remove applications.";
                 $reply["success"] = false;
             }
 		}
@@ -152,31 +152,31 @@
 	}
 
     // ========= GET ==========
-    else if (isset($_GET["getFileTypes"]))
+    else if (isset($_GET["getApplications"]))
     {
         $reply["accepted"] = true;
-        $reply["query"] = "getFileTypes";
+        $reply["query"] = "getApplications";
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`extensions`,`uuid` FROM " . $tablePrefix . "filetypes WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`executableFilePath`,`uuid` FROM " . $tablePrefix . "applications WHERE removed = 0;");
         $rep->execute();
 
-        $filetypes = Array();
+        $applications = Array();
 
-        while ($f = $rep->fetch())
+        while ($a = $rep->fetch())
         {
-            $filetype = Array();
-			$filetype['name'] = $f['name'];
-			$filetype['shortName'] = $f['shortName'];
-			$filetype['uuid'] = $f['uuid'];
-			$filetype['extensions'] = $f['extensions'];
+            $application = Array();
+			$application['name'] = $a['name'];
+			$application['shortName'] = $a['shortName'];
+			$application['uuid'] = $a['uuid'];
+			$application['executableFilePath'] = $a['executableFilePath'];
 
-			$filetypes[] = $filetype;
+			$applications[] = $application;
         }
 
         $rep->closeCursor();
 
-		$reply["content"] = $filetypes;
-		$reply["message"] = "File types list retrieved.";
+		$reply["content"] = $applications;
+		$reply["message"] = "Application list retrieved.";
 		$reply["success"] = true;
     }
 ?>

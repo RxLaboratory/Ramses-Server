@@ -56,6 +56,7 @@
 			include ("assets.php");
 			include ("sequences.php");
 			include ("filetypes.php");
+			include ("applications.php");
 		}
 		else if (!$reply["accepted"])
 		{
