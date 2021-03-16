@@ -50,7 +50,7 @@
                     $qString = $qString . "uuid()";
                 }
 
-                $qString = $qString . " ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), extensions = VALUES(extensions), executableFilePath = VALUES(executableFilePath), removed = 0;";
+                $qString = $qString . " ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), executableFilePath = VALUES(executableFilePath), removed = 0;";
 
                 $rep = $db->prepare($qString);
                 $rep->execute($values);
