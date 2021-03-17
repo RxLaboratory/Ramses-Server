@@ -321,7 +321,7 @@
 		$stepUuid = $_GET["stepUuid"] ?? "";
 		$applicationUuid = $_GET["applicationUuid"] ?? "";
 
-		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
+		if (strlen($stepUuid) > 0 && strlen($applicationUuid) > 0)
 		{
 			//only if lead
 			if (isProjectAdmin())
@@ -329,7 +329,7 @@
 				$q = "DELETE " . $tablePrefix . "stepapplication FROM " . $tablePrefix . "stepapplication WHERE
 					stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
 				AND
-					userId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
+					applicationId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
 				;";
 				$rep = $db->prepare($q);
 				$ok = $rep->execute(array('stepUuid' => $stepUuid,'applicationUuid' => $applicationUuid));
