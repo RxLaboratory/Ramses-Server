@@ -265,6 +265,7 @@
 
 		$fileTypeUuid = $_GET["fileTypeUuid"] ?? "";
 		$applicationUuid = $_GET["applicationUuid"] ?? "";
+        $type = $_GET["type"] ?? "";
 
 		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
 		{
@@ -274,10 +275,18 @@
 				$q = "DELETE " . $tablePrefix . "applicationfiletype FROM " . $tablePrefix . "applicationfiletype WHERE
                         applicationId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
                     AND
-                        filetypeId= ( SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE " . $tablePrefix . "filetypes.uuid = :fileTypeUuid )
-                    ;";
-				$rep = $db->prepare($q);
-				$ok = $rep->execute(array('applicationUuid' => $applicationUuid,'fileTypeUuid' => $fileTypeUuid));
+                        filetypeId= ( SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE " . $tablePrefix . "filetypes.uuid = :fileTypeUuid )";
+                $values = array( 'applicationUuid' => $applicationUuid,'fileTypeUuid' => $fileTypeUuid );
+
+                if (strlen($type) > 0)
+                {
+                    $q = $q . "AND `type` = :type";
+                    $values['type'] = $type;
+                }
+
+                $q = $q . ";";
+				$rep = $db->prepare( $q );
+				$ok = $rep->execute( $values );
 				$rep->closeCursor();
 	
 				$reply["message"] = "File type unassigned from application.";
