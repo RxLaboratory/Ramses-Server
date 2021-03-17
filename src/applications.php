@@ -207,4 +207,88 @@
 		$reply["message"] = "Application list retrieved.";
 		$reply["success"] = true;
     }
+
+    // ========= ASSIGN FILE TYPE ==========
+	else if (isset($_GET["assignFileType"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "assignFileType";
+
+		$fileTypeUuid = $_GET["fileTypeUuid"] ?? "";
+		$applicationUuid = $_GET["applicationUuid"] ?? "";
+		$type = $_GET["type"] ?? "native";
+
+		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
+		{
+			//only if lead
+			if (isProjectAdmin())
+			{
+				$qString = "INSERT INTO " . $tablePrefix . "applicationfiletype (`applicationId`, `fileTypeId`, `type`) VALUES (
+					( SELECT " . $tablePrefix . "applications.`id` FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.`uuid` = :applicationUuid ),
+					( SELECT " . $tablePrefix . "filetypes.`id` FROM " . $tablePrefix . "filetypes WHERE " . $tablePrefix . "filetypes.`uuid` = :fileTypeUuid ),
+                    :type
+					) ON DUPLICATE KEY UPDATE " . $tablePrefix . "applicationfiletype.`removed` = 0 ;";
+
+				$rep = $db->prepare($qString);
+
+				$ok = $rep->execute( array('fileTypeUuid' => $fileTypeUuid, 'applicationUuid' => $applicationUuid, 'type' => $type ) );
+				$rep->closeCursor();
+
+				if ($ok) $reply["message"] = "File type assigned to application as a " . $type . " type.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to assign file types.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= REMOVE FILE TYPE ==========
+	else if (isset($_GET["unassignFileType"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "unassignFileType";
+
+		$fileTypeUuid = $_GET["fileTypeUuid"] ?? "";
+		$applicationUuid = $_GET["applicationUuid"] ?? "";
+
+		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
+		{
+			//only if lead
+			if (isProjectAdmin())
+			{
+				$q = "DELETE " . $tablePrefix . "applicationfiletype FROM " . $tablePrefix . "applicationfiletype WHERE
+                        applicationId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
+                    AND
+                        filetypeId= ( SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE " . $tablePrefix . "filetypes.uuid = :fileTypeUuid )
+                    ;";
+				$rep = $db->prepare($q);
+				$ok = $rep->execute(array('applicationUuid' => $applicationUuid,'fileTypeUuid' => $fileTypeUuid));
+				$rep->closeCursor();
+	
+				$reply["message"] = "File type unassigned from application.";
+				$reply["success"] = true;	
+			}
+			else
+            {
+                if ($ok) $reply["message"] = "Insufficient rights, you need to be Project Admin to assign file types.";
+				else $reply["message"] = $rep->errorInfo();
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
 ?>
