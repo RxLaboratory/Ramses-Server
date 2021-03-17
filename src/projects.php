@@ -65,6 +65,20 @@
 				$step['users'][] = $u['uuid'];
 			}
 
+			//get applications
+			$qString = "SELECT 
+				" . $tablePrefix . "applications.`uuid`
+			FROM " . $tablePrefix . "stepapplication
+			JOIN " . $tablePrefix . "applications
+			ON " . $tablePrefix . "stepapplication.`applicationId` = " . $tablePrefix . "applications.`id`
+			WHERE stepId=" . $s['id'] . " AND " . $tablePrefix . "applications.`removed` = 0 
+			ORDER BY " . $tablePrefix . "applications.`name`, " . $tablePrefix . "applications.`shortName`;";
+			$repApplications = $db->query( $qString );
+			while ($a = $repApplications->fetch())
+			{
+				$step['applications'][] = $a['uuid'];
+			}
+
 			$steps[] = $step;
 		}
 		return $steps;
