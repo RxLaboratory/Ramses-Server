@@ -21,6 +21,33 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+    function getFileTypes( $aid )
+    {
+        global $tablePrefix, $db;
+
+        $fileTypes = array();
+        $qString = "SELECT
+                ". $tablePrefix . "filetypes.`uuid`,
+                ". $tablePrefix . "filetypes.`type`
+            FROM " . $tablePrefix . "applicationfiletype
+            JOIN " . $tablePrefix . "filetypes
+            ON " . $tablePrefix . "applicationfiletype.`fileTypeId` = " . $tablePrefix . "filetypes.`id`
+            WHERE applicationId= " . $aid . " AND " . $tablePrefix . "filetypes.`removed` = 0
+            ORDER BY " . $tablePrefix . "filetypes.`name`, " . $tablePrefix . "filetypes.`shortName` ;";
+
+        $repFileTypes = $db->query( $qString );
+        while ($ft = $repFileTypes->fetch())
+        {
+            $fileType = array();
+            $fileType['uuid'] = $ft['uuid'];
+            $fileType['type'] = $ft['type'];
+
+            $fileTypes[] = $fileType['uuid'];
+        }
+
+        return $fileTypes;
+    }
+
     // ========= CREATE ==========
     if (isset($_GET["createApplication"]))
     {
@@ -157,7 +184,7 @@
         $reply["accepted"] = true;
         $reply["query"] = "getApplications";
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`executableFilePath`,`uuid` FROM " . $tablePrefix . "applications WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`executableFilePath`,`id`,`uuid` FROM " . $tablePrefix . "applications WHERE removed = 0;");
         $rep->execute();
 
         $applications = Array();
@@ -169,6 +196,7 @@
 			$application['shortName'] = $a['shortName'];
 			$application['uuid'] = $a['uuid'];
 			$application['executableFilePath'] = $a['executableFilePath'];
+            $application['fileTypes'] = getFileTypes($a['id']);
 
 			$applications[] = $application;
         }
