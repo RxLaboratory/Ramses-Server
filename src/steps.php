@@ -231,7 +231,7 @@
 	else if (isset($_GET["unassignUser"]))
 	{
 		$reply["accepted"] = true;
-		$reply["query"] = "assignUser";
+		$reply["query"] = "unassignUser";
 
 		$userUuid = "";
 		$stepUuid = "";
@@ -259,6 +259,88 @@
 			else
             {
                 if ($ok) $reply["message"] = "Insufficient rights, you need to be Lead to assign users.";
+				else $reply["message"] = $rep->errorInfo();
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= ASSIGN APPLICATION ==========
+	else if (isset($_GET["assignApplication"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "assignApplication";
+
+		$stepUuid = $_GET["stepUuid"] ?? "";
+		$applicationUuid = $_GET["applicationUuid"] ?? "";
+
+		if (strlen($stepUuid) > 0 && strlen($applicationUuid) > 0)
+		{
+			//only if lead
+			if (isProjectAdmin())
+			{
+				$qString = "INSERT INTO " . $tablePrefix . "stepapplication (`stepId`, `applicationId`) VALUES (
+					( SELECT " . $tablePrefix . "steps.`id` FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.`uuid` = :stepUuid ),
+					( SELECT " . $tablePrefix . "applications.`id` FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.`uuid` = :applicationUuid )
+					) ON DUPLICATE KEY UPDATE removed = 0 ;";
+
+				$rep = $db->prepare($qString);
+
+				$ok = $rep->execute( array('stepUuid' => $stepUuid, 'applicationUuid' => $applicationUuid) );
+				$rep->closeCursor();
+
+				if ($ok) $reply["message"] = "Application assigned to step.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Lead to assign applications.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= REMOVE APPLICATION ==========
+	else if (isset($_GET["unassignApplication"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "unassignApplication";
+
+		$stepUuid = $_GET["stepUuid"] ?? "";
+		$applicationUuid = $_GET["applicationUuid"] ?? "";
+
+		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
+		{
+			//only if lead
+			if (isProjectAdmin())
+			{
+				$q = "DELETE " . $tablePrefix . "stepapplication FROM " . $tablePrefix . "stepapplication WHERE
+					stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
+				AND
+					userId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
+				;";
+				$rep = $db->prepare($q);
+				$ok = $rep->execute(array('stepUuid' => $stepUuid,'applicationUuid' => $applicationUuid));
+				$rep->closeCursor();
+	
+				$reply["message"] = "Application unassigned from step.";
+				$reply["success"] = true;	
+			}
+			else
+            {
+                if ($ok) $reply["message"] = "Insufficient rights, you need to be Lead to assign applications.";
 				else $reply["message"] = $rep->errorInfo();
                 $reply["success"] = false;
             }
