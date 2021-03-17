@@ -28,7 +28,7 @@
         $fileTypes = array();
         $qString = "SELECT
                 ". $tablePrefix . "filetypes.`uuid`,
-                ". $tablePrefix . "filetypes.`type`
+                ". $tablePrefix . "applicationfiletype.`type`
             FROM " . $tablePrefix . "applicationfiletype
             JOIN " . $tablePrefix . "filetypes
             ON " . $tablePrefix . "applicationfiletype.`fileTypeId` = " . $tablePrefix . "filetypes.`id`
@@ -42,7 +42,7 @@
             $fileType['uuid'] = $ft['uuid'];
             $fileType['type'] = $ft['type'];
 
-            $fileTypes[] = $fileType['uuid'];
+            $fileTypes[] = $fileType;
         }
 
         return $fileTypes;
@@ -184,7 +184,12 @@
         $reply["accepted"] = true;
         $reply["query"] = "getApplications";
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`executableFilePath`,`id`,`uuid` FROM " . $tablePrefix . "applications WHERE removed = 0;");
+        $rep = $db->prepare("SELECT
+                `name`,`shortName`,`executableFilePath`,`id`,`uuid`
+            FROM " . $tablePrefix . "applications
+            WHERE removed = 0
+            ORDER BY `name`, `shortName`
+            ;");
         $rep->execute();
 
         $applications = Array();

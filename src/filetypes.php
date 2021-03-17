@@ -159,7 +159,12 @@
         $reply["accepted"] = true;
         $reply["query"] = "getFileTypes";
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`extensions`,`previewable`,`uuid` FROM " . $tablePrefix . "filetypes WHERE removed = 0;");
+        $rep = $db->prepare("SELECT
+                `name`,`shortName`,`extensions`,`previewable`,`uuid`
+            FROM " . $tablePrefix . "filetypes
+            WHERE removed = 0
+            ORDER BY `shortName`, `name`
+            ;");
         $rep->execute();
 
         $filetypes = Array();
