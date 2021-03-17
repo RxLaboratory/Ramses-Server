@@ -234,7 +234,7 @@
 				$ok = $rep->execute( array('fileTypeUuid' => $fileTypeUuid, 'applicationUuid' => $applicationUuid, 'type' => $type ) );
 				$rep->closeCursor();
 
-				if ($ok) $reply["message"] = "File type assigned to application as a " . $type . " type.";
+				if ($ok) $reply["message"] = "File type assigned to application as " . $type . " type.";
 				else $reply["message"] = $rep->errorInfo();
 
 				$reply["success"] = $ok;
