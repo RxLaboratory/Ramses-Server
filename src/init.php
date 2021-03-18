@@ -35,5 +35,5 @@
 	}
 
 	//add the "_" after table prefix if needed
-	if (strlen($tablePrefix) > 0 && !endsWith($tablePrefix, "_")) $tablePrefix = $tablePrefix . "_";
+	setupTablePrefix();
 ?>

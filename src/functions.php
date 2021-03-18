@@ -84,4 +84,9 @@
        }
        return substr( $string, -$length ) === $substring;
    }
+
+   function setupTablePrefix() {
+        global $tablePrefix;
+        if (strlen($tablePrefix) > 0 && !endsWith($tablePrefix, "_")) $tablePrefix = $tablePrefix . "_";
+   }
 ?>
