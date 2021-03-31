@@ -16,12 +16,23 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Dumping data for table `ram_assetgroupasset`
+-- Dumping data for table `ram_applicationfiletype`
 --
 
-LOCK TABLES `ram_assetgroupasset` WRITE;
-/*!40000 ALTER TABLE `ram_assetgroupasset` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ram_assetgroupasset` ENABLE KEYS */;
+LOCK TABLES `ram_applicationfiletype` WRITE;
+/*!40000 ALTER TABLE `ram_applicationfiletype` DISABLE KEYS */;
+INSERT INTO `ram_applicationfiletype` VALUES (1,14,17,'native','2021-03-31 11:04:12',0),(2,14,18,'native','2021-03-31 11:04:14',0),(3,14,19,'import','2021-03-31 11:04:16',0),(6,14,20,'import','2021-03-31 11:04:20',0),(7,14,19,'export','2021-03-31 11:04:23',0),(8,14,20,'export','2021-03-31 11:04:24',0),(9,15,19,'import','2021-03-31 11:04:59',0),(10,15,20,'import','2021-03-31 11:05:00',0),(11,15,19,'export','2021-03-31 11:05:02',0),(12,15,20,'export','2021-03-31 11:05:03',0),(13,15,21,'native','2021-03-31 11:05:27',0),(14,14,21,'import','2021-03-31 11:05:31',0),(15,14,21,'export','2021-03-31 11:05:33',0);
+/*!40000 ALTER TABLE `ram_applicationfiletype` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `ram_applications`
+--
+
+LOCK TABLES `ram_applications` WRITE;
+/*!40000 ALTER TABLE `ram_applications` DISABLE KEYS */;
+INSERT INTO `ram_applications` VALUES (14,'13b6c954-2738-5d30-a2f1-80f34753fcfe','Adobe After Effects','Ae','','2021-03-31 11:04:48',0),(15,'af92e804-db38-5692-9a76-5aa35edb3b39','Adobe Photoshop','Ps','','2021-03-31 11:04:54',0);
+/*!40000 ALTER TABLE `ram_applications` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -30,6 +41,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_assetgroups` WRITE;
 /*!40000 ALTER TABLE `ram_assetgroups` DISABLE KEYS */;
+INSERT INTO `ram_assetgroups` VALUES (11,'60af61d1-767a-5bd4-a8c6-066528d020f3','Props','PROP',12,'2021-03-31 11:13:50',0),(12,'0faf70ff-4a7b-52a6-9beb-545c35118945','Characters','CHAR',12,'2021-03-31 11:13:51',0),(13,'688e1cec-5e6c-5a6c-b8d5-0fedca27b99e','Backgrounds','BG',12,'2021-03-31 11:13:52',0);
 /*!40000 ALTER TABLE `ram_assetgroups` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -39,6 +51,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_assets` WRITE;
 /*!40000 ALTER TABLE `ram_assets` DISABLE KEYS */;
+INSERT INTO `ram_assets` VALUES (27,'fe749770-ff85-591c-a212-2bb2a5f10173','Bâton de marche','BATON','baton,accessoire,outil',11,'2021-03-31 11:14:16',0);
 /*!40000 ALTER TABLE `ram_assets` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -49,6 +62,16 @@ UNLOCK TABLES;
 LOCK TABLES `ram_assetstatuses` WRITE;
 /*!40000 ALTER TABLE `ram_assetstatuses` DISABLE KEYS */;
 /*!40000 ALTER TABLE `ram_assetstatuses` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `ram_filetypes`
+--
+
+LOCK TABLES `ram_filetypes` WRITE;
+/*!40000 ALTER TABLE `ram_filetypes` DISABLE KEYS */;
+INSERT INTO `ram_filetypes` VALUES (17,'b1b3c25b-88d8-5591-9a19-37fcbc4015e2','After Effects Project','.aep','aep,aepx',0,'2021-03-31 11:03:19',0),(18,'02a9a1c8-0e29-5546-b15a-c7dc0b688ab2','After Effects Template','.aet','aet',0,'2021-03-31 11:03:34',0),(19,'0883e6ac-0bce-5e49-aa54-c2b2c2660ebb','PNG Image','.png','png',1,'2021-03-31 11:03:45',0),(20,'661f44fa-ae6e-54d9-9b3e-e0ff7775469b','JPEG image','.jpg','jpg,jpeg',1,'2021-03-31 11:03:58',0),(21,'a93c7dbc-39e5-5423-98cd-3ac2052f7b00','Photoshop','.psd','psd,psb',0,'2021-03-31 11:05:22',0);
+/*!40000 ALTER TABLE `ram_filetypes` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -66,7 +89,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_projects` WRITE;
 /*!40000 ALTER TABLE `ram_projects` DISABLE KEYS */;
-INSERT INTO `ram_projects` VALUES (7,'e08e7a9e-e30d-56ce-8922-5ccf41bd1c65','Mythomen','MYTHO','auto','2021-02-18 14:24:58'),(11,'11986390-13dc-518e-ba20-54f85d3208d2','L\'insouciance des libellules','LIDL','auto','2021-02-17 12:30:31');
+INSERT INTO `ram_projects` VALUES (12,'02cfde73-48a7-5080-838e-cee25736ee47','L\'insouciance des libellules','LIDL','auto','2021-03-31 10:51:59',0),(13,'c2abbe47-d9d0-512d-acdb-1b98158363fc','Mythomen','MYTHO','auto','2021-03-31 10:52:13',0);
 /*!40000 ALTER TABLE `ram_projects` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -77,6 +100,15 @@ UNLOCK TABLES;
 LOCK TABLES `ram_projectshot` WRITE;
 /*!40000 ALTER TABLE `ram_projectshot` DISABLE KEYS */;
 /*!40000 ALTER TABLE `ram_projectshot` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `ram_sequences`
+--
+
+LOCK TABLES `ram_sequences` WRITE;
+/*!40000 ALTER TABLE `ram_sequences` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ram_sequences` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -94,8 +126,18 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_states` WRITE;
 /*!40000 ALTER TABLE `ram_states` DISABLE KEYS */;
-INSERT INTO `ram_states` VALUES (2,'952bd5b9-8c86-5bf6-8195-e81f6a000247','Work in progress','WIP','#aaaa00','2021-02-17 18:12:33',50),(11,'5261f4cb-e40f-5595-9d42-284fbffdef3d','Stand by','STB','#232323','2021-02-17 18:08:35',0),(12,'6382ad1a-99a7-5fd4-bd31-1bc45a62cda1','Finished','OK','#00aa00','2021-02-17 14:27:21',100),(13,'6ed72e24-2182-51b8-82b1-90a865241131','To do','TODO','#00aaff','2021-02-17 14:27:21',0);
+INSERT INTO `ram_states` VALUES (14,'efea0416-1456-515c-9a4e-5ce6e7d2000e','OK','OK','%2355aa00','2021-03-31 11:02:01',100,0),(15,'05a13d0e-a2f8-5e0b-864e-c8cfc8ce22a2','Work in progress','WIP','%23ffff7f','2021-03-31 11:00:09',50,0),(16,'173c2dc8-916a-5fe3-989a-54e420c46fca','Waiting for approval','CHK','%23ff5500','2021-03-31 11:00:44',75,0),(17,'1d1d9f12-79cd-5f29-8ad5-97ed8b7a2ea8','To do','TODO','%2355ffff','2021-03-31 11:00:59',0,0),(18,'04fb9195-ddb0-5ff7-9b17-e757085bd7f8','Stand by','STB','%23434343','2021-03-31 11:01:21',0,0),(19,'0be03056-b5db-5945-8117-63bfbff9a574','Could be better','CBB','%2355ff7f','2021-03-31 11:01:53',90,0),(20,'47325dd4-36e3-5b50-b419-00efc97c9e83','Retake','RTK','%23da0000','2021-03-31 11:02:48',75,0);
 /*!40000 ALTER TABLE `ram_states` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `ram_stepapplication`
+--
+
+LOCK TABLES `ram_stepapplication` WRITE;
+/*!40000 ALTER TABLE `ram_stepapplication` DISABLE KEYS */;
+INSERT INTO `ram_stepapplication` VALUES (1,15,24,'2021-03-31 11:13:10',0),(2,14,25,'2021-03-31 11:13:21',0);
+/*!40000 ALTER TABLE `ram_stepapplication` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -104,7 +146,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_steps` WRITE;
 /*!40000 ALTER TABLE `ram_steps` DISABLE KEYS */;
-INSERT INTO `ram_steps` VALUES (5,'df1712ec-821d-5326-a314-e41f4676c993','Animation','ANIM',0,'shot',11,1,'2021-02-22 11:07:39'),(6,'7a8e5e7f-4de9-5237-8576-0f9e7208a6d8','Rigging','RIG',0,'asset',11,2,'2021-02-22 11:07:37'),(8,'9105980b-0660-5835-b4df-3692f2d42376','Modeling','MOD',0,'asset',11,0,'2021-02-22 11:07:39'),(9,'0e0d438e-2f8b-5de6-9e96-af88dba1d506','Textures','TEX',0,'asset',11,3,'2021-02-22 11:07:37'),(11,'584dfe85-9d3c-5a2d-86d7-16680d06aead','Character Design','CD',0,'asset',7,2,'2021-02-22 10:34:59'),(12,'d49e9f41-910b-54ab-9289-4ddcf06fef9e','Editing','EDIT',0,'post',7,1,'2021-02-22 10:35:00'),(13,'4e8f5a2e-aea6-584e-b9ae-a5831ec4675b','Storyboard','STORY',0,'pre',7,0,'2021-02-22 10:35:00'),(14,'21e75653-b7ac-5276-928d-5a6635fad276','Compositing','COMP',0,'shot',7,3,'2021-02-22 10:11:07'),(21,'7db9d290-6109-52dc-9dda-4442017e916d','Animation','ANIM',0,'shot',7,4,'2021-02-22 10:34:59');
+INSERT INTO `ram_steps` VALUES (24,'27858b5b-d7d4-5f50-8f15-b156162a7d72','Character Design','CD',0,'asset',12,0,'2021-03-31 11:05:56',0),(25,'25b7fce6-56c8-598b-9530-7a4e913be34c','Rigging','RIG',0,'asset',12,0,'2021-03-31 11:13:16',0);
 /*!40000 ALTER TABLE `ram_steps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -114,8 +156,18 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_stepuser` WRITE;
 /*!40000 ALTER TABLE `ram_stepuser` DISABLE KEYS */;
-INSERT INTO `ram_stepuser` VALUES (2,8,1,'2021-02-22 15:30:24'),(3,8,5,'2021-02-22 15:30:36'),(7,5,1,'2021-02-22 15:31:56'),(9,9,1,'2021-02-22 15:33:59'),(10,5,5,'2021-02-22 15:34:04'),(13,9,5,'2021-02-22 15:40:00'),(14,5,12,'2021-02-22 15:51:37'),(17,6,12,'2021-02-22 17:11:28'),(18,6,13,'2021-02-22 17:11:29');
+INSERT INTO `ram_stepuser` VALUES (27,24,16,'2021-03-31 11:06:14',0),(28,24,17,'2021-03-31 11:06:15',0),(29,24,15,'2021-03-31 11:06:16',0),(30,25,14,'2021-03-31 11:13:22',0),(31,25,15,'2021-03-31 11:13:23',0);
 /*!40000 ALTER TABLE `ram_stepuser` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `ram_templateassetgroups`
+--
+
+LOCK TABLES `ram_templateassetgroups` WRITE;
+/*!40000 ALTER TABLE `ram_templateassetgroups` DISABLE KEYS */;
+INSERT INTO `ram_templateassetgroups` VALUES (10,'954204b1-1950-5be7-9ffd-74ab4640b794','Props','PROP','2021-03-31 10:57:16',0),(11,'39ca4b52-6774-5c5d-a8df-aea6921cea50','Characters','CHAR','2021-03-31 10:57:25',0),(12,'aca51d86-357a-5564-a182-1f13b91bbb7d','Sets','SET','2021-03-31 10:57:33',0),(13,'62da98ee-d983-532f-bb7b-517402b66248','Backgrounds','BG','2021-03-31 10:57:58',0);
+/*!40000 ALTER TABLE `ram_templateassetgroups` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -124,7 +176,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_templatesteps` WRITE;
 /*!40000 ALTER TABLE `ram_templatesteps` DISABLE KEYS */;
-INSERT INTO `ram_templatesteps` VALUES (1,'dcb57b02-a32a-5736-b758-a7b41926d822','Character Design','CD',0,'2021-02-17 12:28:02','asset'),(2,'9879f545-3edc-514a-bf46-b8e1b1baebda','Storyboard','STORY',0,'2021-02-17 12:28:18','pre'),(3,'c8377eda-384b-5540-9d3f-71171fc2a49c','Modeling','MOD',0,'2021-02-17 12:36:55','asset'),(4,'e092b191-fa7b-58d1-be8f-284abec57d39','Animation','ANIM',0,'2021-02-17 13:20:18','shot'),(5,'f89c16b4-ccac-52cf-aeef-eb7a04d5d765','Editing','EDIT',0,'2021-02-17 13:27:11','post');
+INSERT INTO `ram_templatesteps` VALUES (7,'a29e2c57-ddc1-5c97-91b5-69b02da969d5','Character Design','CD',0,'2021-03-31 10:52:31','asset',0),(8,'eb43cace-3cc8-5ae4-a4f7-b80e1c9144ec','Storyboard','SB',0,'2021-03-31 10:52:47','pre',0),(9,'864110b2-7c1d-504a-8246-d0e0b55777d9','Edit','EDIT',0,'2021-03-31 10:52:55','post',0),(10,'e16703e5-7458-5961-bf73-8b19411bf93e','Rigging','RIG',0,'2021-03-31 10:53:04','asset',0),(11,'3a9e7bb8-bda7-51f8-96da-939518367db6','Lighting','LIGHT',0,'2021-03-31 10:53:49','shot',0),(12,'2b89be14-8019-599c-90de-8b3742d75948','Texture','TEX',0,'2021-03-31 10:53:58','asset',0),(13,'970751c5-2c2b-556f-8976-393eb3d59f12','Modeling','MOD',0,'2021-03-31 10:54:25','asset',0),(14,'7b0388b7-9035-5a7d-b78c-fddf7c048432','Shading','SHADE',0,'2021-03-31 10:54:41','asset',0),(15,'d36a8656-f51c-588f-a0c5-b03b0da1040c','Visual Effects','VFX',0,'2021-03-31 10:55:03','shot',0),(16,'6467b134-d6b4-5fdc-822e-4eb773333d15','Rendering','RENDER',0,'2021-03-31 10:55:15','shot',0),(17,'5ab4bda6-2dec-58c9-b5dd-197fcd5ea038','Color Grading','COLO',0,'2021-03-31 10:55:28','post',0),(18,'9f051087-cf36-5537-a2be-beae18b103c7','Compositing','COMP',0,'2021-03-31 10:55:40','shot',0),(19,'2d21f60e-6f7f-56a4-83d3-d478f84187b4','Layout','LAY',0,'2021-03-31 10:55:58','asset',0),(20,'b8b25b0f-cd5e-52f5-99cb-6585082be148','Matte Painting','MATTE',0,'2021-03-31 10:56:19','asset',0),(21,'cca7cf4e-09a3-5a75-80b7-019a0c28be36','Set Design','SD',0,'2021-03-31 10:57:47','asset',0);
 /*!40000 ALTER TABLE `ram_templatesteps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -134,7 +186,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_users` WRITE;
 /*!40000 ALTER TABLE `ram_users` DISABLE KEYS */;
-INSERT INTO `ram_users` VALUES (1,'2d7d7e01-671c-11e7-a78f-4ccc6a288527','Nicolas Dufresne','Duduf','499729131d2f160d3f0ee99b01f25c4a7c735fba675d44a3909b2145aaace90f9dac5675d291f642dc34f96c9963f4c55d5b0fc6122f85904f66c038b5ccff08','2021-02-18 13:28:29','auto','admin'),(5,'ac19a485-3115-5578-b1f1-c5c386f1092b','Ana Arce','Ana','69eac4ab802f709012f5c58d193165a7722aed955ccdbb1c90cf194362481a103711fd3fbec05bcf14f7cd45826e8d49cfa94cf93a039c6e0e8757944e537a13','2021-02-22 11:03:02','auto','project'),(12,'51de0082-cf7d-5d6a-ae3e-37ef864e2d74','Jane Doe','Jane','b7906e6d72018423a530b9eb040dd5858a4b9ca1adaa68e1aeb95e4b1a024a4520cf146bfba9bbafa588053536cf557e4f0dbd7d95fe6dd660cb5f077fadb3a6','2021-02-22 11:00:06','auto','lead'),(13,'b6ae72a7-959f-55ce-8cf6-2f0424643fa6','John Doe','John','4567eda55ed3455a62ff4b31193f3f63bb665ce02cdbae14ab930e74ae6c11cc225d482989df7fe7a76a558924d70394cc4533f9744ea2934c334603b1d90b54','2021-02-22 15:57:48','auto','standard');
+INSERT INTO `ram_users` VALUES (14,'bVda5hjqDNLFJia9DCmwwH2p','Ana Arce','Ana','09b4b3eeff6cc464628dd7a486068aa621bddca545307a6069b67bd75b23cf929d435860ebabe3ebe1d36ef1dc0d3a0dda5e3b097b6e7641ea09a7afba3cc074','2021-03-31 10:51:47','auto','project',0),(15,'dda68ab7-2364-5be8-9569-47c50e24bc14','Nico Duduf','Duduf','838f648f84f453f56aa05c98a3effeaa333ed3c5a6f78c84865a6dd50ea73be6a78c5d77a64c11b9820bed0fa9334cb6605e3a39619e566fa092c5ac107e940a','2021-03-31 10:51:33','auto','admin',0),(16,'a9df40db-3311-5fc5-a2a5-b4752a61fb98','John Doe','John','1488d20c50ae416d5dcbe8d9739af65e37f68fda8851ea12d992066d30b9ed3fd048ff4a80edc31594203286ffc6d78d015c313423e63a7ef1d17754b615e8a6','2021-03-31 10:50:20','auto','standard',0),(17,'1bd9e736-bb66-5a33-97cb-caae74b68b86','Jane Doe','Jane','23bd2f66514103fc427feac0fa1c2db998b30543170741151c5973752c188dabbb09ef89603f02e9d241787580c7ea33b54578bc8d27a405299f1bbf8a315ea5','2021-03-31 10:50:35','auto','lead',0);
 /*!40000 ALTER TABLE `ram_users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -147,4 +199,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-04 11:29:26
+-- Dump completed on 2021-03-31 13:22:43
