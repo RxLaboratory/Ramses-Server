@@ -91,13 +91,21 @@
 		$pipes = array();
 		//get pipes
 		$qString = "SELECT 
-				" . $tablePrefix . "pipes.`uuid`,
-				" . $tablePrefix . "pipes.`inputStepUuid`,
-				" . $tablePrefix . "pipes.`outputStepUuid`,
-				" . $tablePrefix . "pipes.`colorSpaceUuid`,
-				" . $tablePrefix . "pipes.`filetypeUuid`
-			FROM " . $tablePrefix . "pipes
-			WHERE projectId=" . $pid . " AND removed = 0 ;";
+				pipes.`uuid`,
+				inputSteps.`uuid` as inputStepUuid,
+				outputSteps.`uuid` as outputStepUuid,
+				colorspaces.`uuid` as colorSpaceUuid,
+				filetypes.`uuid` as filetypeUuid
+			FROM " . $tablePrefix . "pipes AS pipes
+			LEFT JOIN " . $tablePrefix . "steps AS inputSteps
+				ON pipes.inputStepId = inputSteps.id
+			LEFT JOIN " . $tablePrefix . "steps AS outputSteps
+				ON pipes.outputStepId = outputSteps.id
+			LEFT JOIN " . $tablePrefix . "colorspaces AS colorspaces
+				ON pipes.colorSpaceId = colorspaces.id
+			LEFT JOIN " . $tablePrefix . "filetypes AS filetypes
+				ON pipes.filetypeId = filetypes.id
+			WHERE inputSteps.projectId=" . $pid . " AND pipes.removed = 0 ;";
 		$repPipes = $db->query( $qString );
 
 		while ($p = $repPipes->fetch())
