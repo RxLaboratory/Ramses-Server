@@ -37,7 +37,7 @@
             if ( isProjectAdmin() )
             {
 				// Create pipe
-				$qString = "INSERT INTO " . $tablePrefix . "pipes (inputUuid,outputUuid,uuid) 
+				$qString = "INSERT INTO " . $tablePrefix . "pipes (inputStepId,outputStepId,uuid) 
 				VALUES (
 					(SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :inputUuid ),
 					(SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :outputUuid ),";
@@ -90,6 +90,7 @@
 		$filetypeUuid = $_GET["filetypeUuid"] ?? "";
 		$uuid = $_GET["uuid"] ?? "";
 
+
 		if (strlen($uuid) > 0)
 		{
 			// Only if admin
@@ -109,16 +110,12 @@
 					$setArray[] = "`outputStepId`= (SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :outputUuid )";
                     $values["outputUuid"] = $outputUuid;
 				}
-                if (strlen($colorspaceUuid) > 0)
-				{
-					$setArray[] = "`colorSpaceId`= (SELECT " . $tablePrefix . "colorspaces.id FROM " . $tablePrefix . "colorspaces WHERE uuid = :colorspaceUuid )";
-                    $values["colorspaceUuid"] = $colorspaceUuid;
-				}
-                if (strlen($filetypeUuid) > 0)
-				{
-					$setArray[] = "`filetypeId`= (SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE uuid = :filetypeUuid )";
-                    $values["filetypeUuid"] = $filetypeUuid;
-				}
+
+				$setArray[] = "`colorSpaceId`= (SELECT " . $tablePrefix . "colorspaces.id FROM " . $tablePrefix . "colorspaces WHERE uuid = :colorspaceUuid )";
+				$values["colorspaceUuid"] = $colorspaceUuid;
+
+				$setArray[] = "`filetypeId`= (SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE uuid = :filetypeUuid )";
+				$values["filetypeUuid"] = $filetypeUuid;
 
 				$qString = $qString . $setArray.join(",") . " WHERE uuid= :uuid ;";
 			
