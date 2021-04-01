@@ -183,15 +183,15 @@ CREATE TABLE `ram_pipes` (
   `outputStepId` int NOT NULL,
   `inputStepId` int NOT NULL,
   `filetypeId` int DEFAULT NULL,
-  `colorSpace` int DEFAULT NULL,
+  `colorSpaceId` int DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `step_UNIQUE` (`outputStepId`,`inputStepId`),
   KEY `fk_pipes_input_idx` (`inputStepId`),
   KEY `fk_pipes_filetype_idx` (`filetypeId`),
-  KEY `fk_pipes_colorspace_idx` (`colorSpace`),
-  CONSTRAINT `fk_pipes_colorspace` FOREIGN KEY (`colorSpace`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  KEY `fk_pipes_colorspace_idx` (`colorSpaceId`),
+  CONSTRAINT `fk_pipes_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   CONSTRAINT `fk_pipes_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -479,4 +479,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-04-01  9:21:43
+-- Dump completed on 2021-04-01  9:42:03

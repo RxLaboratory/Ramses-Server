@@ -84,6 +84,38 @@
 		return $steps;
 	}
 
+	function getPipes( $pid, $puuid )
+	{
+		global $tablePrefix, $db;
+
+		$pipes = array();
+		//get pipes
+		$qString = "SELECT 
+				" . $tablePrefix . "pipes.`uuid`,
+				" . $tablePrefix . "pipes.`inputStepUuid`,
+				" . $tablePrefix . "pipes.`outputStepUuid`,
+				" . $tablePrefix . "pipes.`colorSpaceUuid`,
+				" . $tablePrefix . "pipes.`filetypeUuid`
+			FROM " . $tablePrefix . "pipes
+			WHERE projectId=" . $pid . " AND removed = 0 ;";
+		$repPipes = $db->query( $qString );
+
+		while ($p = $repPipes->fetch())
+		{
+			$pipe = array();
+			$pipe['uuid'] = $p['uuid'];
+			$pipe['inputStepUuid'] = $p['inputStepUuid'];
+			$pipe['outputStepUuid'] = $p['outputStepUuid'];
+			$pipe['colorSpaceUuid'] = $p['colorSpaceUuid'];
+			$pipe['filetypeUuid'] = $p['filetypeUuid'];
+			$pipe['projectUuid'] = $puuid;
+
+			$pipes[] = $pipe;
+		}
+
+		return $pipes;
+	}
+
 	function getAssetGroups( $pid, $puuid )
 	{
 		global $tablePrefix, $db;
@@ -188,6 +220,7 @@
 		$project['uuid'] = $sqlRep['uuid'];
 
 		$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
+		$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
 		$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
 		$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
 
