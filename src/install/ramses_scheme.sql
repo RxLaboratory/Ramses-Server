@@ -180,14 +180,17 @@ DROP TABLE IF EXISTS `ram_pipes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `ram_pipes` (
   `id` int NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) NOT NULL,
   `outputStepId` int NOT NULL,
   `inputStepId` int NOT NULL,
   `filetypeId` int DEFAULT NULL,
   `colorSpaceId` int DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `step_UNIQUE` (`outputStepId`,`inputStepId`),
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   KEY `fk_pipes_input_idx` (`inputStepId`),
   KEY `fk_pipes_filetype_idx` (`filetypeId`),
   KEY `fk_pipes_colorspace_idx` (`colorSpaceId`),
@@ -479,4 +482,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-04-01  9:42:03
+-- Dump completed on 2021-04-01 13:53:55
