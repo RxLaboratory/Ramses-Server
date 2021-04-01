@@ -65,6 +65,15 @@ LOCK TABLES `ram_assetstatuses` WRITE;
 UNLOCK TABLES;
 
 --
+-- Dumping data for table `ram_colorspaces`
+--
+
+LOCK TABLES `ram_colorspaces` WRITE;
+/*!40000 ALTER TABLE `ram_colorspaces` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ram_colorspaces` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Dumping data for table `ram_filetypes`
 --
 
@@ -72,6 +81,15 @@ LOCK TABLES `ram_filetypes` WRITE;
 /*!40000 ALTER TABLE `ram_filetypes` DISABLE KEYS */;
 INSERT INTO `ram_filetypes` VALUES (17,'b1b3c25b-88d8-5591-9a19-37fcbc4015e2','After Effects Project','.aep','aep,aepx',0,'2021-03-31 11:03:19',0),(18,'02a9a1c8-0e29-5546-b15a-c7dc0b688ab2','After Effects Template','.aet','aet',0,'2021-03-31 11:03:34',0),(19,'0883e6ac-0bce-5e49-aa54-c2b2c2660ebb','PNG Image','.png','png',1,'2021-03-31 11:03:45',0),(20,'661f44fa-ae6e-54d9-9b3e-e0ff7775469b','JPEG image','.jpg','jpg,jpeg',1,'2021-03-31 11:03:58',0),(21,'a93c7dbc-39e5-5423-98cd-3ac2052f7b00','Photoshop','.psd','psd,psb',0,'2021-03-31 11:05:22',0);
 /*!40000 ALTER TABLE `ram_filetypes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping data for table `ram_pipes`
+--
+
+LOCK TABLES `ram_pipes` WRITE;
+/*!40000 ALTER TABLE `ram_pipes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ram_pipes` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -136,7 +154,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_stepapplication` WRITE;
 /*!40000 ALTER TABLE `ram_stepapplication` DISABLE KEYS */;
-INSERT INTO `ram_stepapplication` VALUES (1,15,24,'2021-03-31 11:13:10',0),(2,14,25,'2021-03-31 11:13:21',0);
+INSERT INTO `ram_stepapplication` VALUES (1,15,24,'2021-03-31 11:13:10',0),(2,14,25,'2021-03-31 11:13:21',0),(3,14,39,'2021-03-31 18:43:02',0);
 /*!40000 ALTER TABLE `ram_stepapplication` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -146,7 +164,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_steps` WRITE;
 /*!40000 ALTER TABLE `ram_steps` DISABLE KEYS */;
-INSERT INTO `ram_steps` VALUES (24,'27858b5b-d7d4-5f50-8f15-b156162a7d72','Character Design','CD',0,'asset',12,0,'2021-03-31 11:05:56',0),(25,'25b7fce6-56c8-598b-9530-7a4e913be34c','Rigging','RIG',0,'asset',12,0,'2021-03-31 11:13:16',0);
+INSERT INTO `ram_steps` VALUES (24,'27858b5b-d7d4-5f50-8f15-b156162a7d72','Character Design','CD',0,'asset',12,0,'2021-03-31 17:17:10',1),(25,'25b7fce6-56c8-598b-9530-7a4e913be34c','Rigging','RIG',0,'asset',12,0,'2021-03-31 11:13:16',0),(31,'1fc74cbf-ea59-5a0e-8f7e-d99106407466','Step','NEW',0,'asset',12,0,'2021-03-31 16:59:05',1),(32,'72c68fd4-cac3-596d-8c3c-164b82be5971','Sound Recording','SR',0,'pre',12,0,'2021-03-31 17:00:00',1),(33,'eb7ce93e-88c8-5b1a-892e-a3fe89e4dc7f','Character Design','CD',0,'asset',12,0,'2021-03-31 17:17:00',1),(34,'49f6eff5-5a0b-57a2-b448-eae5f79ddbf0','Step','NEW',0,'asset',12,0,'2021-03-31 17:17:14',1),(35,'199bde76-f496-5c56-acb0-1559b34c9a4c','Character Design','CD',0,'asset',12,0,'2021-03-31 17:17:25',1),(36,'5bf4390e-fc43-569a-be25-f1db2bea07fc','Compositing','COMP',0,'shot',12,0,'2021-03-31 17:17:20',0),(37,'e79bbab5-202e-5d07-a338-b4a2bcae2755','Character Design','CD',0,'asset',12,0,'2021-03-31 17:17:28',0),(38,'07b81f8a-b0c0-5adf-8822-e91a6b604744','Layout','LAY',0,'asset',12,0,'2021-03-31 17:17:33',0),(39,'cce489f7-1a7e-5af5-be31-c97c3d77a0b1','Animation','ANIM',0,'shot',12,0,'2021-03-31 17:17:57',0),(40,'6590f86a-4f41-5011-9c2e-d7b1967648af','Modeling','MOD',0,'asset',12,0,'2021-03-31 17:20:24',0),(41,'15c538d9-d16a-5c19-bd0c-63da98088285','Lighting','LIGHT',0,'shot',12,0,'2021-03-31 17:21:17',0),(42,'9af82aee-a0eb-5316-80f9-a20eed1642f9','Rendering','RENDER',0,'shot',12,0,'2021-03-31 18:51:20',0),(43,'e81244cf-b463-5beb-87c7-9ee62236e395','Visual Effects','VFX',0,'shot',12,0,'2021-03-31 17:22:56',0),(44,'f2ebbe0b-1b25-5381-8082-e947b68a705c','Texture','TEX',0,'asset',12,0,'2021-03-31 17:23:24',0),(45,'114123b3-7c61-56fe-9dfa-0484461ae4f3','Shading','SHADE',0,'asset',12,0,'2021-03-31 17:23:47',0),(46,'f671701c-bb05-5331-b7f1-4d41744c1a09','Matte Painting','MATTE',0,'asset',12,0,'2021-03-31 17:24:15',0),(47,'9c5c69e1-2bef-5829-8a7f-e2fe81d7064a','Set Design','SD',0,'asset',12,0,'2021-03-31 17:24:34',0),(48,'9043c1f2-4608-5ee0-8440-b21d738d9755','Edit','EDIT',0,'post',12,0,'2021-03-31 18:33:48',0),(49,'061169d2-f063-5018-8c0c-4f04e8273f33','Color Grading','COLO',0,'post',12,0,'2021-03-31 18:33:57',0),(50,'1817f69c-896c-5a2e-ab69-6092d47cacc0','Storyboard','SB',0,'pre',12,0,'2021-03-31 18:34:09',0);
 /*!40000 ALTER TABLE `ram_steps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -156,7 +174,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_stepuser` WRITE;
 /*!40000 ALTER TABLE `ram_stepuser` DISABLE KEYS */;
-INSERT INTO `ram_stepuser` VALUES (27,24,16,'2021-03-31 11:06:14',0),(28,24,17,'2021-03-31 11:06:15',0),(29,24,15,'2021-03-31 11:06:16',0),(30,25,14,'2021-03-31 11:13:22',0),(31,25,15,'2021-03-31 11:13:23',0);
+INSERT INTO `ram_stepuser` VALUES (27,24,16,'2021-03-31 11:06:14',0),(28,24,17,'2021-03-31 11:06:15',0),(29,24,15,'2021-03-31 11:06:16',0),(30,25,14,'2021-03-31 11:13:22',0),(31,25,15,'2021-03-31 11:13:23',0),(32,43,14,'2021-03-31 18:42:50',0),(33,43,16,'2021-03-31 18:42:51',0),(34,39,15,'2021-03-31 18:42:55',0);
 /*!40000 ALTER TABLE `ram_stepuser` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -176,7 +194,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `ram_templatesteps` WRITE;
 /*!40000 ALTER TABLE `ram_templatesteps` DISABLE KEYS */;
-INSERT INTO `ram_templatesteps` VALUES (7,'a29e2c57-ddc1-5c97-91b5-69b02da969d5','Character Design','CD',0,'2021-03-31 10:52:31','asset',0),(8,'eb43cace-3cc8-5ae4-a4f7-b80e1c9144ec','Storyboard','SB',0,'2021-03-31 10:52:47','pre',0),(9,'864110b2-7c1d-504a-8246-d0e0b55777d9','Edit','EDIT',0,'2021-03-31 10:52:55','post',0),(10,'e16703e5-7458-5961-bf73-8b19411bf93e','Rigging','RIG',0,'2021-03-31 10:53:04','asset',0),(11,'3a9e7bb8-bda7-51f8-96da-939518367db6','Lighting','LIGHT',0,'2021-03-31 10:53:49','shot',0),(12,'2b89be14-8019-599c-90de-8b3742d75948','Texture','TEX',0,'2021-03-31 10:53:58','asset',0),(13,'970751c5-2c2b-556f-8976-393eb3d59f12','Modeling','MOD',0,'2021-03-31 10:54:25','asset',0),(14,'7b0388b7-9035-5a7d-b78c-fddf7c048432','Shading','SHADE',0,'2021-03-31 10:54:41','asset',0),(15,'d36a8656-f51c-588f-a0c5-b03b0da1040c','Visual Effects','VFX',0,'2021-03-31 10:55:03','shot',0),(16,'6467b134-d6b4-5fdc-822e-4eb773333d15','Rendering','RENDER',0,'2021-03-31 10:55:15','shot',0),(17,'5ab4bda6-2dec-58c9-b5dd-197fcd5ea038','Color Grading','COLO',0,'2021-03-31 10:55:28','post',0),(18,'9f051087-cf36-5537-a2be-beae18b103c7','Compositing','COMP',0,'2021-03-31 10:55:40','shot',0),(19,'2d21f60e-6f7f-56a4-83d3-d478f84187b4','Layout','LAY',0,'2021-03-31 10:55:58','asset',0),(20,'b8b25b0f-cd5e-52f5-99cb-6585082be148','Matte Painting','MATTE',0,'2021-03-31 10:56:19','asset',0),(21,'cca7cf4e-09a3-5a75-80b7-019a0c28be36','Set Design','SD',0,'2021-03-31 10:57:47','asset',0);
+INSERT INTO `ram_templatesteps` VALUES (7,'a29e2c57-ddc1-5c97-91b5-69b02da969d5','Character Design','CD',0,'2021-03-31 10:52:31','asset',0),(8,'eb43cace-3cc8-5ae4-a4f7-b80e1c9144ec','Storyboard','SB',0,'2021-03-31 10:52:47','pre',0),(9,'864110b2-7c1d-504a-8246-d0e0b55777d9','Edit','EDIT',0,'2021-03-31 10:52:55','post',0),(10,'e16703e5-7458-5961-bf73-8b19411bf93e','Rigging','RIG',0,'2021-03-31 10:53:04','asset',0),(11,'3a9e7bb8-bda7-51f8-96da-939518367db6','Lighting','LIGHT',0,'2021-03-31 10:53:49','shot',0),(12,'2b89be14-8019-599c-90de-8b3742d75948','Texture','TEX',0,'2021-03-31 10:53:58','asset',0),(13,'970751c5-2c2b-556f-8976-393eb3d59f12','Modeling','MOD',0,'2021-03-31 10:54:25','asset',0),(14,'7b0388b7-9035-5a7d-b78c-fddf7c048432','Shading','SHADE',0,'2021-03-31 10:54:41','asset',0),(15,'d36a8656-f51c-588f-a0c5-b03b0da1040c','Visual Effects','VFX',0,'2021-03-31 10:55:03','shot',0),(16,'6467b134-d6b4-5fdc-822e-4eb773333d15','Rendering','RENDER',0,'2021-03-31 10:55:15','shot',0),(17,'5ab4bda6-2dec-58c9-b5dd-197fcd5ea038','Color Grading','COLO',0,'2021-03-31 17:10:29','post',0),(18,'9f051087-cf36-5537-a2be-beae18b103c7','Compositing','COMP',0,'2021-03-31 10:55:40','shot',0),(19,'2d21f60e-6f7f-56a4-83d3-d478f84187b4','Layout','LAY',0,'2021-03-31 10:55:58','asset',0),(20,'b8b25b0f-cd5e-52f5-99cb-6585082be148','Matte Painting','MATTE',0,'2021-03-31 10:56:19','asset',0),(21,'cca7cf4e-09a3-5a75-80b7-019a0c28be36','Set Design','SD',0,'2021-03-31 10:57:47','asset',0),(22,'2a4620e7-d88a-5ba3-b382-cd3284c757f5','Animation','ANIM',0,'2021-03-31 17:17:50','shot',0);
 /*!40000 ALTER TABLE `ram_templatesteps` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -199,4 +217,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-03-31 13:22:43
+-- Dump completed on 2021-04-01  9:21:50
