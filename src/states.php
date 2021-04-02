@@ -104,17 +104,11 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateState";
 
-		$name = "";
-		$shortName = "";
-		$color = "";
-		$completionRatio = "";
-		$uuid = "";
-
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
-        if (isset($_GET["color"])) $color = $_GET["color"];
-        if (isset($_GET["completionRatio"])) $completionRatio = $_GET["completionRatio"];
+		$name = rawurldecode ( $_GET["name"] ?? "" );
+		$shortName = rawurldecode ( $_GET["shortName"] ?? "" );
+		$color = rawurldecode ( $_GET["color"] ?? "" );
+		$completionRatio = rawurldecode ( $_GET["completionRatio"] ?? "" );
+		$uuid = rawurldecode ( $_GET["uuid"] ?? "" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
