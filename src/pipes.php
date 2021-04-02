@@ -117,7 +117,7 @@
 				$setArray[] = "`filetypeId`= (SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE uuid = :filetypeUuid )";
 				$values["filetypeUuid"] = $filetypeUuid;
 
-				$qString = $qString . $setArray.join(",") . " WHERE uuid= :uuid ;";
+				$qString = $qString . join(",", $setArray) . " WHERE uuid= :uuid ;";
 			
 				$rep = $db->prepare($qString);
 				
