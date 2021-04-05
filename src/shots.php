@@ -42,18 +42,18 @@
 			// Only if lead
             if ( isLead() )
             {
-				$qString = "INSERT INTO {$shotsTable} (name, shortName, sequenceId, duration, order, uuid)
+				$qString = "INSERT INTO {$shotsTable} (`name`, `shortName`, `sequenceId`, `duration`, `order`, `uuid`)
 				VALUES (
 					:name,
 					:shortName,
 					(SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid ),
-					:duration,";
-				$values = array( 'name' => $name,'shortName' => $shortName, 'sequenceUuid' => $assetGroupUuid, 'duration' => (int)$duration);
+					:duration,
+					:order,";
+				$values = array( 'name' => $name,'shortName' => $shortName, 'sequenceUuid' => $sequenceUuid, 'duration' => (int)$duration);
 
 				if (strlen($order) > 0)
 				{
-					$qString = $qString . ":order,";
-					$values['order'] = $order;
+					$values['order'] = (int)$order;
 					// We need to move all other shots
 					$orderString = "UPDATE {$shotsTable}
 						SET order = order + 1
@@ -66,8 +66,16 @@
 				}
 				else 
 				{
-					$qString = $qString . "( SELECT COUNT(*) FROM {$shotsTable}
-						WHERE sequenceId =  (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid ) ),";
+					$qOrder = "SELECT COUNT(*) as c FROM {$shotsTable}
+						WHERE sequenceId =  (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid );";
+					
+					$rep = $db->prepare($qOrder);
+					$rep->execute( array('sequenceUuid' => $sequenceUuid) );
+					if ($o = $rep->fetch()) $order = (int)$o['c'];
+					else $order = 0;
+					$rep->closeCursor();
+
+					$values['order'] = $order;
 				}
 
 				if (strlen($uuid) > 0)
@@ -125,22 +133,22 @@
 					SET
 						`name`= :name,
 						`shortName`= :shortName";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName);
 
 				if (strlen($sequenceUuid) > 0)
 				{
-					$qString = $qString . ",`sequenceId` = (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid )";
+					$qString = $qString . ",`sequenceId` = (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE {$sequencesTable}.uuid = :sequenceUuid )";
 					$values['sequenceUuid'] = $sequenceUuid;
-					$values['sequences'] = $sequencesTable;
 				}
 
 				if (strlen($duration) > 0)
 				{
 					$qString = $qString . ",duration = :duration";
-					$values['duration'] = (int)$duration;
+					$values['duration'] = (float)$duration;
 				}
 
-				$qString = $qString . "WHERE uuid= :uuid ;";
+				$qString = $qString . " WHERE uuid= :uuid ;";
+				$values['uuid'] = $uuid;
 
 				$rep = $db->prepare($qString);
 				$ok = $rep->execute($values);

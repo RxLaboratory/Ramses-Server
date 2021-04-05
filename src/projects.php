@@ -364,15 +364,10 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateProject";
 
-		$name = "";
-		$shortName = "";
-		$uuid = "";
-		$folderPath = "";
-
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
-        if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
+		$name = $_GET["name"] ?? "";
+		$shortName = $_GET["shortName"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
+		$folderPath = $_GET["folderPath"] ?? "";
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
