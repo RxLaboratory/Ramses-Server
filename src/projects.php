@@ -207,14 +207,50 @@
 			$sequence['name'] = $s['name'];
 			$sequence['projectUuid'] = $puuid;
 
-			$sequence['shots'] = array();
-
-			//TODO get shots
+			$sequence['shots'] = getShots($s['id'], $sequence['uuid']);
 
 			$sequences[] = $sequence;
 		}
 
 		return $sequences;
+	}
+
+	function getShots( $sid, $suuid )
+	{
+		global $tablePrefix, $db;
+
+		$shotsTable = $tablePrefix . "shots";
+
+		$shots = array();
+
+		$qString = "SELECT
+				{$shotsTable}.`uuid`,
+				{$shotsTable}.`name`,
+				{$shotsTable}.`shortName`,
+				{$shotsTable}.`duration`,
+				{$shotsTable}.`order`
+			FROM {$shotsTable}
+			WHERE `sequenceId` = " . $sid . " AND `removed` = 0
+			ORDER BY `order`;";
+
+		$repShots = $db->query( $qString );
+
+		while ($s = $repShots->fetch())
+		{
+			$shot = array();
+			$shot['uuid'] = $s['uuid'];
+			$shot['shortName'] = $s['shortName'];
+			$shot['name'] = $s['name'];
+			$shot['duration'] = $s['duration'];
+			$shot['order'] = $s['order'];
+			$shot['sequenceUuid'] = $suuid;
+			
+			$shots[] = $shot;
+		}
+
+		$repShots->closeCursor();
+
+		return $shots;
 	}
 
 	function getProject( $sqlRep )
@@ -231,15 +267,6 @@
 		$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
 		$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
 		$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
-
-		// TODO get shots
-		/*$projectShots = Array();
-		$repShots = $db->query("SELECT " . $tablePrefix . "shots.uuid as shotId FROM " . $tablePrefix . "projectshot JOIN " . $tablePrefix . "shots ON " . $tablePrefix . "shots.id = " . $tablePrefix . "projectshot.shotId WHERE projectId=" . $project['id'] . ";");
-		while ($projectShot = $repShots->fetch())
-		{
-			$projectShots[] = $projectShot['shotId'];
-		}
-		$proj['assetGroups'] = $projectAssetGroups;*/
 
 		return $project;
 	}

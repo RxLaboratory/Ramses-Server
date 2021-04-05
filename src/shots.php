@@ -21,6 +21,9 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+	$shotsTable = $tablePrefix . "shots";
+	$sequencesTable = $tablePrefix . "sequences";
+
 	// ========= CREATE ==========
 	if (isset($_GET["createShot"]))
 	{
@@ -39,35 +42,32 @@
 			// Only if lead
             if ( isLead() )
             {
-				$shotsTable = $tablePrefix . "shots";
-				$sequencesTable = $tablePrefix . "sequences";
-
-				$qString = "INSERT INTO :shots (name, shortName, sequenceId, duration, order, uuid)
+				$qString = "INSERT INTO {$shotsTable} (name, shortName, sequenceId, duration, order, uuid)
 				VALUES (
 					:name,
 					:shortName,
-					(SELECT :sequences.id FROM :sequences WHERE uuid = :sequenceUuid ),
+					(SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid ),
 					:duration,";
-				$values = array( 'name' => $name,'shortName' => $shortName, 'sequenceUuid' => $assetGroupUuid, 'duration' => (int)$duration, 'sequences' => $sequencesTable, 'shots' => $shotsTable);
+				$values = array( 'name' => $name,'shortName' => $shortName, 'sequenceUuid' => $assetGroupUuid, 'duration' => (int)$duration);
 
 				if (strlen($order) > 0)
 				{
 					$qString = $qString . ":order,";
 					$values['order'] = $order;
 					// We need to move all other shots
-					$orderString = "UPDATE :shots
+					$orderString = "UPDATE {$shotsTable}
 						SET order = order + 1
 						WHERE order >= :order
-						AND sequenceId = (SELECT :sequences.id FROM :sequences WHERE uuid = :sequenceUuid );";
-					$orderValues = array( 'order' => $order, 'sequenceUuid' => $sequenceUuid, 'sequences' => $sequencesTable, 'shots' => $shotsTable);
+						AND sequenceId = (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid );";
+					$orderValues = array( 'order' => $order, 'sequenceUuid' => $sequenceUuid);
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
 					$rep->closeCursor();
 				}
 				else 
 				{
-					$qString = $qString . "( SELECT COUNT(*) FROM :shots
-						WHERE sequenceId =  (SELECT :sequences.id FROM :sequences WHERE uuid = :sequenceUuid ) ),";
+					$qString = $qString . "( SELECT COUNT(*) FROM {$shotsTable}
+						WHERE sequenceId =  (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid ) ),";
 				}
 
 				if (strlen($uuid) > 0)
@@ -121,10 +121,7 @@
 			// Only if lead
             if ( isLead() )
             {
-				$shotsTable = $tablePrefix . "shots";
-				$sequencesTable = $tablePrefix . "sequences";
-
-				$qString = "UPDATE :shots
+				$qString = "UPDATE {$shotsTable}
 					SET
 						`name`= :name,
 						`shortName`= :shortName";
@@ -132,7 +129,7 @@
 
 				if (strlen($sequenceUuid) > 0)
 				{
-					$qString = $qString . ",`sequenceId` = (SELECT :sequences.id FROM :sequences WHERE uuid = :sequenceUuid )";
+					$qString = $qString . ",`sequenceId` = (SELECT {$sequencesTable}.id FROM {$sequencesTable} WHERE uuid = :sequenceUuid )";
 					$values['sequenceUuid'] = $sequenceUuid;
 					$values['sequences'] = $sequencesTable;
 				}
@@ -184,21 +181,20 @@
 			{
 				// Update
 				$order = (int)$order;
-				$shotsTable = $tablePrefix . "shots";
 
 				if ($previous > $order)
 				{
 					//Move all other shots
-					$qString = "UPDATE :shots
+					$qString = "UPDATE {$shotsTable}
 						SET
 							order = order + 1
 						WHERE
 							order >= :order
 							AND
-							order < (SELECT order FROM :shots WHERE uuid = :uuid)
+							order < (SELECT order FROM {$shotsTable} WHERE uuid = :uuid)
 							AND
-							sequenceId = (SELECT sequenceId FROM :shots WHERE uuid = :uuid);";
-					$values = array('order' => $order, 'shots' => $shotsTable);
+							sequenceId = (SELECT sequenceId FROM {$shotsTable} WHERE uuid = :uuid);";
+					$values = array('order' => $order);
 
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
@@ -207,16 +203,16 @@
 				else 
 				{
 					//Move all other shots
-					$qString = "UPDATE :shots
+					$qString = "UPDATE {$shotsTable}
 						SET
 							order = order - 1
 						WHERE
 							order <= :order
 							AND
-							order > (SELECT order FROM :shots WHERE uuid = :uuid)
+							order > (SELECT order FROM {$shotsTable} WHERE uuid = :uuid)
 							AND
-							sequenceId = (SELECT sequenceId FROM :shots WHERE uuid = :uuid);";
-					$values = array('order' => $order, 'shots' => $shotsTable);
+							sequenceId = (SELECT sequenceId FROM {$shotsTable} WHERE uuid = :uuid);";
+					$values = array('order' => $order);
 
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
@@ -224,10 +220,10 @@
 				}
 
 				//Move given shot
-				$qString = "UPDATE :shots
+				$qString = "UPDATE {$shotsTable}
 					SET order = :order
 					WHERE uuid = :uuid;";
-				$values = array('order'  => $order,'uuid'  => $uuid, 'shots' => $shotsTable);
+				$values = array('order'  => $order,'uuid'  => $uuid);
 
 				$rep = $db->prepare($qString);
 				$rep->execute($values);
@@ -262,16 +258,14 @@
 			//only if admin
 			if (isLead())
 			{
-				$shotsTable = $tablePrefix . "shots";
-
-				$rep = $db->prepare("UPDATE :shots
+				$rep = $db->prepare("UPDATE {$shotsTable}
 						SET order = order - 1
-						WHERE order > (SELECT order FROM :shots WHERE uuid = :uuid);
-					UPDATE :shots
+						WHERE order > (SELECT order FROM {$shotsTable} WHERE uuid = :uuid);
+					UPDATE {$shotsTable}
 						SET removed = 1, order = -1
 						WHERE uuid = :uuid ;");
 
-				$rep->execute(array('uuid' => $uuid, 'shots' => $shotsTable));
+				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 
 				$reply["message"] = "Shot removed.";
