@@ -274,7 +274,7 @@
 				$rep->execute(array('uuid' => $uuid, 'shots' => $shotsTable));
 				$rep->closeCursor();
 
-				$reply["message"] = "State " . $uuid . " removed.";
+				$reply["message"] = "Shot removed.";
 				$reply["success"] = true;
 			}
 			else
