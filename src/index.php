@@ -58,6 +58,7 @@
 			include ("filetypes.php");
 			include ("applications.php");
 			include ("pipes.php");
+			include ("shots.php");
 		}
 		else if (!$reply["accepted"])
 		{
