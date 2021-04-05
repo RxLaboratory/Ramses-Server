@@ -241,8 +241,8 @@
 			$shot['uuid'] = $s['uuid'];
 			$shot['shortName'] = $s['shortName'];
 			$shot['name'] = $s['name'];
-			$shot['duration'] = $s['duration'];
-			$shot['order'] = $s['order'];
+			$shot['duration'] = (float)$s['duration'];
+			$shot['order'] = (int)$s['order'];
 			$shot['sequenceUuid'] = $suuid;
 			
 			$shots[] = $shot;
