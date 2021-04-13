@@ -281,14 +281,24 @@
 			//only if admin
 			if (isLead())
 			{
-				$rep = $db->prepare("UPDATE {$shotsTable}
-						SET order = order - 1
-						WHERE order > (SELECT order FROM {$shotsTable} WHERE uuid = :uuid);
-					UPDATE {$shotsTable}
-						SET removed = 1, order = -1
-						WHERE uuid = :uuid ;");
-
+				// Get prev order
+				$qString = "SELECT `order`
+					FROM {$shotsTable}
+					WHERE `uuid` = :uuid;";
+				$rep = $db->prepare($qString);
 				$rep->execute(array('uuid' => $uuid));
+				$previous = 0;
+				if ($r = $rep->fetch()) $previous = (int)$r['order'];
+				$rep->closeCursor();
+
+				$rep = $db->prepare("UPDATE {$shotsTable}
+						SET `order` = `order` - 1
+						WHERE `order` > :previous;
+					UPDATE {$shotsTable}
+						SET `removed` = 1, `order` = -1
+						WHERE `uuid` = :uuid ;");
+
+				$rep->execute(array('uuid' => $uuid, 'previous' => $previous));
 				$rep->closeCursor();
 
 				$reply["message"] = "Shot removed.";
