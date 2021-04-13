@@ -21,7 +21,7 @@
 
 DROP TABLE IF EXISTS `ram_applicationfiletype`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_applicationfiletype` (
   `id` int NOT NULL AUTO_INCREMENT,
   `applicationId` int NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE `ram_applicationfiletype` (
   KEY `fk_applicationfiletype_filetype_idx` (`filetypeId`),
   CONSTRAINT `fk_applicationfiletype_app` FOREIGN KEY (`applicationId`) REFERENCES `ram_applications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_applicationfiletype_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=117 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +44,7 @@ CREATE TABLE `ram_applicationfiletype` (
 
 DROP TABLE IF EXISTS `ram_applications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_applications` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE `ram_applications` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   UNIQUE KEY `exec_unique` (`executableFilePath`,`shortName`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -66,7 +66,7 @@ CREATE TABLE `ram_applications` (
 
 DROP TABLE IF EXISTS `ram_assetgroups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_assetgroups` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -80,7 +80,7 @@ CREATE TABLE `ram_assetgroups` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_assetgroups_projectid_idx` (`projectId`),
   CONSTRAINT `fk_assetgroups_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -89,7 +89,7 @@ CREATE TABLE `ram_assetgroups` (
 
 DROP TABLE IF EXISTS `ram_assets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_assets` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -114,7 +114,7 @@ CREATE TABLE `ram_assets` (
 
 DROP TABLE IF EXISTS `ram_assetstatuses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_assetstatuses` (
   `id` int NOT NULL AUTO_INCREMENT,
   `assetId` int NOT NULL,
@@ -133,7 +133,7 @@ CREATE TABLE `ram_assetstatuses` (
 
 DROP TABLE IF EXISTS `ram_colorspaces`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_colorspaces` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -145,7 +145,7 @@ CREATE TABLE `ram_colorspaces` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `name_UNIQUE` (`name`,`shortName`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -154,7 +154,7 @@ CREATE TABLE `ram_colorspaces` (
 
 DROP TABLE IF EXISTS `ram_filetypes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_filetypes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE `ram_filetypes` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   UNIQUE KEY `filetypeName` (`name`,`shortName`)
-) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=38 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -177,7 +177,7 @@ CREATE TABLE `ram_filetypes` (
 
 DROP TABLE IF EXISTS `ram_pipes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_pipes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -198,7 +198,7 @@ CREATE TABLE `ram_pipes` (
   CONSTRAINT `fk_pipes_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=128 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=128 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -207,7 +207,7 @@ CREATE TABLE `ram_pipes` (
 
 DROP TABLE IF EXISTS `ram_projectassetgroup`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_projectassetgroup` (
   `id` int NOT NULL AUTO_INCREMENT,
   `projectId` int NOT NULL,
@@ -220,7 +220,7 @@ CREATE TABLE `ram_projectassetgroup` (
   KEY `fk_assetgroupId_idx` (`assetgroupId`),
   CONSTRAINT `fk_assetgroupId_projectassetgroup` FOREIGN KEY (`assetgroupId`) REFERENCES `ram_templateassetgroups` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_projectId_projectassetgroup` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -229,7 +229,7 @@ CREATE TABLE `ram_projectassetgroup` (
 
 DROP TABLE IF EXISTS `ram_projects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_projects` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -251,7 +251,7 @@ CREATE TABLE `ram_projects` (
 
 DROP TABLE IF EXISTS `ram_projectshot`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_projectshot` (
   `id` int NOT NULL AUTO_INCREMENT,
   `shotId` int NOT NULL,
@@ -271,7 +271,7 @@ CREATE TABLE `ram_projectshot` (
 
 DROP TABLE IF EXISTS `ram_sequences`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_sequences` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -285,7 +285,7 @@ CREATE TABLE `ram_sequences` (
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   KEY `fk_sequences_projectid_idx` (`projectId`),
   CONSTRAINT `fk_sequences_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -294,7 +294,7 @@ CREATE TABLE `ram_sequences` (
 
 DROP TABLE IF EXISTS `ram_shots`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_shots` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -313,7 +313,7 @@ CREATE TABLE `ram_shots` (
 
 DROP TABLE IF EXISTS `ram_states`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_states` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -335,7 +335,7 @@ CREATE TABLE `ram_states` (
 
 DROP TABLE IF EXISTS `ram_stepapplication`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_stepapplication` (
   `id` int NOT NULL AUTO_INCREMENT,
   `applicationId` int NOT NULL,
@@ -348,7 +348,7 @@ CREATE TABLE `ram_stepapplication` (
   KEY `fk_stepapplication_step_idx` (`stepId`),
   CONSTRAINT `fk_stepapplication_app` FOREIGN KEY (`applicationId`) REFERENCES `ram_applications` (`id`),
   CONSTRAINT `fk_stepapplication_step` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -357,7 +357,7 @@ CREATE TABLE `ram_stepapplication` (
 
 DROP TABLE IF EXISTS `ram_steps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_steps` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -382,7 +382,7 @@ CREATE TABLE `ram_steps` (
 
 DROP TABLE IF EXISTS `ram_stepuser`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_stepuser` (
   `id` int NOT NULL AUTO_INCREMENT,
   `stepId` int NOT NULL,
@@ -396,7 +396,7 @@ CREATE TABLE `ram_stepuser` (
   KEY `fk_stepuser_userId_idx` (`userId`),
   CONSTRAINT `fk_stepuser_stepId` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_stepuser_userId` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -405,7 +405,7 @@ CREATE TABLE `ram_stepuser` (
 
 DROP TABLE IF EXISTS `ram_templateassetgroups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_templateassetgroups` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -417,7 +417,7 @@ CREATE TABLE `ram_templateassetgroups` (
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `shortName_UNIQUE` (`shortName`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -426,7 +426,7 @@ CREATE TABLE `ram_templateassetgroups` (
 
 DROP TABLE IF EXISTS `ram_templatesteps`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_templatesteps` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) NOT NULL,
@@ -439,7 +439,7 @@ CREATE TABLE `ram_templatesteps` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -448,7 +448,7 @@ CREATE TABLE `ram_templatesteps` (
 
 DROP TABLE IF EXISTS `ram_users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
+/*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_users` (
   `id` int NOT NULL AUTO_INCREMENT,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
