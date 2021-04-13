@@ -7,7 +7,7 @@
 
 	try
 	{
-		$db = new PDO('mysql:host=' . $sqlHost . ';dbname=' . $sqlDBName . ';charset=utf8', $sqlUser, $sqlpassword,array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+		$db = new PDO('mysql:host=' . $sqlHost . ';dbname=' . $sqlDBName . ';charset=utf8', $sqlUser, $sqlpassword,array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'utf8'"));
 	}
 	catch (Exception $e)
 	{

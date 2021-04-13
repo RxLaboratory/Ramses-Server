@@ -187,6 +187,21 @@
 			// Only if lead
             if ( isLead() )
 			{
+				// Get previous order
+				$qString = "SELECT `order`, `sequenceId`
+					FROM {$shotsTable}
+					WHERE `uuid` = :uuid;";
+				$rep = $db->prepare($qString);
+				$rep->execute(array('uuid' => $uuid));
+				$previous = -1;
+				$sequenceId = -1;
+				if ($r = $rep->fetch())
+				{
+					$previous = (int)$r['order'];
+					$sequenceId = (int)$r['sequenceId'];
+				}
+				$rep->closeCursor();
+
 				// Update
 				$order = (int)$order;
 
@@ -195,32 +210,32 @@
 					//Move all other shots
 					$qString = "UPDATE {$shotsTable}
 						SET
-							order = order + 1
+							`order` = `order` + 1
 						WHERE
-							order >= :order
+							`order` >= :order
 							AND
-							order < (SELECT order FROM {$shotsTable} WHERE uuid = :uuid)
+							`order` < :previous
 							AND
-							sequenceId = (SELECT sequenceId FROM {$shotsTable} WHERE uuid = :uuid);";
-					$values = array('order' => $order);
+							`sequenceId` = :sequenceId;";
+					$values = array('order' => $order, 'previous' => $previous, 'sequenceId' => $sequenceId);
 
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
 					$rep->closeCursor();
 				}
-				else 
+				else if ($previous >= 0)
 				{
 					//Move all other shots
 					$qString = "UPDATE {$shotsTable}
 						SET
-							order = order - 1
+							`order` = `order` - 1
 						WHERE
-							order <= :order
+							`order` <= :order
 							AND
-							order > (SELECT order FROM {$shotsTable} WHERE uuid = :uuid)
+							`order` > :previous
 							AND
-							sequenceId = (SELECT sequenceId FROM {$shotsTable} WHERE uuid = :uuid);";
-					$values = array('order' => $order);
+							`sequenceId` = :sequenceId;";
+					$values = array('order' => $order, 'previous' => $previous, 'sequenceId' => $sequenceId);
 
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
@@ -229,8 +244,8 @@
 
 				//Move given shot
 				$qString = "UPDATE {$shotsTable}
-					SET order = :order
-					WHERE uuid = :uuid;";
+					SET `order` = :order
+					WHERE `uuid` = :uuid;";
 				$values = array('order'  => $order,'uuid'  => $uuid);
 
 				$rep = $db->prepare($qString);
