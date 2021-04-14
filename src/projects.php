@@ -231,7 +231,7 @@
 				{$shotsTable}.`order`
 			FROM {$shotsTable}
 			WHERE `sequenceId` = " . $sid . " AND `removed` = 0
-			ORDER BY `order`;";
+			ORDER BY `sequenceId`, `order`, `shortName`;";
 
 		$repShots = $db->query( $qString );
 
