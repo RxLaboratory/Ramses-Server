@@ -111,11 +111,13 @@
 				)
 				AS newAsset
 				ON DUPLICATE KEY UPDATE
-					`shortName` = newAsset.`shortName`,
 					`name` = newAsset.`name`,
 					`tags` = newAsset.`tags`,
 					`assetGroupId` = newAsset.`assetGroupId`,
-					`removed` = 0;";
+					`removed` = 0;
+				UPDATE {$assetsTable}
+				SET `shortName` = :shortName
+				WHERE `uuid` = :uuid;";
 
 				$values = array('name' => $name,'shortName' => $shortName, 'tags' => $tags, 'assetGroupUuid' => $assetGroupUuid, 'uuid' => $uuid);
 
