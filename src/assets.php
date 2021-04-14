@@ -21,6 +21,9 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+	$assetsTable = $tablePrefix . "assets";
+	$assetGroupsTable = $tablePrefix . "assetgroups";
+
 	// ========= CREATE ASSET ==========
 	if (isset($_GET["createAsset"]))
 	{
@@ -38,12 +41,13 @@
 			// Only if lead
             if ( isLead() )
             {
-				$qString = "INSERT INTO " . $tablePrefix . "assets (name, shortName, assetGroupId, tags, uuid)
+				$qString = "INSERT INTO {$assetsTable} (`name`, `shortName`, `assetGroupId`, `tags`, `uuid`)
 				VALUES (
 					:name,
 					:shortName,
-					(SELECT " . $tablePrefix . "assetgroups.id FROM " . $tablePrefix . "assetgroups WHERE uuid = :assetGroupUuid ),
+					(SELECT {$assetGroupsTable}.`id` FROM {$assetGroupsTable} WHERE `uuid` = :assetGroupUuid ),
 					:tags,";
+				
 				$values = array( 'name' => $name,'shortName' => $shortName, 'assetGroupUuid' => $assetGroupUuid, 'tags' => $tags);
 
 				if (strlen($uuid) > 0)
@@ -97,18 +101,25 @@
 			// Only if lead
             if ( isLead() )
             {
-				$qString = "UPDATE " . $tablePrefix . "assets
-				SET
-					`name`= :name ,
-					`shortName`= :shortName,
-					`tags` = :tags,
-					`assetGroupId` = (SELECT " . $tablePrefix . "assetgroups.id FROM " . $tablePrefix . "assetgroups WHERE uuid = :assetGroupUuid )
-				WHERE
-					uuid= :uuid ;";
+				$qString = "INSERT INTO {$assetsTable} (`name`, `shortName`, `tags`, `uuid`, `assetGroupId`)
+				VALUES(
+					:name ,
+					:shortName,
+					:tags,
+					:uuid,
+					(SELECT {$assetGroupsTable}.`id` FROM {$assetGroupsTable} WHERE `uuid` = :assetGroupUuid )
+				)
+				AS newAsset
+				ON DUPLICATE KEY UPDATE
+					`shortName` = newAsset.`shortName`,
+					`name` = newAsset.`name`,
+					`tags` = newAsset.`tags`,
+					`assetGroupId` = newAsset.`assetGroupId`,
+					`removed` = 0;";
+
 				$values = array('name' => $name,'shortName' => $shortName, 'tags' => $tags, 'assetGroupUuid' => $assetGroupUuid, 'uuid' => $uuid);
 
                 $rep = $db->prepare($qString);
-				
                 $rep->execute($values);
                 $rep->closeCursor();
 
@@ -161,216 +172,4 @@
 			$reply["success"] = false;
 		}
 	}
-/*
-	// TODO shot - Asset assignment
-	if ($reply["type"] == "assignAsset")
-	{
-		$reply["accepted"] = true;
-
-		$assetId = "";
-		$shotId = "";
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'assetId'})) $assetId = $data->{'assetId'};
-			if (isset($data->{'shotId'})) $shotId = $data->{'shotId'};
-		}
-
-		if (strlen($assetId) > 0 AND strlen($shotId) > 0)
-		{
-			$q = "INSERT INTO " . $tablePrefix . "assetstatuses (shotId,assetId)
-			VALUES (
-				 ( SELECT id FROM " . $tablePrefix . "shots WHERE uuid = :shotId ) ,
-				 ( SELECT id FROM " . $tablePrefix . "assets WHERE uuid = :assetId )
-				 ) ON DUPLICATE KEY UPDATE shotId = VALUES(shotId);";
-
-			$rep = $db->prepare($q);
-			$rep->execute(array('shotId' => $shotId , 'assetId' => $assetId));
-			$rep->closeCursor();
-			$reply["message"] = "Asset assigned.";
-			$reply["success"] = true;
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values.";
-			$reply["success"] = false;
-		}
-	}
-
-	if ($reply["type"] == "assignAssets")
-	{
-		$reply["accepted"] = true;
-
-		$assignments = array();
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'assignments'})) $assignments = $data->{'assignments'};
-		}
-
-		if (count($assignments) > 0)
-		{
-			$q = "INSERT INTO " . $tablePrefix . "assetstatuses (shotId,assetId) VALUES ";
-			$placeHolder = "(( SELECT id FROM " . $tablePrefix . "shots WHERE uuid = ? ),( SELECT id FROM " . $tablePrefix . "assets WHERE uuid = ? ))";
-
-			$placeHolders = array();
-			$values = array();
-			foreach($assignments as $assignment)
-			{
-				$placeHolders[] = $placeHolder;
-				$values[] = $assignment->{'shotId'};
-				$values[] = $assignment->{'assetId'};
-			}
-
-			$q = $q . implode(",",$placeHolders);
-			$q = $q . " ON DUPLICATE KEY UPDATE shotId = VALUES(shotId);";
-
-			$rep = $db->prepare($q);
-			$rep->execute($values);
-			$rep->closeCursor();
-			$reply["message"] = "Assets assigned.";
-			$reply["success"] = true;
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-	}
-
-	if ($reply["type"] == "addAssignAssets")
-	{
-		$reply["accepted"] = true;
-
-		$assets = array();
-		$stageId = "";
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'assets'})) $assets = $data->{'assets'};
-			if (isset($data->{'stageId'})) $stageId = $data->{'stageId'};
-		}
-
-		if (strlen($stageId) > 0 AND count($assets) > 0)
-		{
-			$qAdd = "INSERT INTO " . $tablePrefix . "assets (name,shortName,statusId,comment,uuid,stageId) VALUES ";
-			$qAssign = "INSERT INTO " . $tablePrefix . "assetstatuses (shotId,assetId) VALUES ";
-			$placeHolderAdd = "(?,?,( SELECT id FROM " . $tablePrefix . "status WHERE uuid = ? ),?,?,( SELECT id FROM " . $tablePrefix . "stages WHERE uuid = ? ))";
-			$placeHolderAssign = "(( SELECT id FROM " . $tablePrefix . "shots WHERE uuid = ? ),( SELECT id FROM " . $tablePrefix . "assets WHERE uuid = ? ))";
-
-			$placeHoldersAdd = array();
-			$placeHoldersAssign = array();
-			$values = array();
-
-			//add values
-			foreach($assets as $asset)
-			{
-				$placeHoldersAdd[] = $placeHolderAdd;
-				$values[] = $asset->{'name'};
-				$values[] = $asset->{'shortName'};
-				$values[] = $asset->{'statusId'};
-				$values[] = $asset->{'comment'};
-				$values[] = $asset->{'uuid'};
-				$values[] = $stageId;
-			}
-			//assign values
-			foreach($assets as $asset)
-			{
-				$placeHoldersAssign[] = $placeHolderAssign;
-				$values[] = $asset->{'shotId'};
-				$values[] = $asset->{'uuid'};
-			}
-
-			$qAdd = $qAdd . implode(",",$placeHoldersAdd);
-			$qAdd = $qAdd . " ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);\n";
-			$qAssign = $qAssign . implode(",",$placeHoldersAssign);
-			$qAssign = $qAssign . " ON DUPLICATE KEY UPDATE shotId = VALUES(shotId);";
-			$q = $qAdd . $qAssign;
-
-			$rep = $db->prepare($q);
-			$rep->execute($values);
-			$rep->closeCursor();
-			$reply["message"] = "Assets added and assigned.";
-			$reply["success"] = true;
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
-	}
-
-	if ($reply["type"] == "unAssignAsset")
-	{
-		$reply["accepted"] = true;
-
-		$assetId = "";
-		$shotId = "";
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			$assetId = $data->{'assetId'};
-			$shotId = $data->{'shotId'};
-		}
-
-		if (strlen($assetId) > 0 AND strlen($shotId) > 0)
-		{
-			$q = "DELETE " . $tablePrefix . "assetstatuses FROM " . $tablePrefix . "assetstatuses WHERE shotId = ( SELECT id FROM " . $tablePrefix . "shots WHERE uuid = :shotId ) AND assetId = ( SELECT id FROM " . $tablePrefix . "assets WHERE uuid = :assetId ) ;";
-
-			$rep = $db->prepare($q);
-			$rep->execute(array('shotId' => $shotId , 'assetId' => $assetId));
-			$rep->closeCursor();
-			$reply["message"] = "Asset un-assigned.";
-			$reply["success"] = true;
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values.";
-			$reply["success"] = false;
-		}
-
-
-
-	}
-
-	// TODO Asset statuses
-	if ($reply["type"] == "setAssetStatus")
-	{
-		$reply["accepted"] = true;
-
-		$assetId = "";
-		$statusId = "";
-
-		$data = json_decode(file_get_contents('php://input'));
-		if ($data)
-		{
-			if (isset($data->{'statusId'})) $statusId = $data->{'statusId'};
-			if (isset($data->{'assetId'})) $assetId = $data->{'assetId'};
-		}
-
-		if (strlen($statusId) > 0 AND strlen($assetId) > 0)
-		{
-			$q = "UPDATE " . $tablePrefix . "assets SET statusId= ( SELECT id FROM " . $tablePrefix . "status WHERE uuid = :statusId ) WHERE uuid= :assetId ;";
-
-			$rep = $db->prepare($q);
-			$rep->execute(array('statusId' => $statusId, 'assetId' => $assetId));
-			$rep->closeCursor();
-
-			$reply["message"] = "Status for the asset (id:" . $assetId . ") has been updated.";
-			$reply["success"] = true;
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values.";
-			$reply["success"] = false;
-		}
-	}*/
 ?>
