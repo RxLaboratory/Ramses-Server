@@ -21,6 +21,8 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+	$projectsTable = $tablePrefix . "projects";
+
 	// ========= Functions ===============
 	function getSteps( $pid, $puuid )
 	{
@@ -262,6 +264,10 @@
 		$project['shortName'] = $sqlRep['shortName'];
 		$project['folderPath'] = $sqlRep['folderPath'];
 		$project['uuid'] = $sqlRep['uuid'];
+		$project['framerate'] = $sqlRep['framerate'];
+		$project['width'] = (int)$sqlRep['width'];
+		$project['height'] = (int)$sqlRep['height'];
+		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
 
 		$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
 		$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
@@ -328,7 +334,11 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getProjects";
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE removed = 0 ORDER BY `shortName`,`name`;");
+		$rep = $db->query("SELECT
+				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`
+			FROM {$projectsTable}
+			WHERE removed = 0
+			ORDER BY `shortName`,`name`;");
 
 		$projects = array();
 		while ($p = $rep->fetch()) $projects[] = getProject( $p );
@@ -348,7 +358,11 @@
 
 		$uuid = $_GET["uuid"] ?? "";
 	
-		$rep = $db->prepare("SELECT `name`,`shortName`,`uuid`,`folderPath`,`id` FROM " . $tablePrefix . "projects WHERE `uuid` = :uuid ;");
+		$rep = $db->prepare("SELECT
+				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`
+			FROM {$projectsTable}
+			WHERE `uuid` = :uuid ;");
+
 		$rep->execute( array('uuid' => $uuid) );
 		$p = $rep->fetch();
 		$rep->closeCursor();
@@ -368,19 +382,49 @@
 		$shortName = $_GET["shortName"] ?? "";
 		$uuid = $_GET["uuid"] ?? "";
 		$folderPath = $_GET["folderPath"] ?? "";
+		$framerate = $_GET["framerate"] ?? "";
+		$width = $_GET["width"] ?? "";
+		$height = $_GET["height"] ?? "";
+		$aspectRatio = $_GET["aspectRatio"] ?? "";
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "projects SET name= :name ,shortName= :shortName";
+				$qString = "UPDATE {$projectsTable}
+					SET `name`= :name ,`shortName`= :shortName";
+
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
 
 				if (strlen($folderPath) > 0)
                 {
-                    $qString = $qString . ", folderPath= :folderPath";
+                    $qString = $qString . ", `folderPath`= :folderPath";
                     $values["folderPath"] = $folderPath;
+                }
+
+				if (strlen($framerate) > 0)
+                {
+                    $qString = $qString . ", `framerate`= :framerate";
+                    $values["framerate"] = $framerate;
+                }
+
+				if (strlen($width) > 0)
+                {
+                    $qString = $qString . ", `width`= :width";
+                    $values["width"] = $width;
+                }
+
+				if (strlen($height) > 0)
+                {
+                    $qString = $qString . ", `height`= :height";
+                    $values["height"] = $height;
+                }
+
+				if (strlen($aspectRatio) > 0)
+                {
+                    $qString = $qString . ", `aspectRatio`= :aspectRatio";
+                    $values["aspectRatio"] = $aspectRatio;
                 }
 
 				$qString = $qString . " WHERE uuid= :uuid ;";
