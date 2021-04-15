@@ -264,7 +264,7 @@
 		$project['shortName'] = $sqlRep['shortName'];
 		$project['folderPath'] = $sqlRep['folderPath'];
 		$project['uuid'] = $sqlRep['uuid'];
-		$project['framerate'] = $sqlRep['framerate'];
+		$project['framerate'] = (float)$sqlRep['framerate'];
 		$project['width'] = (int)$sqlRep['width'];
 		$project['height'] = (int)$sqlRep['height'];
 		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
