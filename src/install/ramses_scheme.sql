@@ -108,26 +108,7 @@ CREATE TABLE `ram_assets` (
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `fk_assets_assgroup_idx` (`assetGroupId`),
   CONSTRAINT `fk_assets_assgroup` FOREIGN KEY (`assetGroupId`) REFERENCES `ram_assetgroups` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `ram_assetstatuses`
---
-
-DROP TABLE IF EXISTS `ram_assetstatuses`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8 */;
-CREATE TABLE `ram_assetstatuses` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `assetId` int NOT NULL,
-  `shotId` int NOT NULL,
-  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `removed` tinyint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `assetId` (`assetId`,`shotId`) USING BTREE,
-  KEY `shotId` (`shotId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=82 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -203,7 +184,7 @@ CREATE TABLE `ram_pipes` (
   CONSTRAINT `fk_pipes_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=280 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=512 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -256,26 +237,6 @@ CREATE TABLE `ram_projects` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ram_projectshot`
---
-
-DROP TABLE IF EXISTS `ram_projectshot`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8 */;
-CREATE TABLE `ram_projectshot` (
-  `id` int NOT NULL AUTO_INCREMENT,
-  `shotId` int NOT NULL,
-  `projectId` int NOT NULL,
-  `shotOrder` int NOT NULL,
-  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `removed` tinyint NOT NULL DEFAULT '0',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `shotId` (`shotId`,`projectId`),
-  KEY `projectId` (`projectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `ram_sequences`
 --
 
@@ -320,7 +281,7 @@ CREATE TABLE `ram_shots` (
   UNIQUE KEY `uuid` (`uuid`),
   KEY `fk_shots_sequence_idx` (`sequenceId`),
   CONSTRAINT `fk_shots_sequence` FOREIGN KEY (`sequenceId`) REFERENCES `ram_sequences` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -341,8 +302,45 @@ CREATE TABLE `ram_states` (
   `removed` tinyint NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`,`shortName`),
-  UNIQUE KEY `uuid` (`uuid`)
+  UNIQUE KEY `uuid` (`uuid`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ram_status`
+--
+
+DROP TABLE IF EXISTS `ram_status`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8 */;
+CREATE TABLE `ram_status` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) NOT NULL,
+  `completionRatio` tinyint(1) NOT NULL DEFAULT '-1',
+  `userId` int NOT NULL,
+  `stateId` int NOT NULL,
+  `comment` text,
+  `version` int NOT NULL DEFAULT '1',
+  `stepId` int NOT NULL,
+  `assetId` int DEFAULT NULL,
+  `shotId` int DEFAULT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  KEY `fk_status_user_idx` (`userId`),
+  KEY `fk_status_state_idx` (`stateId`),
+  KEY `fk_status_step_idx` (`stepId`),
+  KEY `fk_status_asset_idx` (`assetId`),
+  KEY `fk_status_shot_idx` (`shotId`),
+  CONSTRAINT `fk_status_asset` FOREIGN KEY (`assetId`) REFERENCES `ram_assets` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  CONSTRAINT `fk_status_shot` FOREIGN KEY (`shotId`) REFERENCES `ram_shots` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_status_state` FOREIGN KEY (`stateId`) REFERENCES `ram_states` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_status_step` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_status_user` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -364,7 +362,7 @@ CREATE TABLE `ram_stepapplication` (
   KEY `fk_stepapplication_step_idx` (`stepId`),
   CONSTRAINT `fk_stepapplication_app` FOREIGN KEY (`applicationId`) REFERENCES `ram_applications` (`id`),
   CONSTRAINT `fk_stepapplication_step` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -412,7 +410,7 @@ CREATE TABLE `ram_stepuser` (
   KEY `fk_stepuser_userId_idx` (`userId`),
   CONSTRAINT `fk_stepuser_stepId` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_stepuser_userId` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=35 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=39 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -501,4 +499,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-04-14 13:37:44
+-- Dump completed on 2021-04-22 21:26:31
