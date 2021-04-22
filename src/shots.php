@@ -323,7 +323,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "setShotStatus";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = $_GET["uuid"] ?? uuid() ;
 		$shotUuid = $_GET["shotUuid"] ?? "";
 		$completionRatio = $_GET["completionRatio"] ?? -1;
 		$userUuid = $_GET["userUuid"] ?? $_SESSION["userUuid"];

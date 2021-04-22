@@ -178,7 +178,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "setAssetStatus";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = $_GET["uuid"] ?? uuid();
 		$assetUuid = $_GET["assetUuid"] ?? "";
 		$completionRatio = $_GET["completionRatio"] ?? -1;
 		$userUuid = $_GET["userUuid"] ?? $_SESSION["userUuid"];
