@@ -316,4 +316,71 @@
 			$reply["success"] = false;
 		}
 	}
+
+	// ========= SET STATUS ==========
+	else if (isset($_GET["setShotStatus"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setShotStatus";
+
+		$uuid = $_GET["uuid"] ?? "";
+		$shotUuid = $_GET["shotUuid"] ?? "";
+		$completionRatio = $_GET["completionRatio"] ?? -1;
+		$userUuid = $_GET["userUuid"] ?? $_SESSION["userUuid"];
+		$stateUuid = $_GET["stateUuid"] ?? "";
+		$comment = $_GET["comment"] ?? "";
+		$version = $_GET["version"] ?? 1;
+		$stepUuid = $_GET["stepUuid"] ?? 1;
+
+		if (strlen($shotUuid) > 0 && strlen($userUuid) > 0 && strlen($stateUuid) > 0 && strlen($stepUuid) > 0 )
+		{
+			$qString = "INSERT INTO {$statusTable} (
+				`uuid`,
+				`completionRatio`,
+				`userId`,
+				`stateId`,
+				`comment`,
+				`version`,
+				`stepId`,
+				`shotId`
+				)
+				VALUES(
+					:uuid ,
+					:completionRatio,
+					SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid,
+					SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid,
+					:comment,
+					:version,
+					SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid,
+					SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :shotUuid
+				)
+				AS newStatus
+				ON DUPLICATE KEY UPDATE
+					`comment` = newStatus.`comment`,
+					`completionRatio` = newStatus.`completionRatio`,
+					`version` = newStatus.`version`,
+					`removed` = 0;";
+
+			$rep = $db->prepare($qString);
+			$rep->execute(array(
+				'uuid' => $uuid,
+				'completionRation' => $completionRatio,
+				'userUuid' => $userUuid,
+				'stateUuid' => $stateUuid,
+				'comment' => $comment,
+				'stepUuid' => $stepUuid,
+				'version' => $version,
+				'shotUuid' => $shotUuid
+			));
+			$rep->closeCursor();
+
+			$reply["message"] = "Shot status updated.";
+			$reply["success"] = true;
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
 ?>

@@ -21,9 +21,6 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	$assetsTable = $tablePrefix . "assets";
-	$assetGroupsTable = $tablePrefix . "assetgroups";
-
 	// ========= CREATE ASSET ==========
 	if (isset($_GET["createAsset"]))
 	{
@@ -45,7 +42,7 @@
 				VALUES (
 					:name,
 					:shortName,
-					(SELECT {$assetGroupsTable}.`id` FROM {$assetGroupsTable} WHERE `uuid` = :assetGroupUuid ),
+					(SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE `uuid` = :assetGroupUuid ),
 					:tags,";
 				
 				$values = array( 'name' => $name,'shortName' => $shortName, 'assetGroupUuid' => $assetGroupUuid, 'tags' => $tags);
@@ -107,7 +104,7 @@
 					:shortName,
 					:tags,
 					:uuid,
-					(SELECT {$assetGroupsTable}.`id` FROM {$assetGroupsTable} WHERE `uuid` = :assetGroupUuid )
+					(SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE `uuid` = :assetGroupUuid )
 				)
 				AS newAsset
 				ON DUPLICATE KEY UPDATE
@@ -167,6 +164,73 @@
                 $reply["message"] = "Insufficient rights, you need to be Lead to remove assets.";
                 $reply["success"] = false;
             }
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= SET STATUS ==========
+	else if (isset($_GET["setAssetStatus"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setAssetStatus";
+
+		$uuid = $_GET["uuid"] ?? "";
+		$assetUuid = $_GET["assetUuid"] ?? "";
+		$completionRatio = $_GET["completionRatio"] ?? -1;
+		$userUuid = $_GET["userUuid"] ?? $_SESSION["userUuid"];
+		$stateUuid = $_GET["stateUuid"] ?? "";
+		$comment = $_GET["comment"] ?? "";
+		$version = $_GET["version"] ?? 1;
+		$stepUuid = $_GET["stepUuid"] ?? 1;
+
+		if (strlen($assetUuid) > 0 && strlen($userUuid) > 0 && strlen($stateUuid) > 0 && strlen($stepUuid) > 0 )
+		{
+			$qString = "INSERT INTO {$statusTable} (
+				`uuid`,
+				`completionRatio`,
+				`userId`,
+				`stateId`,
+				`comment`,
+				`version`,
+				`stepId`,
+				`assetId`
+				)
+				VALUES(
+					:uuid ,
+					:completionRatio,
+					SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid,
+					SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid,
+					:comment,
+					:version,
+					SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid,
+					SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid
+				)
+				AS newStatus
+				ON DUPLICATE KEY UPDATE
+					`comment` = newStatus.`comment`,
+					`completionRatio` = newStatus.`completionRatio`,
+					`version` = newStatus.`version`,
+					`removed` = 0;";
+
+			$rep = $db->prepare($qString);
+			$rep->execute(array(
+				'uuid' => $uuid,
+				'completionRation' => $completionRatio,
+				'userUuid' => $userUuid,
+				'stateUuid' => $stateUuid,
+				'comment' => $comment,
+				'stepUuid' => $stepUuid,
+				'version' => $version,
+				'assetUuid' => $assetUuid
+			));
+			$rep->closeCursor();
+
+			$reply["message"] = "Asset status updated.";
+			$reply["success"] = true;
 		}
 		else
 		{

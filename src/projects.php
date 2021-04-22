@@ -166,7 +166,8 @@
 				" . $tablePrefix . "assets.`uuid`,
 				" . $tablePrefix . "assets.`name`,
 				" . $tablePrefix . "assets.`shortName`,
-				" . $tablePrefix . "assets.`tags`
+				" . $tablePrefix . "assets.`tags`,
+				" . $tablePrefix . "assets.`id`
 			FROM " . $tablePrefix . "assets
 			WHERE `assetGroupId`=" . $aid . " AND `removed` = 0
 			ORDER BY `shortName`, `name`;";
@@ -179,11 +180,54 @@
 			$asset['name'] = $a['name'];
 			$asset['tags'] = $a['tags'];
 			$asset['assetGroupUuid'] = $auuid;
+			$asset['statusHistory'] = getAssetStatusHistory( $a['id'], $asset['uuid'] );
 			
 			$assets[] = $asset;
 		}
 
 		return $assets;
+	}
+
+	function getAssetStatusHistory( $aid, $auuid )
+	{
+		global $db, $statusTable, $usersTable, $statesTable, $stepsTable;
+
+		$statusHistory = array();
+		$qString = "SELECT
+				{$statusTable}.`uuid`,
+				{$statusTable}.`completionRatio`,
+				{$statusTable}.`comment`,
+				{$statusTable}.`version`,
+				{$statusTable}.`latestUpdate`,
+				{$usersTable}.`uuid` as `userUuid`,
+				{$statesTable}.`uuid` as `stateUuid`,
+				{$stepsTable}.`uuid` as `stepUuid`
+			FROM {$statusTable}
+			JOIN {$usersTable} ON {$usersTable}.`id` = {$statusTable}.`userId`
+			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
+			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
+			WHERE {$statusTable}.`assetId` = '" . $aid . "' AND {$statusTable}.`removed` = 0
+			ORDER BY `latestUpdate`;";
+
+		$repStatusHistory = $db->query( $qString );
+
+		while ($s = $repStatusHistory->fetch())
+		{
+			$status = array();
+			$status['uuid'] = $s['uuid'];
+			$status['completionRatio'] = $s['completionRatio'];
+			$status['comment'] = $s['comment'];
+			$status['version'] = (int)$s['version'];
+			$status['latestUpdate'] = $s['latestUpdate'];
+			$status['userUuid'] = $s['userUuid'];
+			$status['stateUuid'] = $s['stateUuid'];
+			$status['stepUuid'] = $s['stepUuid'];
+			$status['assetUuid'] = $auuid;
+
+			$statusHistory[] = $status;
+		}
+
+		return $statusHistory;
 	}
 
 	function getSequences($pid, $puuid)
@@ -253,6 +297,47 @@
 		$repShots->closeCursor();
 
 		return $shots;
+	}
+
+	function getShotStatusHistory( $sid, $suuid )
+	{
+		global $db, $statusTable, $usersTable, $statesTable, $stepsTable;
+
+		$statusHistory = array();
+		$qString = "SELECT
+				{$statusTable}.`uuid`,
+				{$statusTable}.`completionRatio`,
+				{$statusTable}.`comment`,
+				{$statusTable}.`version`,
+				{$statusTable}.`latestUpdate`,
+				{$usersTable}.`uuid` as `userUuid`,
+				{$statesTable}.`uuid` as `stateUuid`,
+				{$stepsTable}.`uuid` as `stepUuid`
+			FROM {$statusTable}
+			JOIN {$usersTable} ON {$usersTable}.`id` = {$statusTable}.`userId`
+			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
+			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
+			WHERE {$statusTable}.`shotId` = '" . $sid . "' AND {$statusTable}.`removed` = 0
+			ORDER BY `latestUpdate`;";
+		$repStatusHistory = $db->query( $qString );
+
+		while ($s = $repStatusHistory->fetch())
+		{
+			$status = array();
+			$status['uuid'] = $s['uuid'];
+			$status['completionRatio'] = $s['completionRatio'];
+			$status['comment'] = $s['comment'];
+			$status['version'] = (int)$s['version'];
+			$status['latestUpdate'] = $s['latestUpdate'];
+			$status['userUuid'] = $s['userUuid'];
+			$status['stateUuid'] = $s['stateUuid'];
+			$status['stepUuid'] = $s['stepUuid'];
+			$status['shotUuid'] = $suuid;
+
+			$statusHistory[] = $status;
+		}
+
+		return $statusHistory;
 	}
 
 	function getProject( $sqlRep )
