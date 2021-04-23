@@ -202,12 +202,12 @@
 				VALUES(
 					:uuid ,
 					:completionRatio,
-					SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid,
-					SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid,
+					(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid ),
+					(SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid ),
 					:comment,
 					:version,
-					SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid,
-					SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid
+					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid ),
+					(SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid )
 				)
 				AS newStatus
 				ON DUPLICATE KEY UPDATE
@@ -217,16 +217,16 @@
 					`removed` = 0;";
 
 			$rep = $db->prepare($qString);
-			$rep->execute(array(
-				'uuid' => $uuid,
-				'completionRation' => $completionRatio,
-				'userUuid' => $userUuid,
-				'stateUuid' => $stateUuid,
-				'comment' => $comment,
-				'stepUuid' => $stepUuid,
-				'version' => $version,
-				'assetUuid' => $assetUuid
-			));
+			$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+			$rep->bindValue(':completionRatio', $completionRatio, PDO::PARAM_INT);
+			$rep->bindValue(':stateUuid', $stateUuid, PDO::PARAM_STR);
+			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
+			$rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+			$rep->bindValue(':version', $version, PDO::PARAM_INT);
+			$rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
+			$rep->bindValue(':assetUuid', $assetUuid, PDO::PARAM_STR);
+			//$rep->debugDumpParams();
+			$rep->execute();
 			$rep->closeCursor();
 
 			$reply["message"] = "Asset status updated.";
