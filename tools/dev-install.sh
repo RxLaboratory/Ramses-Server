@@ -5,7 +5,7 @@
 # DO NOT USE THIS SCRIPT TO INSTALL THE SERVER IN PRODUCTION
 # as it does copy developmet scripts which are not secured (the "dev" folder)
 
-destination=/var/www
+destination=/var/www/html
 
 # php
 src=../src/
