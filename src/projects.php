@@ -215,7 +215,7 @@
 		{
 			$status = array();
 			$status['uuid'] = $s['uuid'];
-			$status['completionRatio'] = $s['completionRatio'];
+			$status['completionRatio'] = (int)$s['completionRatio'];
 			$status['comment'] = $s['comment'];
 			$status['version'] = (int)$s['version'];
 			$status['latestUpdate'] = $s['latestUpdate'];
@@ -325,7 +325,7 @@
 		{
 			$status = array();
 			$status['uuid'] = $s['uuid'];
-			$status['completionRatio'] = $s['completionRatio'];
+			$status['completionRatio'] = (int)$s['completionRatio'];
 			$status['comment'] = $s['comment'];
 			$status['version'] = (int)$s['version'];
 			$status['latestUpdate'] = $s['latestUpdate'];
