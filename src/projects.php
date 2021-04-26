@@ -198,7 +198,7 @@
 				{$statusTable}.`completionRatio`,
 				{$statusTable}.`comment`,
 				{$statusTable}.`version`,
-				{$statusTable}.`latestUpdate`,
+				{$statusTable}.`date`,
 				{$usersTable}.`uuid` as `userUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
 				{$stepsTable}.`uuid` as `stepUuid`
@@ -207,7 +207,7 @@
 			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
 			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
 			WHERE {$statusTable}.`assetId` = '" . $aid . "' AND {$statusTable}.`removed` = 0
-			ORDER BY `latestUpdate`;";
+			ORDER BY `date`;";
 
 		$repStatusHistory = $db->query( $qString );
 
@@ -218,7 +218,7 @@
 			$status['completionRatio'] = (int)$s['completionRatio'];
 			$status['comment'] = $s['comment'];
 			$status['version'] = (int)$s['version'];
-			$status['latestUpdate'] = $s['latestUpdate'];
+			$status['date'] = $s['date'];
 			$status['userUuid'] = $s['userUuid'];
 			$status['stateUuid'] = $s['stateUuid'];
 			$status['stepUuid'] = $s['stepUuid'];
@@ -309,7 +309,7 @@
 				{$statusTable}.`completionRatio`,
 				{$statusTable}.`comment`,
 				{$statusTable}.`version`,
-				{$statusTable}.`latestUpdate`,
+				{$statusTable}.`date`,
 				{$usersTable}.`uuid` as `userUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
 				{$stepsTable}.`uuid` as `stepUuid`
@@ -318,7 +318,7 @@
 			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
 			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
 			WHERE {$statusTable}.`shotId` = '" . $sid . "' AND {$statusTable}.`removed` = 0
-			ORDER BY `latestUpdate`;";
+			ORDER BY `date`;";
 		$repStatusHistory = $db->query( $qString );
 
 		while ($s = $repStatusHistory->fetch())
@@ -328,7 +328,7 @@
 			$status['completionRatio'] = (int)$s['completionRatio'];
 			$status['comment'] = $s['comment'];
 			$status['version'] = (int)$s['version'];
-			$status['latestUpdate'] = $s['latestUpdate'];
+			$status['date'] = $s['date'];
 			$status['userUuid'] = $s['userUuid'];
 			$status['stateUuid'] = $s['stateUuid'];
 			$status['stepUuid'] = $s['stepUuid'];
