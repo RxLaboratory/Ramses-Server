@@ -26,39 +26,37 @@
         $reply["accepted"] = true;
         $reply["query"] = "updateUser";
 
-        $name = "";
-        $shortName = "";
-        $uuid = "";
-        $role = "";
-        $folderPath = "";
+        $name = getArg( "name" );
+        $shortName = getArg( "shortName" );
+        $uuid = getArg( "uuid" );
+        $role = getArg( "role" );
+        $folderPath =getArg( "folderPath" );
 
-        if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
-        if (isset($_GET["role"])) $role = $_GET["role"];
-        if (isset($_GET["folderPath"])) $folderPath = $_GET["folderPath"];
-
-        if (strlen($shortName) > 0 AND strlen($uuid) > 0)
+        if ( $shortName != "" && $uuid != "")
         {
             // Only if self or admin
             if ( isSelf($uuid) || isAdmin() )
             {
-                $qString = "UPDATE " . $tablePrefix . "users SET shortName= :shortName ,name= :name";
-                $values = array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid);
+                $qString = "INSERT INTO {$usersTable} (`shortName`, `name`, `role`, `folderPath`, `uuid`, `password`)
+                    VALUES(
+                        :shortName,
+                        :name,
+                        :role,
+                        :folderPath,
+                        :uuid,
+                        ''
+                        )
+                    AS newUser
+                    ON DUPLICATE KEY UPDATE
+                        `name` = newUser.`name`,
+                        `role` = newUser.`role`,
+                        `folderPath` = newUser.`folderPath`,
+                        `removed` = 0;
+                    UPDATE {$usersTable}
+                    SET `shortName` = :shortName
+                    WHERE `uuid` = :uuid;";
 
-                if (strlen($role) > 0)
-                {
-                    $qString = $qString . ", role= :role";
-                    $values["role"] = $role;
-                }
-
-                if (strlen($folderPath) > 0)
-                {
-                    $qString = $qString . ", folderPath= :folderPath";
-                    $values["folderPath"] = $folderPath;
-                }
-
-                $qString = $qString . " WHERE uuid= :uuid ;";
+                $values = array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid, 'role' => $role, 'folderPath' => $folderPath);
 
                 $rep = $db->prepare($qString);
                 $rep->execute($values);
@@ -204,12 +202,16 @@
 
                 if (strlen($uuid) > 0)
                 {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , :uuid, :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password)
+                        VALUES ( :name , :shortName , :uuid, :password )
+                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), removed = 0, uuid = VALUES(uuid);";
                     $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password);
                 }
                 else
                 {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password) VALUES ( :name , :shortName , uuid(), :password ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password)
+                        VALUES ( :name , :shortName , uuid(), :password )
+                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), removed = 0, uuid = VALUES(uuid);";
                     $values = array('name' => $name,'shortName' => $shortName, 'password' => $password);
                 }
     
