@@ -85,9 +85,20 @@
        return substr( $string, -$length ) === $substring;
    }
 
+   /**
+    * Prepares the prefix for SQL table names (adds a "_" at the end if needed)
+    */
    function setupTablePrefix() {
         global $tablePrefix;
         if (strlen($tablePrefix) > 0 && !endsWith($tablePrefix, "_")) $tablePrefix = $tablePrefix . "_";
+   }
+
+   /**
+    * Gets an argument from the url
+    */
+   function getArg($name, $defaultValue = "")
+   {
+        return rawurldecode ( $_GET[$name] ?? $defaultValue );
    }
 
    /**

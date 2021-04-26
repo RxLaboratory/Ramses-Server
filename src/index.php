@@ -59,6 +59,7 @@
 			include ("applications.php");
 			include ("pipes.php");
 			include ("shots.php");
+			include ("status.php");
 		}
 		else if (!$reply["accepted"])
 		{
