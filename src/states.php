@@ -79,7 +79,12 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "getStates";
 
-		$rep = $db->query("SELECT name,shortName,color,completionRatio,uuid FROM " . $tablePrefix . "states WHERE removed = 0 ORDER BY shortName, name;");
+		$rep = $db->query( "SELECT
+			`name`, `shortName`, `color`, `completionRatio`, `uuid`
+			FROM {$statesTable}
+			WHERE `removed` = 0
+			ORDER BY `completionRatio`, `shortName`, `name` ;"
+			);
 		$states = Array();
 		while ($state = $rep->fetch())
 		{
@@ -130,7 +135,7 @@
 				if (strlen($completionRatio) > 0)
 				{
 					$qString = $qString . ", completionRatio= :completionRatio";
-					$values["completionRatio"] = $completionRatio;
+					$values["completionRatio"] = (int)$completionRatio;
 				}
 
 				$qString = $qString . " WHERE uuid= :uuid ;";
