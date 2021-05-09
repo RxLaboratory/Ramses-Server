@@ -179,10 +179,13 @@
 	}
 
     // ========= GET ==========
-    else if (isset($_GET["getApplications"]))
+    else if (isset($_GET["getApplications"]) || isset($_GET["init"]))
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "getApplications";
+        if (isset($_GET["getApplications"])) {
+            $reply["accepted"] = true;
+            $reply["query"] = "getApplications";
+        }
+        
         
         $rep = $db->prepare("SELECT
                 `name`,`shortName`,`executableFilePath`,`id`,`uuid`
@@ -208,9 +211,14 @@
 
         $rep->closeCursor();
 
-		$reply["content"] = $applications;
-		$reply["message"] = "Application list retrieved.";
-		$reply["success"] = true;
+        if (isset($_GET["getApplications"])) {
+            $reply["content"] = $applications;
+            $reply["message"] = "Application list retrieved.";
+            $reply["success"] = true;
+        } else {
+            $reply["content"]["applications"] = $applications;
+        }
+		
     }
 
     // ========= ASSIGN FILE TYPE ==========

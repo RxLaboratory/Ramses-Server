@@ -73,10 +73,14 @@
 	}
 
 	// ========= GET STEPS ==========
-	else if (isset($_GET["getTemplateSteps"]))
+	else if (isset($_GET["getTemplateSteps"]) || isset($_GET["init"]))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "getTemplateSteps";
+		if (isset($_GET["getTemplateSteps"]))
+		{
+			$reply["accepted"] = true;
+			$reply["query"] = "getTemplateSteps";
+		}
+		
 
 		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templatesteps WHERE removed = 0 ORDER BY shortName,name;");
 		$steps = Array();
@@ -91,9 +95,16 @@
 		}
 		$rep->closeCursor();
 
-		$reply["content"] = $steps;
-		$reply["message"] = "Steps list retreived";
-		$reply["success"] = true;
+		if (isset($_GET["getTemplateSteps"]))
+		{
+			$reply["content"] = $steps;
+			$reply["message"] = "Steps list retreived";
+			$reply["success"] = true;
+		}
+		else 
+		{
+			$reply["content"]["templateSteps"] = $steps;
+		}
 	}
 
 	// ========= UPDATE STEP ==========

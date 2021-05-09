@@ -67,10 +67,13 @@
     }
 
     // ========= GET TEMPLATE ASSET GROUPS ==========
-	else if (isset($_GET["getTemplateAssetGroups"]))
+	else if (isset($_GET["getTemplateAssetGroups"]) || isset($_GET["init"]))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "getTemplateAssetGroups";
+		if (isset($_GET["getTemplateAssetGroups"]))
+		{
+			$reply["accepted"] = true;
+			$reply["query"] = "getTemplateAssetGroups";
+		}
 
 		$rep = $db->query("SELECT `name`,`shortName`,`uuid` FROM " . $tablePrefix . "templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
 		$assetGroups = Array();
@@ -84,9 +87,15 @@
 		}
 		$rep->closeCursor();
 
-		$reply["content"] = $assetGroups;
-		$reply["message"] = "Asset groups list retreived";
-		$reply["success"] = true;
+		if (isset($_GET["getTemplateAssetGroups"]))
+		{
+			$reply["content"] = $assetGroups;
+			$reply["message"] = "Asset groups list retreived";
+			$reply["success"] = true;
+		}
+		else {
+			$reply["content"]["templateAssetGroups"] = $assetGroups;
+		}
 	}
 
 	// ========= UPDATE ASSET GROUP ==========

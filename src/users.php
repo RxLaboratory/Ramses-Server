@@ -150,10 +150,13 @@
             $reply["success"] = false;
         }
     }
-    else if (isset($_GET["getUsers"]))
+    else if (isset($_GET["getUsers"]) || isset($_GET["init"]))
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "getUsers";
+        if (isset($_GET["getUsers"]) )
+        {
+            $reply["accepted"] = true;
+            $reply["query"] = "getUsers";    
+        }
         
         $rep = $db->prepare("SELECT name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE removed = 0;");
         $rep->execute();
@@ -174,9 +177,16 @@
 
         $rep->closeCursor();
 
-		$reply["content"] = $users;
-		$reply["message"] = "Users list retrieved.";
-		$reply["success"] = true;
+        if (isset($_GET["getUsers"]) )
+        {
+            $reply["content"] = $users;
+            $reply["message"] = "Users list retrieved.";
+            $reply["success"] = true;
+        }
+        else 
+        {
+            $reply["content"]["users"] = $users;
+        }
     }
     else if (isset($_GET["createUser"]))
     {

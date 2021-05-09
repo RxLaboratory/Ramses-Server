@@ -154,10 +154,13 @@
 	}
 
     // ========= GET ==========
-    else if (isset($_GET["getFileTypes"]))
+    else if (isset($_GET["getFileTypes"]) || isset($_GET["init"]))
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "getFileTypes";
+        if (isset($_GET["getFileTypes"])) {
+            $reply["accepted"] = true;
+            $reply["query"] = "getFileTypes";
+        }
+        
         
         $rep = $db->prepare("SELECT
                 `name`,`shortName`,`extensions`,`previewable`,`uuid`
@@ -183,8 +186,12 @@
 
         $rep->closeCursor();
 
-		$reply["content"] = $filetypes;
-		$reply["message"] = "File types list retrieved.";
-		$reply["success"] = true;
+        if (isset($_GET["getFileTypes"])) {
+            $reply["content"] = $filetypes;
+            $reply["message"] = "File types list retrieved.";
+            $reply["success"] = true;
+        } else {
+            $reply["content"]["fileTypes"] = $filetypes;
+        }
     }
 ?>

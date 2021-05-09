@@ -40,4 +40,15 @@
             $reply["message"] = "The server is not installed!";
         }
     }
+
+    else if (isset($_GET["init"]))
+	{
+        $reply["accepted"] = true;
+		$reply["query"] = "init";
+
+        // The reply is completed in corresponding categories
+
+		$reply["message"] = "Initial data retrieved.";
+		$reply["success"] = true;
+    }
 ?>

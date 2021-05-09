@@ -340,7 +340,7 @@
 		return $statusHistory;
 	}
 
-	function getProject( $sqlRep )
+	function getProject( $sqlRep, $details=true )
 	{
 		global $tablePrefix, $db;
 
@@ -354,10 +354,17 @@
 		$project['height'] = (int)$sqlRep['height'];
 		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
 
-		$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
-		$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
-		$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
-		$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
+		if ($details) {
+			$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
+			$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
+			$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
+			$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
+		} else {
+			$project['steps'] = Array();
+			$project['pipes'] = Array();
+			$project['assetGroups'] = Array();
+			$project['sequences'] = Array();
+		}
 
 		return $project;
 	}
@@ -414,10 +421,13 @@
 	}
 
 	// ========= GET PROJECTS ==========
-	else if (isset($_GET["getProjects"]))
+	else if (isset($_GET["getProjects"]) || isset($_GET["init"]))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "getProjects";
+		if (isset($_GET["getProjects"])) {
+			$reply["accepted"] = true;
+			$reply["query"] = "getProjects";
+		}
+		
 
 		$rep = $db->query("SELECT
 				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`
@@ -426,13 +436,17 @@
 			ORDER BY `shortName`,`name`;");
 
 		$projects = array();
-		while ($p = $rep->fetch()) $projects[] = getProject( $p );
+		while ($p = $rep->fetch()) $projects[] = getProject( $p, false );
 
 		$rep->closeCursor();
 
-		$reply["content"] = $projects;
-		$reply["message"] = "Projects list retrieved";
-		$reply["success"] = true;
+		if (isset($_GET["getProjects"])) {
+			$reply["content"] = $projects;
+			$reply["message"] = "Projects list retrieved";
+			$reply["success"] = true;
+		} else {
+			$reply["content"]["projects"] = $projects;
+		}
 	}
 
 	// ========= GET SINGLE PROJECT ========

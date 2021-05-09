@@ -74,10 +74,13 @@
 	}
 
 	// ========= GET STATES ==========
-	else if (isset($_GET["getStates"]))
+	else if (isset($_GET["getStates"]) || isset($_GET["init"]))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "getStates";
+		if (isset($_GET["getStates"])) {
+			$reply["accepted"] = true;
+			$reply["query"] = "getStates";
+		}
+		
 
 		$rep = $db->query( "SELECT
 			`name`, `shortName`, `color`, `completionRatio`, `uuid`
@@ -98,9 +101,13 @@
 		}
 		$rep->closeCursor();
 
-		$reply["content"] = $states;
-		$reply["message"] = "States list retreived";
-		$reply["success"] = true;
+		if (isset($_GET["getStates"])) {
+			$reply["content"] = $states;
+			$reply["message"] = "States list retreived";
+			$reply["success"] = true;
+		} else {
+			$reply["content"]["states"] = $states;
+		}
 	}
 
 	// ========= UPDATE STATE ==========
