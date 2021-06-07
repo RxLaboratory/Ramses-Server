@@ -27,24 +27,24 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "createPipe";
 
-		$inputUuid = $_GET["inputUuid"] ?? "";
-		$outputUuid = $_GET["outputUuid"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$inputUuid = getArg ( "inputUuid" );
+		$outputUuid = getArg ( "outputUuid" );
+		$uuid = getArg ( "uuid" );
 
-		if (strlen($inputUuid) > 0 && strlen($outputUuid) > 0 && $inputUuid != $outputUuid)
+		if ( $uuid != "" && $outputUuid != "" && $outputUuid != $inputUuid)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
 				// Create pipe
-				$qString = "INSERT INTO " . $tablePrefix . "pipes (inputStepId,outputStepId,uuid) 
+				$qString = "INSERT INTO {$pipesTable} ( inputStepId, outputStepId, uuid ) 
 				VALUES (
-					(SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :inputUuid ),
-					(SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :outputUuid ),";
+					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :inputUuid ),
+					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :outputUuid ),";
 
 				$values = array('inputUuid' => $inputUuid,'outputUuid' => $outputUuid);
 				
-				if (strlen($uuid) > 0)
+				if ( $uuid != "" )
 				{
 					$qString = $qString . ":uuid ";
 					$values['uuid'] = $uuid;
@@ -84,40 +84,32 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updatePipe";
 
-		$inputUuid = $_GET["inputUuid"] ?? "";
-		$outputUuid = $_GET["outputUuid"] ?? "";
-		$colorspaceUuid = $_GET["colorspaceUuid"] ?? "";
-		$filetypeUuid = $_GET["filetypeUuid"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$inputUuid = getArg ( "inputUuid" );
+		$outputUuid = getArg ( "outputUuid" );
+		$uuid = getArg ( "uuid" );
 
-
-		if (strlen($uuid) > 0)
+		if ( $uuid != "" && ($inputUuid != "" or $outputUuid != ""))
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "pipes SET ";
+				$qString = "UPDATE {$pipesTable} SET ";
                 $setArray = array();
 				$values = array('uuid' => $uuid);
 				
-				if (strlen($inputUuid) > 0)
+				if ($inputUuid != "")
 				{
-					$setArray[] = "`inputStepId`= (SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :inputUuid )";
+					$setArray[] = "`inputStepId`= (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :inputUuid )";
                     $values["inputUuid"] = $inputUuid;
 				}
-                if (strlen($outputUuid) > 0)
+                if ($outputUuid != "")
 				{
-					$setArray[] = "`outputStepId`= (SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE uuid = :outputUuid )";
+					$setArray[] = "`outputStepId`= (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :outputUuid )";
                     $values["outputUuid"] = $outputUuid;
 				}
 
-				$setArray[] = "`colorSpaceId`= (SELECT " . $tablePrefix . "colorspaces.id FROM " . $tablePrefix . "colorspaces WHERE uuid = :colorspaceUuid )";
-				$values["colorspaceUuid"] = $colorspaceUuid;
 
-				$setArray[] = "`filetypeId`= (SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE uuid = :filetypeUuid )";
-				$values["filetypeUuid"] = $filetypeUuid;
-
-				$qString = $qString . join(",", $setArray) . " WHERE uuid= :uuid ;";
+				$qString = $qString . join(",", $setArray) . " WHERE `uuid`= :uuid ;";
 			
 				$rep = $db->prepare($qString);
 				
@@ -157,7 +149,7 @@
 			//only if admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "pipes SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$pipesTable} SET removed = 1 WHERE `uuid`= :uuid ;");
 				
                 $ok = $rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
