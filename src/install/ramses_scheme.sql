@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.23, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.25, for Linux (x86_64)
 --
 -- Host: localhost    Database: ramses
 -- ------------------------------------------------------
--- Server version	8.0.23-0ubuntu0.20.04.1
+-- Server version	8.0.25-0ubuntu0.20.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -158,6 +158,32 @@ CREATE TABLE `ram_filetypes` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ram_pipefile`
+--
+
+DROP TABLE IF EXISTS `ram_pipefile`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8 */;
+CREATE TABLE `ram_pipefile` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+  `pipeId` int NOT NULL,
+  `filetypeId` int NOT NULL,
+  `colorSpaceId` int DEFAULT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  UNIQUE KEY `pipe_UNIQU` (`pipeId`,`filetypeId`,`colorSpaceId`),
+  KEY `fk_pipefile_colorspace_idx` (`colorSpaceId`),
+  KEY `fk_ram_pipefile_filetype_idx` (`filetypeId`),
+  CONSTRAINT `fk_pipefile_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  CONSTRAINT `fk_pipefile_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_pipefile_pipe` FOREIGN KEY (`pipeId`) REFERENCES `ram_pipes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `ram_pipes`
 --
 
@@ -169,8 +195,6 @@ CREATE TABLE `ram_pipes` (
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `outputStepId` int NOT NULL,
   `inputStepId` int NOT NULL,
-  `filetypeId` int DEFAULT NULL,
-  `colorSpaceId` int DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `removed` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
@@ -178,10 +202,6 @@ CREATE TABLE `ram_pipes` (
   UNIQUE KEY `step_UNIQUE` (`outputStepId`,`inputStepId`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   KEY `fk_pipes_input_idx` (`inputStepId`),
-  KEY `fk_pipes_filetype_idx` (`filetypeId`),
-  KEY `fk_pipes_colorspace_idx` (`colorSpaceId`),
-  CONSTRAINT `fk_pipes_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
-  CONSTRAINT `fk_pipes_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=530 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -316,11 +336,11 @@ DROP TABLE IF EXISTS `ram_status`;
 /*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_status` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+  `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `completionRatio` tinyint(1) NOT NULL DEFAULT '-1',
   `userId` int NOT NULL,
   `stateId` int NOT NULL,
-  `comment` text COLLATE utf8_unicode_ci,
+  `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `version` int NOT NULL DEFAULT '1',
   `stepId` int NOT NULL,
   `assetId` int DEFAULT NULL,
@@ -500,4 +520,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-04-26 10:41:01
+-- Dump completed on 2021-06-07 22:30:33
