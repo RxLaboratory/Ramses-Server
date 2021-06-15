@@ -224,18 +224,23 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "unassignPipeFile";
 
-		$uuid = getArg( "uuid" );
+		$pipeFileUuid = getArg( "pipeFileUuid" );
+		$pipeUuid = getArg( "pipeUuid" );
 
-		if ($uuid != '')
+		if ($pipeFileUuid != '' && $pipeUuid != '')
 		{
 			//only if lead
 			if (isProjectAdmin())
 			{
 				$queryStr = "DELETE {$pipefilepipeTable} FROM {$pipefilepipeTable}
-					WHERE {$pipefilepipeTable}.`uuid` = :uuid ;";
+					WHERE {$pipefilepipeTable}.`pipeFileId` = 
+							( SELECT {$pipefileTable}.`id` FROM {$pipefileTable} WHERE {$pipefileTable}.`uuid` = :pipeFileUuid )
+						AND {$pipefilepipeTable}.`pipeId` = 
+							( SELECT {$pipesTable}.`id` FROM {$pipesTable} WHERE {$pipesTable}.`uuid` = :pipeUuid ) ;";
 				$rep = $db->prepare($queryStr);
 				$ok = $rep->execute( array(
-					'uuid' => $uuid
+					'pipeFileUuid' => $pipeFileUuid,
+					'pipeUuid' => $pipeUuid
 				));
 				$rep->closeCursor();
 
