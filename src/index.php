@@ -57,6 +57,7 @@
 			include ("sequences.php");
 			include ("filetypes.php");
 			include ("applications.php");
+			include ("pipefiles.php");
 			include ("pipes.php");
 			include ("shots.php");
 			include ("status.php");

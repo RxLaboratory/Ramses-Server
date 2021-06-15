@@ -31,7 +31,7 @@
 		$outputUuid = getArg ( "outputUuid" );
 		$uuid = getArg ( "uuid" );
 
-		if ( $uuid != "" && $outputUuid != "" && $outputUuid != $inputUuid)
+		if ( $outputUuid != "" && $outputUuid != $inputUuid)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
@@ -140,9 +140,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "removePipe";
 
-		$uuid = "";
-
-		if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$uuid = getArg ( "uuid" );
 
 		if (strlen($uuid) > 0)
 		{
@@ -172,4 +170,90 @@
 		}
 	}
 
+	// ========= ASSIGN ==========
+	else if (isset($_GET["assignPipeFile"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "assignPipeFile";
+
+		$pipeFileUuid = getArg( "pipeFileUuid" );
+		$pipeUuid = getArg( "pipeUuid" );
+
+		if ($pipeFileUuid != '' && $pipeUuid != '')
+		{
+			//only if lead
+			if (isProjectAdmin())
+			{
+				$queryStr = "INSERT INTO {$pipefilepipeTable} (`pipeId`, `pipeFileId`)
+					VALUES (
+					( SELECT {$pipesTable}.`id` FROM {$pipesTable} WHERE {$pipesTable}.`uuid` = :pipeUuid ),
+					( SELECT {$pipefileTable}.`id` FROM {$pipefileTable} WHERE {$pipefileTable}.`uuid` = :pipeFileUuid )
+					) ; ";
+
+				$values = array(
+					'pipeFileUuid' => $pipeFileUuid,
+					'pipeUuid' => $pipeUuid
+				);
+
+				$queryStr = $queryStr . ") ON DUPLICATE KEY UPDATE {$pipefilepipeTable}.`removed` = 0 ;";
+				$rep = $db->prepare($queryStr);
+				$ok = $rep->execute( $values );
+				$rep->closeCursor();
+
+				if ($ok) $reply["message"] = "New File assigned to pipe.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= UNASSIGN ==========
+	else if (isset($_GET["unassignPipeFile"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "unassignPipeFile";
+
+		$uuid = getArg( "uuid" );
+
+		if ($uuid != '')
+		{
+			//only if lead
+			if (isProjectAdmin())
+			{
+				$queryStr = "DELETE {$pipefilepipeTable} FROM {$pipefilepipeTable}
+					WHERE {$pipefilepipeTable}.`uuid` = :uuid ;";
+				$rep = $db->prepare($queryStr);
+				$ok = $rep->execute( array(
+					'uuid' => $uuid
+				));
+				$rep->closeCursor();
+
+				if ($ok) $reply["message"] = "File removed from pipe.";
+				else $reply["message"] = $rep->errorInfo();
+
+				$reply["success"] = $ok;
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
 ?>

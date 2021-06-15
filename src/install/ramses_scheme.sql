@@ -166,20 +166,43 @@ DROP TABLE IF EXISTS `ram_pipefile`;
 /*!50503 SET character_set_client = utf8 */;
 CREATE TABLE `ram_pipefile` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
-  `pipeId` int NOT NULL,
+  `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `shortName` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `projectId` int NOT NULL,
   `filetypeId` int NOT NULL,
   `colorSpaceId` int DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `removed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  UNIQUE KEY `pipe_UNIQU` (`pipeId`,`filetypeId`,`colorSpaceId`),
   KEY `fk_pipefile_colorspace_idx` (`colorSpaceId`),
   KEY `fk_ram_pipefile_filetype_idx` (`filetypeId`),
   CONSTRAINT `fk_pipefile_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
-  CONSTRAINT `fk_pipefile_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_pipefile_pipe` FOREIGN KEY (`pipeId`) REFERENCES `ram_pipes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `fk_pipefile_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ram_pipefilepipe`
+--
+
+DROP TABLE IF EXISTS `ram_pipefilepipe`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8 */;
+CREATE TABLE `ram_pipefilepipe` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `pipeId` int NOT NULL,
+  `pipeFileId` int NOT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  UNIQUE KEY `association_UNIQUE` (`pipeId`,`pipeFileId`),
+  KEY `fk_pipefilepipe_pipe_idx` (`pipeId`),
+  KEY `fk_pipefilepipe_pipefile_idx` (`pipeFileId`),
+  CONSTRAINT `fk_pipefilepipe_pipe` FOREIGN KEY (`pipeId`) REFERENCES `ram_pipes` (`id`),
+  CONSTRAINT `fk_pipefilepipe_pipefile` FOREIGN KEY (`pipeFileId`) REFERENCES `ram_pipefile` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -520,4 +543,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-06-07 22:30:33
+-- Dump completed on 2021-06-15 15:36:27

@@ -21,8 +21,6 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	$projectsTable = $tablePrefix . "projects";
-
 	// ========= Functions ===============
 	function getSteps( $pid, $puuid )
 	{
@@ -88,25 +86,20 @@
 
 	function getPipes( $pid, $puuid )
 	{
-		global $tablePrefix, $db;
+		global $pipesTable, $stepsTable, $db;
 
 		$pipes = array();
 		//get pipes
 		$qString = "SELECT 
+				pipes.`id`,
 				pipes.`uuid`,
 				inputSteps.`uuid` as inputStepUuid,
-				outputSteps.`uuid` as outputStepUuid,
-				colorspaces.`uuid` as colorSpaceUuid,
-				filetypes.`uuid` as filetypeUuid
-			FROM " . $tablePrefix . "pipes AS pipes
-			LEFT JOIN " . $tablePrefix . "steps AS inputSteps
+				outputSteps.`uuid` as outputStepUuid
+			FROM {$pipesTable} AS pipes
+			LEFT JOIN {$stepsTable} AS inputSteps
 				ON pipes.inputStepId = inputSteps.id
-			LEFT JOIN " . $tablePrefix . "steps AS outputSteps
+			LEFT JOIN {$stepsTable} AS outputSteps
 				ON pipes.outputStepId = outputSteps.id
-			LEFT JOIN " . $tablePrefix . "colorspaces AS colorspaces
-				ON pipes.colorSpaceId = colorspaces.id
-			LEFT JOIN " . $tablePrefix . "filetypes AS filetypes
-				ON pipes.filetypeId = filetypes.id
 			WHERE inputSteps.projectId=" . $pid . " AND pipes.removed = 0 ;";
 		$repPipes = $db->query( $qString );
 
@@ -116,14 +109,67 @@
 			$pipe['uuid'] = $p['uuid'];
 			$pipe['inputStepUuid'] = $p['inputStepUuid'];
 			$pipe['outputStepUuid'] = $p['outputStepUuid'];
-			$pipe['colorSpaceUuid'] = $p['colorSpaceUuid'];
-			$pipe['filetypeUuid'] = $p['filetypeUuid'];
+			$pipe['pipeFiles'] = getPipeFilesUuids( $p['id'] );
 			$pipe['projectUuid'] = $puuid;
 
 			$pipes[] = $pipe;
 		}
 
 		return $pipes;
+	}
+
+	function getPipeFilesUuids( $pipeId )
+	{
+		global $pipefilepipeTable, $pipefileTable, $db;
+
+		$pipeFiles = array();
+		// get
+		$queryStr = "SELECT
+			pipeFiles.`uuid`
+		FROM {$pipefilepipeTable} AS pfp
+			LEFT JOIN {$pipefileTable} AS pipeFiles
+				ON pipeFiles.`id` = pfp.`pipeFileId`
+			WHERE pfp.`pipeId` = {$pipeId} AND pipeFiles.`removed` = 0 ;" ;
+		
+		$repPipeFiles = $db->query( $queryStr );
+		while ($p = $repPipeFiles->fetch())
+		{
+			$pipeFileUuid = $p['uuid'];
+			$pipeFiles[] = $pipeFileUuid;
+		}
+		return $pipeFiles;
+	}
+
+	function getPipeFiles( $projectId, $projectUuid )
+	{
+		global $pipefilepipeTable, $pipefileTable, $colorspacesTable, $filetypesTable, $db;
+
+		$pipeFiles = array();
+		// get
+		$queryStr = "SELECT
+			pipeFiles.`uuid`,
+			pipeFiles.`shortName`,
+			fileTypes.`uuid` as fileTypeUuid,
+			colorSpaces.`uuid` as colorSpaceUuid
+		FROM {$pipefileTable} AS pipeFiles
+			LEFT JOIN {$colorspacesTable} AS colorSpaces
+				ON pipeFiles.`colorSpaceId` = colorSpaces.`id`
+			LEFT JOIN {$filetypesTable} AS fileTypes
+				ON pipeFiles.`filetypeId` = fileTypes.`id`
+			WHERE pipeFiles.`projectId` = {$projectId} AND pipeFiles.`removed` = 0 ;" ;
+		
+		$repPipeFiles = $db->query( $queryStr );
+		while ($p = $repPipeFiles->fetch())
+		{
+			$pipeFile = array();
+			$pipeFile['uuid'] = $p['uuid'];
+			$pipeFile['shortName'] = $p['shortName'];
+			$pipeFile['fileTypeUuid'] = $p['fileTypeUuid'];
+			$pipeFile['colorSpaceUuid'] = $p['colorSpaceUuid'];
+			$pipeFile['projectUuid'] = $projectUuid;
+			$pipeFiles[] = $pipeFile;
+		}
+		return $pipeFiles;
 	}
 
 	function getAssetGroups( $pid, $puuid )
@@ -355,11 +401,13 @@
 		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
 
 		if ($details) {
+			$project['pipeFiles'] = getPipeFiles($sqlRep['id'], $sqlRep['uuid']);
 			$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
 			$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
 			$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
 			$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
 		} else {
+			$project['pipeFiles'] = Array();
 			$project['steps'] = Array();
 			$project['pipes'] = Array();
 			$project['assetGroups'] = Array();

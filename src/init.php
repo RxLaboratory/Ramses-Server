@@ -57,4 +57,6 @@
 	$templateassetgroupsTable = $tablePrefix . "templateassetgroups";
 	$templatestepsTable = $tablePrefix . "templatesteps";
 	$usersTable = $tablePrefix . "users";
+	$pipefileTable = $tablePrefix . "pipefile";
+	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
 ?>
