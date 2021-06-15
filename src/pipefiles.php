@@ -33,7 +33,7 @@
 		$colorSpaceUuid = getArg ( "colorSpaceUuid" );
 		$projectUuid = getArg( "projectUuid" );
 
-        if ($shortName != '' && $fileTypeUuid != '' && $projectUuid != '')
+        if ($shortName != '' && $projectUuid != '')
 		{
 			//only if lead
 			if (isProjectAdmin())

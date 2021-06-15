@@ -169,7 +169,7 @@ CREATE TABLE `ram_pipefile` (
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `shortName` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
   `projectId` int NOT NULL,
-  `filetypeId` int NOT NULL,
+  `filetypeId` int DEFAULT NULL,
   `colorSpaceId` int DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `removed` tinyint NOT NULL DEFAULT '0',
@@ -543,4 +543,4 @@ CREATE TABLE `ram_users` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2021-06-15 15:36:27
+-- Dump completed on 2021-06-15 17:10:03
