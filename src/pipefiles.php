@@ -48,7 +48,6 @@
 				$values = array(
 					'shortName' => $shortName,
 					'projectUuid' => $projectUuid,
-					'pipeUuid' => $pipeUuid,
 					'fileTypeUuid' => $fileTypeUuid,
 					'colorSpaceUuid' => $colorSpaceUuid
 				);
