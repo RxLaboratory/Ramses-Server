@@ -320,7 +320,8 @@
 				{$shotsTable}.`name`,
 				{$shotsTable}.`shortName`,
 				{$shotsTable}.`duration`,
-				{$shotsTable}.`order`
+				{$shotsTable}.`order`,
+				{$shotsTable}.`id`
 			FROM {$shotsTable}
 			WHERE `sequenceId` = " . $sid . " AND `removed` = 0
 			ORDER BY `sequenceId`, `order`, `shortName`;";
@@ -336,6 +337,7 @@
 			$shot['duration'] = (float)$s['duration'];
 			$shot['order'] = (int)$s['order'];
 			$shot['sequenceUuid'] = $suuid;
+			$shot['statusHistory'] = getShotStatusHistory( $s['id'], $shot['uuid'] );
 			
 			$shots[] = $shot;
 		}
