@@ -346,13 +346,13 @@
 				)
 				VALUES(
 					:uuid ,
-					:completionRatio,
-					SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid,
-					SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid,
+					:completionRatio ,
+					(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid),
+					(SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid),
 					:comment,
 					:version,
-					SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid,
-					SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :shotUuid
+					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid),
+					(SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :shotUuid)
 				)
 				AS newStatus
 				ON DUPLICATE KEY UPDATE
@@ -364,7 +364,7 @@
 			$rep = $db->prepare($qString);
 			$rep->execute(array(
 				'uuid' => $uuid,
-				'completionRation' => $completionRatio,
+				'completionRatio' => $completionRatio,
 				'userUuid' => $userUuid,
 				'stateUuid' => $stateUuid,
 				'comment' => $comment,
