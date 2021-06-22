@@ -179,7 +179,6 @@
 		$assetGroups = array();
 
 		$qString = "SELECT 
-				" . $tablePrefix . "assetgroups.`id`,
 				" . $tablePrefix . "assetgroups.`uuid`,
 				" . $tablePrefix . "assetgroups.`shortName`,
 				" . $tablePrefix . "assetgroups.`name`
@@ -195,27 +194,28 @@
 			$assetGroup['name'] = $ag['name'];
 			$assetGroup['projectUuid'] = $puuid;
 
-			$assetGroup['assets'] = getAssets($ag['id'], $assetGroup['uuid'] );
-
 			$assetGroups[] = $assetGroup;
 		}
 
 		return $assetGroups;
 	}
 
-	function getAssets( $aid, $auuid )
+	function getAssets( $projectId )
 	{
-		global $tablePrefix, $db;
+		global $assetsTable, $assetgroupsTable, $db;
 
 		$assets = array();
 		$qString = "SELECT
-				" . $tablePrefix . "assets.`uuid`,
-				" . $tablePrefix . "assets.`name`,
-				" . $tablePrefix . "assets.`shortName`,
-				" . $tablePrefix . "assets.`tags`,
-				" . $tablePrefix . "assets.`id`
-			FROM " . $tablePrefix . "assets
-			WHERE `assetGroupId`=" . $aid . " AND `removed` = 0
+				{$assetsTable}.`id`,
+				{$assetsTable}.`uuid`,
+				{$assetsTable}.`name`,
+				{$assetsTable}.`shortName`,
+				{$assetsTable}.`tags`,
+				{$assetsTable}.`id`,
+				{$assetgroupsTable}.`uuid` AS assetGroupUuid
+			FROM {$assetsTable}
+			LEFT JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$assetsTable}.`assetGroupId`
+			WHERE {$assetgroupsTable}.`projectId` = ". $projectId  ." AND {$assetsTable}.`removed` = 0
 			ORDER BY `shortName`, `name`;";
 		$repAssets = $db->query( $qString );
 		while ($a = $repAssets->fetch())
@@ -225,7 +225,7 @@
 			$asset['shortName'] = $a['shortName'];
 			$asset['name'] = $a['name'];
 			$asset['tags'] = $a['tags'];
-			$asset['assetGroupUuid'] = $auuid;
+			$asset['assetGroupUuid'] = $a['assetGroupUuid'];
 			$asset['statusHistory'] = getAssetStatusHistory( $a['id'], $asset['uuid'] );
 			
 			$assets[] = $asset;
@@ -282,7 +282,6 @@
 
 		$sequences = array();
 		$qString = "SELECT 
-					" . $tablePrefix . "sequences.`id`,
 					" . $tablePrefix . "sequences.`uuid`,
 					" . $tablePrefix . "sequences.`shortName`,
 					" . $tablePrefix . "sequences.`name`
@@ -299,32 +298,30 @@
 			$sequence['name'] = $s['name'];
 			$sequence['projectUuid'] = $puuid;
 
-			$sequence['shots'] = getShots($s['id'], $sequence['uuid']);
-
 			$sequences[] = $sequence;
 		}
 
 		return $sequences;
 	}
 
-	function getShots( $sid, $suuid )
+	function getShots( $projectId )
 	{
-		global $tablePrefix, $db;
-
-		$shotsTable = $tablePrefix . "shots";
+		global $shotsTable, $sequencesTable, $db;
 
 		$shots = array();
 
 		$qString = "SELECT
+				{$shotsTable}.`id`,
 				{$shotsTable}.`uuid`,
 				{$shotsTable}.`name`,
 				{$shotsTable}.`shortName`,
 				{$shotsTable}.`duration`,
 				{$shotsTable}.`order`,
-				{$shotsTable}.`id`
+				{$sequencesTable}.`uuid` AS sequenceUuid
 			FROM {$shotsTable}
-			WHERE `sequenceId` = " . $sid . " AND `removed` = 0
-			ORDER BY `sequenceId`, `order`, `shortName`;";
+			LEFT JOIN {$sequencesTable} ON {$sequencesTable}.`id` = {$shotsTable}.`sequenceId`
+			WHERE {$sequencesTable}.`projectId` = ". $projectId  ." AND {$shotsTable}.`removed` = 0
+			ORDER BY `order`, `shortName`, `name`;";
 
 		$repShots = $db->query( $qString );
 
@@ -336,7 +333,7 @@
 			$shot['name'] = $s['name'];
 			$shot['duration'] = (float)$s['duration'];
 			$shot['order'] = (int)$s['order'];
-			$shot['sequenceUuid'] = $suuid;
+			$shot['sequenceUuid'] = $s['sequenceUuid'];
 			$shot['statusHistory'] = getShotStatusHistory( $s['id'], $shot['uuid'] );
 			
 			$shots[] = $shot;
@@ -407,13 +404,17 @@
 			$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
 			$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
 			$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
+			$project['assets'] = getAssets($sqlRep['id']);
 			$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
+			$project['shots'] = getShots($sqlRep['id']);
 		} else {
 			$project['pipeFiles'] = Array();
 			$project['steps'] = Array();
 			$project['pipes'] = Array();
 			$project['assetGroups'] = Array();
+			$project['assets'] = Array();
 			$project['sequences'] = Array();
+			$project['shots'] = Array();
 		}
 
 		return $project;
