@@ -483,7 +483,7 @@
 		$rep = $db->query("SELECT
 				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`
 			FROM {$projectsTable}
-			WHERE removed = 0
+			WHERE `removed` = 0
 			ORDER BY `shortName`,`name`;");
 
 		$projects = array();
