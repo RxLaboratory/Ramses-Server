@@ -121,7 +121,7 @@
 						`shortName`= :shortName,
 						`comment`= :comment
 					WHERE uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+				$values = array( 'name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment );
 			
 				$rep = $db->prepare($qString);
                 $rep->execute($values);
