@@ -95,13 +95,11 @@
 		$shortName = "";
 		$uuid = "";
 		$type = "";
-		$order = "";
 
 		if (isset($_GET["name"])) $name = $_GET["name"];
         if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
         if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
         if (isset($_GET["type"])) $type = $_GET["type"];
-        if (isset($_GET["order"])) $order = $_GET["order"];
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -115,12 +113,6 @@
 				{
 					$qString = $qString . ", `type`= :type";
                     $values["type"] = $type;
-				}
-
-				if (strlen($order) > 0)
-				{
-					$qString = $qString . ", `order`= :order";
-                    $values["order"] = (int) $order;
 				}
 
 				$qString = $qString . " WHERE uuid= :uuid ;";
@@ -144,7 +136,6 @@
 			$reply["message"] = "Invalid request, missing values";
 			$reply["success"] = false;
 		}
-
 	}
 
 	// ========= REMOVE STEP ==========
@@ -174,6 +165,141 @@
                 $reply["message"] = "Insufficient rights, you need to be Admin to remove steps.";
                 $reply["success"] = false;
             }
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= SET ORDER ==========
+	else if (isset($_GET["setStepOrder"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setStepOrder";
+
+		$order = $_GET["order"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
+
+		if (strlen($uuid) > 0 && strlen($order) > 0)
+		{
+			// Only if lead
+			if ( isProjectAdmin() )
+			{
+			//Move given step
+			$qString = "UPDATE {$stepsTable}
+			SET `order` = :order
+			WHERE `uuid` = :uuid;";
+			$values = array('order'  => $order,'uuid'  => $uuid);
+
+			$rep = $db->prepare($qString);
+			$rep->execute($values);
+			$rep->closeCursor();
+
+			$reply["message"] = "Step moved.";
+			$reply["success"] = true;
+			}
+			else
+			{
+				$reply["message"] = "Insufficient rights, you need to be Project Admin to update step order.";
+				$reply["success"] = false;
+			}
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= MOVE ==========
+	else if (isset($_GET["moveStep"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "moveStep";
+
+		$order = $_GET["order"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
+
+		if (strlen($uuid) > 0 && strlen($order) > 0)
+		{
+			// Only if lead
+			if ( isProjectAdmin() )
+			{
+				// Get previous order and project
+				$qString = "SELECT {$stepsTable}.`order`, {$stepsTable}.`projectId`
+					FROM {$stepsTable}
+					WHERE {$stepsTable}.`uuid` = :uuid;";
+				$rep = $db->prepare($qString);
+				$rep->execute(array('uuid' => $uuid));
+				$previous = -1;
+				$projectId = -1;
+				if ($r = $rep->fetch())
+				{
+					$previous = (int)$r['order'];
+					$projectId = (int)$r['projectId'];
+				}
+				$rep->closeCursor();
+
+				// Update
+				$order = (int)$order;
+
+				if ($previous > $order)
+				{
+					//Move all other steps
+					$qString = "UPDATE {$stepsTable}
+						SET
+							{$stepsTable}.`order` = {$stepsTable}.`order` + 1
+						WHERE
+							{$stepsTable}.`order` >= :order
+							AND
+							{$stepsTable}.`order` < :previous
+							AND
+							{$stepsTable}.`projectId` = :projectId;";
+					$values = array('order' => $order, 'previous' => $previous, 'projectId' => $projectId);
+
+					$rep = $db->prepare($qString);
+					$rep->execute($values);
+					$rep->closeCursor();
+				}
+				else if ($previous >= 0)
+				{
+					//Move all other steps
+					$qString = "UPDATE {$stepsTable}
+						SET
+							{$stepsTable}.`order` = {$stepsTable}.`order` - 1
+						WHERE
+							{$stepsTable}.`order` <= :order
+							AND
+							{$stepsTable}.`order` > :previous
+							AND
+							{$stepsTable}.`projectId` = :projectId;";
+					$values = array('order' => $order, 'previous' => $previous, 'projectId' => $projectId);
+
+					$rep = $db->prepare($qString);
+					$rep->execute($values);
+					$rep->closeCursor();
+				}
+
+				//Move given step
+				$qString = "UPDATE {$stepsTable}
+					SET `order` = :order
+					WHERE `uuid` = :uuid;";
+				$values = array('order'  => $order,'uuid'  => $uuid);
+
+				$rep = $db->prepare($qString);
+				$rep->execute($values);
+				$rep->closeCursor();
+
+				$reply["message"] = "Step moved.";
+				$reply["success"] = true;
+			}
+			else
+			{
+				$reply["message"] = "Insufficient rights, you need to be Project Admin to update step order.";
+				$reply["success"] = false;
+			}
 		}
 		else
 		{

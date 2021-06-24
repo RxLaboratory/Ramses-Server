@@ -173,6 +173,46 @@
 
 	}
 
+	// ========= SET ORDER ==========
+	else if (isset($_GET["setSshotOrder"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setSshotOrder";
+
+		$order = $_GET["order"] ?? "";
+		$uuid = $_GET["uuid"] ?? "";
+
+		if (strlen($uuid) > 0 && strlen($order) > 0)
+		{
+			// Only if lead
+			if ( isLead() )
+			{
+			//Move given step
+			$qString = "UPDATE {$shotsTable}
+			SET `order` = :order
+			WHERE `uuid` = :uuid;";
+			$values = array('order'  => $order,'uuid'  => $uuid);
+
+			$rep = $db->prepare($qString);
+			$rep->execute($values);
+			$rep->closeCursor();
+
+			$reply["message"] = "Shot moved.";
+			$reply["success"] = true;
+			}
+			else
+			{
+				$reply["message"] = "Insufficient rights, you need to be Lead to update shot order.";
+				$reply["success"] = false;
+			}
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
 	// ========= MOVE ==========
 	else if (isset($_GET["moveShot"]))
 	{
@@ -187,18 +227,19 @@
 			// Only if lead
             if ( isLead() )
 			{
-				// Get previous order
-				$qString = "SELECT `order`, `sequenceId`
+				// Get previous order and project
+				$qString = "SELECT {$shotsTable}.`order`, {$sequencesTable}.`projectId`
 					FROM {$shotsTable}
-					WHERE `uuid` = :uuid;";
+					JOIN {$sequencesTable} ON {$shotsTable}.`sequenceId` = {$sequencesTable}.`id`
+					WHERE {$shotsTable}.`uuid` = :uuid;";
 				$rep = $db->prepare($qString);
 				$rep->execute(array('uuid' => $uuid));
 				$previous = -1;
-				$sequenceId = -1;
+				$projectId = -1;
 				if ($r = $rep->fetch())
 				{
 					$previous = (int)$r['order'];
-					$sequenceId = (int)$r['sequenceId'];
+					$projectId = (int)$r['projectId'];
 				}
 				$rep->closeCursor();
 
@@ -209,15 +250,16 @@
 				{
 					//Move all other shots
 					$qString = "UPDATE {$shotsTable}
+						JOIN {$sequencesTable} ON {$shotsTable}.`sequenceId` = {$sequencesTable}.`id`
 						SET
-							`order` = `order` + 1
+							{$shotsTable}.`order` = {$shotsTable}.`order` + 1
 						WHERE
-							`order` >= :order
+							{$shotsTable}.`order` >= :order
 							AND
-							`order` < :previous
+							{$shotsTable}.`order` < :previous
 							AND
-							`sequenceId` = :sequenceId;";
-					$values = array('order' => $order, 'previous' => $previous, 'sequenceId' => $sequenceId);
+							{$sequencesTable}.`projectId` = :projectId;";
+					$values = array('order' => $order, 'previous' => $previous, 'projectId' => $projectId);
 
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
@@ -227,15 +269,16 @@
 				{
 					//Move all other shots
 					$qString = "UPDATE {$shotsTable}
+						JOIN {$sequencesTable} ON {$shotsTable}.`sequenceId` = {$sequencesTable}.`id`
 						SET
-							`order` = `order` - 1
+							{$shotsTable}.`order` = {$shotsTable}.`order` - 1
 						WHERE
-							`order` <= :order
+							{$shotsTable}.`order` <= :order
 							AND
-							`order` > :previous
+							{$shotsTable}.`order` > :previous
 							AND
-							`sequenceId` = :sequenceId;";
-					$values = array('order' => $order, 'previous' => $previous, 'sequenceId' => $sequenceId);
+							{$sequencesTable}.`projectId` = :projectId;";
+					$values = array('order' => $order, 'previous' => $previous, 'projectId' => $projectId);
 
 					$rep = $db->prepare($qString);
 					$rep->execute($values);
