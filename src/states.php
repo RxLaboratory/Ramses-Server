@@ -116,11 +116,12 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateState";
 
-		$name = rawurldecode ( $_GET["name"] ?? "" );
-		$shortName = rawurldecode ( $_GET["shortName"] ?? "" );
-		$color = rawurldecode ( $_GET["color"] ?? "" );
-		$completionRatio = rawurldecode ( $_GET["completionRatio"] ?? "" );
-		$uuid = rawurldecode ( $_GET["uuid"] ?? "" );
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$color = getArg( "color" );
+		$completionRatio = getArg( "completionRatio" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -128,8 +129,8 @@
             if ( isAdmin() )
             {
 
-				$qString = "UPDATE " . $tablePrefix . "states SET name= :name ,shortName= :shortName";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+				$qString = "UPDATE {$statesTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
 
 				if (strlen($color) > 0)
 				{

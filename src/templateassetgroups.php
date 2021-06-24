@@ -104,16 +104,22 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateTemplateAssetGroup";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "templateassetgroups SET name= :name ,shortName= :shortName WHERE uuid= :uuid ;";
+				$qString = "UPDATE {$templateassetgroupsTable}
+					SET
+						`name`= :name,
+						`shortName`= :shortName,
+						`comment`= :comment
+					WHERE uuid= :uuid ;";
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
 			
 				$rep = $db->prepare($qString);

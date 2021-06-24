@@ -86,16 +86,17 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateSequence";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "sequences SET `name`= :name ,`shortName`= :shortName WHERE uuid= :uuid ;";
+				$qString = "UPDATE {$sequencesTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment WHERE uuid= :uuid ;";
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
 
                 $rep = $db->prepare($qString);

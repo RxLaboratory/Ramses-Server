@@ -78,26 +78,28 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateFileType";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-        $extensions = $_GET["extensions"] ?? "";
-        $previewable = $_GET["previewable"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+        $extensions = getArg( "extensions" );
+        $previewable = getArg( "previewable" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "filetypes
+				$qString = "UPDATE {$filetypesTable}
 				SET
 					`name`= :name ,
 					`shortName`= :shortName,
                     `extensions`= :extensions,
-                    `previewable` = :previewable
+                    `previewable` = :previewable,
+                    `comment` = :comment
 				WHERE
 					uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName,'extensions' => $extensions, 'previewable' => $previewable, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName,'extensions' => $extensions, 'previewable' => $previewable, 'uuid' => $uuid, 'comment' => $comment);
 
                 $rep = $db->prepare($qString);
 				

@@ -131,15 +131,16 @@
 		$shortName = getArg( "shortName" );
 		$fileTypeUuid = getArg ( "fileTypeUuid" );
 		$colorSpaceUuid = getArg ( "colorSpaceUuid" );
+		$comment = getArg ( "comment" );
 
         if ( $uuid != "" && ($shortName != "" or $fileTypeUuid != "" or $colorSpaceUuid != ""))
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE {$pipefileTable} SET ";
+				$qString = "UPDATE {$pipefileTable} SET `comment` = :comment, ";
                 $setArray = array();
-				$values = array('uuid' => $uuid);
+				$values = array('uuid' => $uuid, 'comment' => $comment);
 				
 				if ($shortName != "")
 				{

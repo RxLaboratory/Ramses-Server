@@ -87,36 +87,39 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateAsset";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$tags = $_GET["tags"] ?? "";
-		$assetGroupUuid = $_GET["assetGroupUuid"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$tags = getArg( "tags" );
+		$assetGroupUuid = getArg( "assetGroupUuid" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if lead
             if ( isLead() )
             {
-				$qString = "INSERT INTO {$assetsTable} (`name`, `shortName`, `tags`, `uuid`, `assetGroupId`)
+				$qString = "INSERT INTO {$assetsTable} (`name`, `shortName`, `tags`, `uuid`, `assetGroupId`, `comment`)
 				VALUES(
 					:name ,
 					:shortName,
 					:tags,
 					:uuid,
-					(SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE `uuid` = :assetGroupUuid )
+					(SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE `uuid` = :assetGroupUuid ),
+					:comment
 				)
 				AS newAsset
 				ON DUPLICATE KEY UPDATE
 					`name` = newAsset.`name`,
 					`tags` = newAsset.`tags`,
 					`assetGroupId` = newAsset.`assetGroupId`,
+					`comment` = newAsset.`comment`,
 					`removed` = 0;
 				UPDATE {$assetsTable}
 				SET `shortName` = :shortName
 				WHERE `uuid` = :uuid;";
 
-				$values = array('name' => $name,'shortName' => $shortName, 'tags' => $tags, 'assetGroupUuid' => $assetGroupUuid, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName, 'tags' => $tags, 'assetGroupUuid' => $assetGroupUuid, 'uuid' => $uuid, 'comment' => $comment);
 
                 $rep = $db->prepare($qString);
                 $rep->execute($values);

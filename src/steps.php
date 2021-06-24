@@ -91,23 +91,19 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateStep";
 
-		$name = "";
-		$shortName = "";
-		$uuid = "";
-		$type = "";
-
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
-        if (isset($_GET["type"])) $type = $_GET["type"];
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$uuid = getArg( "uuid" );
+		$type = getArg( "type" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "steps SET `name`= :name ,`shortName`= :shortName";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+				$qString = "UPDATE {$stepsTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
 				
 				if (strlen($type) > 0)
 				{

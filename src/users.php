@@ -30,33 +30,36 @@
         $shortName = getArg( "shortName" );
         $uuid = getArg( "uuid" );
         $role = getArg( "role" );
-        $folderPath =getArg( "folderPath" );
+        $folderPath = getArg( "folderPath" );
+        $comment = getArg( "comment" );
 
         if ( $shortName != "" && $uuid != "")
         {
             // Only if self or admin
             if ( isSelf($uuid) || isAdmin() )
             {
-                $qString = "INSERT INTO {$usersTable} (`shortName`, `name`, `role`, `folderPath`, `uuid`, `password`)
+                $qString = "INSERT INTO {$usersTable} (`shortName`, `name`, `role`, `folderPath`, `uuid`, `password`, `comment`)
                     VALUES(
                         :shortName,
                         :name,
                         :role,
                         :folderPath,
                         :uuid,
-                        ''
+                        '',
+                        :comment
                         )
                     AS newUser
                     ON DUPLICATE KEY UPDATE
                         `name` = newUser.`name`,
                         `role` = newUser.`role`,
                         `folderPath` = newUser.`folderPath`,
+                        `comment` = newUser.`comment`,
                         `removed` = 0;
                     UPDATE {$usersTable}
                     SET `shortName` = :shortName
                     WHERE `uuid` = :uuid;";
 
-                $values = array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid, 'role' => $role, 'folderPath' => $folderPath);
+                $values = array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid, 'role' => $role, 'folderPath' => $folderPath, 'comment' => $comment);
 
                 $rep = $db->prepare($qString);
                 $rep->execute($values);

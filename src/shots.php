@@ -118,11 +118,12 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateAsset";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$sequenceUuid = $_GET["sequenceUuid"] ?? "";
-		$duration = $_GET["duration"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$sequenceUuid = getArg( "sequenceUuid" );
+		$duration = getArg( "duration" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -132,8 +133,9 @@
 				$qString = "UPDATE {$shotsTable}
 					SET
 						`name`= :name,
-						`shortName`= :shortName";
-				$values = array('name' => $name,'shortName' => $shortName);
+						`shortName`= :shortName,
+						`comment`= :comment";
+				$values = array('name' => $name,'shortName' => $shortName, 'comment' => $comment);
 
 				if (strlen($sequenceUuid) > 0)
 				{

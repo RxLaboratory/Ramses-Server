@@ -27,10 +27,10 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "createAssetGroup";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$projectUuid = $_GET["projectUuid"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$projectUuid = getArg( "projectUuid" );
+		$uuid = getArg( "uuid" );
 
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
@@ -86,17 +86,23 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateAssetGroup";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$uuid = getArg( "uuid" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "assetgroups SET `name`= :name ,`shortName`= :shortName WHERE uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+				$qString = "UPDATE {$assetgroupsTable}
+					SET
+						`name`= :name ,
+						`shortName`= :shortName,
+						`comment`= :comment
+					WHERE `uuid` = :uuid ;";
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
 
                 $rep = $db->prepare($qString);
 				

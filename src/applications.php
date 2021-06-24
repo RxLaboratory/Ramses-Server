@@ -105,24 +105,26 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateApplication";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-        $executableFilePath = $_GET["executableFilePath"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+        $executableFilePath = getArg( "executableFilePath" );
+        $comment = getArg( "comment" );
+		$uuid = getArg( "uuid" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE " . $tablePrefix . "applications
+				$qString = "UPDATE {$applicationsTable}
 				SET
 					`name`= :name ,
 					`shortName`= :shortName,
-                    `executableFilePath`= :executableFilePath
+                    `executableFilePath`= :executableFilePath,
+                    `comment` = :comment
 				WHERE
 					uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName,'executableFilePath' => $executableFilePath, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName,'executableFilePath' => $executableFilePath, 'uuid' => $uuid, 'comment' => $comment);
 
                 $rep = $db->prepare($qString);
 				

@@ -87,15 +87,16 @@
 		$inputUuid = getArg ( "inputUuid" );
 		$outputUuid = getArg ( "outputUuid" );
 		$uuid = getArg ( "uuid" );
+		$comment = getArg ( "comment" );
 
 		if ( $uuid != "" && ($inputUuid != "" or $outputUuid != ""))
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
-				$qString = "UPDATE {$pipesTable} SET ";
+				$qString = "UPDATE {$pipesTable} SET `comment` = :comment, ";
                 $setArray = array();
-				$values = array('uuid' => $uuid);
+				$values = array('uuid' => $uuid, 'comment' => $comment);
 				
 				if ($inputUuid != "")
 				{

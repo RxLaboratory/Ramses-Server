@@ -528,14 +528,15 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "updateProject";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
-		$folderPath = $_GET["folderPath"] ?? "";
-		$framerate = $_GET["framerate"] ?? "";
-		$width = $_GET["width"] ?? "";
-		$height = $_GET["height"] ?? "";
-		$aspectRatio = $_GET["aspectRatio"] ?? "";
+		$name = getArg( "name" );
+		$shortName = getArg( "shortName" );
+		$uuid = getArg( "uuid" );
+		$folderPath = getArg( "folderPath" );
+		$framerate = getArg( "framerate" );
+		$width = getArg( "width" );
+		$height = getArg( "height" );
+		$aspectRatio = getArg( "aspectRatio" );
+		$comment = getArg( "comment" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -543,9 +544,9 @@
             if ( isAdmin() )
             {
 				$qString = "UPDATE {$projectsTable}
-					SET `name`= :name ,`shortName`= :shortName";
+					SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
 
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
+				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment );
 
 				if (strlen($folderPath) > 0)
                 {
