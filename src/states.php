@@ -83,7 +83,7 @@
 		
 
 		$rep = $db->query( "SELECT
-			`name`, `shortName`, `color`, `completionRatio`, `uuid`
+			`name`, `shortName`, `color`, `completionRatio`, `uuid`, `comment`
 			FROM {$statesTable}
 			WHERE `removed` = 0
 			ORDER BY `completionRatio`, `shortName`, `name` ;"
@@ -94,6 +94,7 @@
 			$stat = Array();
 			$stat['name'] = $state['name'];
 			$stat['shortName'] = $state['shortName'];
+			$stat['comment'] = $state['comment'];
 			$stat['color'] = $state['color'];
 			$stat['completionRatio'] = (int) $state['completionRatio'];
 			$stat['uuid'] = $state['uuid'];

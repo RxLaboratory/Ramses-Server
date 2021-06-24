@@ -190,7 +190,7 @@
         
         
         $rep = $db->prepare("SELECT
-                `name`,`shortName`,`executableFilePath`,`id`,`uuid`
+                `name`,`shortName`,`executableFilePath`,`id`,`uuid`,`comment`
             FROM " . $tablePrefix . "applications
             WHERE removed = 0
             ORDER BY `name`, `shortName`
@@ -204,6 +204,7 @@
             $application = Array();
 			$application['name'] = $a['name'];
 			$application['shortName'] = $a['shortName'];
+			$application['comment'] = $a['comment'];
 			$application['uuid'] = $a['uuid'];
 			$application['executableFilePath'] = $a['executableFilePath'];
             $application['fileTypes'] = getFileTypes($a['id']);

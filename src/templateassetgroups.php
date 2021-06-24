@@ -75,13 +75,14 @@
 			$reply["query"] = "getTemplateAssetGroups";
 		}
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid` FROM " . $tablePrefix . "templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
+		$rep = $db->query("SELECT `name`,`shortName`,`uuid`, `comment` FROM " . $tablePrefix . "templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
 		$assetGroups = Array();
 		while ($assetGroup = $rep->fetch())
 		{
 			$ag = Array();
 			$ag['name'] = $assetGroup['name'];
 			$ag['shortName'] = $assetGroup['shortName'];
+			$ag['comment'] = $assetGroup['comment'];
 			$ag['uuid'] = $assetGroup['uuid'];
 			$assetGroups[] = $ag;
 		}

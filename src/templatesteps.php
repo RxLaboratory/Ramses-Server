@@ -82,13 +82,14 @@
 		}
 		
 
-		$rep = $db->query("SELECT name,shortName,uuid,type FROM " . $tablePrefix . "templatesteps WHERE removed = 0 ORDER BY shortName,name;");
+		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`type`,`comment` FROM " . $tablePrefix . "templatesteps WHERE removed = 0 ORDER BY shortName,name;");
 		$steps = Array();
 		while ($step = $rep->fetch())
 		{
 			$s = Array();
 			$s['name'] = $step['name'];
 			$s['shortName'] = $step['shortName'];
+			$s['comment'] = $step['comment'];
 			$s['type'] = $step['type'];
 			$s['uuid'] = $step['uuid'];
 			$steps[] = $s;

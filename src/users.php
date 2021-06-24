@@ -161,7 +161,7 @@
             $reply["query"] = "getUsers";    
         }
         
-        $rep = $db->prepare("SELECT name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment` FROM " . $tablePrefix . "users WHERE removed = 0;");
         $rep->execute();
 
         $users = Array();
@@ -171,6 +171,7 @@
             $u = Array();
 			$u['name'] = $user['name'];
 			$u['shortName'] = $user['shortName'];
+			$u['comment'] = $user['comment'];
 			$u['uuid'] = $user['uuid'];
 			$u['folderPath'] = $user['folderPath'];
 			$u['role'] = $user['role'];

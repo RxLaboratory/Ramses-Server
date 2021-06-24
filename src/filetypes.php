@@ -165,7 +165,7 @@
         
         
         $rep = $db->prepare("SELECT
-                `name`,`shortName`,`extensions`,`previewable`,`uuid`
+                `name`,`shortName`,`extensions`,`previewable`,`uuid`, `comment`
             FROM " . $tablePrefix . "filetypes
             WHERE removed = 0
             ORDER BY `shortName`, `name`
@@ -179,6 +179,7 @@
             $filetype = Array();
 			$filetype['name'] = $f['name'];
 			$filetype['shortName'] = $f['shortName'];
+			$filetype['comment'] = $f['comment'];
 			$filetype['uuid'] = $f['uuid'];
 			$filetype['extensions'] = $f['extensions'];
 			$filetype['previewable'] = (int) $f['previewable'];

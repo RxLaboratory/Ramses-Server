@@ -31,6 +31,7 @@
 		$qString = "SELECT 
 				" . $tablePrefix . "steps.`uuid`,
 				" . $tablePrefix . "steps.`shortName`,
+				" . $tablePrefix . "steps.`comment`,
 				" . $tablePrefix . "steps.`name`,
 				" . $tablePrefix . "steps.`type`,
 				" . $tablePrefix . "steps.`id`,
@@ -44,6 +45,7 @@
 			$step = array();
 			$step['uuid'] = $s['uuid'];
 			$step['shortName'] = $s['shortName'];
+			$step['comment'] = $s['comment'];
 			$step['name'] = $s['name'];
 			$step['type'] = $s['type'];
 			$step['order'] = (int) $s['order'];
@@ -149,6 +151,7 @@
 		$queryStr = "SELECT
 			pipeFiles.`uuid`,
 			pipeFiles.`shortName`,
+			pipeFiles.`comment`,
 			fileTypes.`uuid` as fileTypeUuid,
 			colorSpaces.`uuid` as colorSpaceUuid
 		FROM {$pipefileTable} AS pipeFiles
@@ -164,6 +167,7 @@
 			$pipeFile = array();
 			$pipeFile['uuid'] = $p['uuid'];
 			$pipeFile['shortName'] = $p['shortName'];
+			$pipeFile['comment'] = $p['comment'];
 			$pipeFile['fileTypeUuid'] = $p['fileTypeUuid'];
 			$pipeFile['colorSpaceUuid'] = $p['colorSpaceUuid'];
 			$pipeFile['projectUuid'] = $projectUuid;
@@ -181,6 +185,7 @@
 		$qString = "SELECT 
 				" . $tablePrefix . "assetgroups.`uuid`,
 				" . $tablePrefix . "assetgroups.`shortName`,
+				" . $tablePrefix . "assetgroups.`comment`,
 				" . $tablePrefix . "assetgroups.`name`
 			FROM " . $tablePrefix . "assetgroups
 			WHERE projectId=" . $pid . " AND removed = 0 
@@ -191,6 +196,7 @@
 			$assetGroup = array();
 			$assetGroup['uuid'] = $ag['uuid'];
 			$assetGroup['shortName'] = $ag['shortName'];
+			$assetGroup['comment'] = $ag['comment'];
 			$assetGroup['name'] = $ag['name'];
 			$assetGroup['projectUuid'] = $puuid;
 
@@ -210,6 +216,7 @@
 				{$assetsTable}.`uuid`,
 				{$assetsTable}.`name`,
 				{$assetsTable}.`shortName`,
+				{$assetsTable}.`comment`,
 				{$assetsTable}.`tags`,
 				{$assetsTable}.`id`,
 				{$assetgroupsTable}.`uuid` AS assetGroupUuid
@@ -223,6 +230,7 @@
 			$asset = array();
 			$asset['uuid'] = $a['uuid'];
 			$asset['shortName'] = $a['shortName'];
+			$asset['comment'] = $a['comment'];
 			$asset['name'] = $a['name'];
 			$asset['tags'] = $a['tags'];
 			$asset['assetGroupUuid'] = $a['assetGroupUuid'];
@@ -284,6 +292,7 @@
 		$qString = "SELECT 
 					" . $tablePrefix . "sequences.`uuid`,
 					" . $tablePrefix . "sequences.`shortName`,
+					" . $tablePrefix . "sequences.`comment`,
 					" . $tablePrefix . "sequences.`name`
 				FROM " . $tablePrefix . "sequences
 				WHERE projectId=" . $pid . " AND removed = 0 
@@ -295,6 +304,7 @@
 
 			$sequence['uuid'] = $s['uuid'];
 			$sequence['shortName'] = $s['shortName'];
+			$sequence['comment'] = $s['comment'];
 			$sequence['name'] = $s['name'];
 			$sequence['projectUuid'] = $puuid;
 
@@ -315,6 +325,7 @@
 				{$shotsTable}.`uuid`,
 				{$shotsTable}.`name`,
 				{$shotsTable}.`shortName`,
+				{$shotsTable}.`comment`,
 				{$shotsTable}.`duration`,
 				{$shotsTable}.`order`,
 				{$sequencesTable}.`uuid` AS sequenceUuid
@@ -330,6 +341,7 @@
 			$shot = array();
 			$shot['uuid'] = $s['uuid'];
 			$shot['shortName'] = $s['shortName'];
+			$shot['comment'] = $s['comment'];
 			$shot['name'] = $s['name'];
 			$shot['duration'] = (float)$s['duration'];
 			$shot['order'] = (int)$s['order'];
@@ -392,6 +404,7 @@
 		$project = Array();
 		$project['name'] = $sqlRep['name'];
 		$project['shortName'] = $sqlRep['shortName'];
+		$project['comment'] = $sqlRep['comment'];
 		$project['folderPath'] = $sqlRep['folderPath'];
 		$project['uuid'] = $sqlRep['uuid'];
 		$project['framerate'] = (float)$sqlRep['framerate'];
@@ -481,7 +494,7 @@
 		
 
 		$rep = $db->query("SELECT
-				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`
+				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`
 			FROM {$projectsTable}
 			WHERE `removed` = 0
 			ORDER BY `shortName`,`name`;");
@@ -509,7 +522,7 @@
 		$uuid = $_GET["uuid"] ?? "";
 	
 		$rep = $db->prepare("SELECT
-				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`
+				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`
 			FROM {$projectsTable}
 			WHERE `uuid` = :uuid ;");
 
