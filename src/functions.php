@@ -98,7 +98,15 @@
     */
    function getArg($name, $defaultValue = "")
    {
-        return rawurldecode ( $_GET[$name] ?? $defaultValue );
+        $decordedArg = rawurldecode ( $_GET[$name] ?? $defaultValue );
+
+        $forbidden = array("and", "or", "if", "else", "insert", "update", "select", "drop", "alter");
+        foreach($forbidden as $word)
+        {
+            $decordedArg = str_replace("%" . $word . "%", " " . $word, $decordedArg);
+        }
+        
+        return $decordedArg;
    }
 
    /**

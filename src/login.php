@@ -27,8 +27,8 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "login";
 
-		$username = $_GET["username"] ?? "";
-		$password = $_GET["password"] ?? "";
+		$username = getArg( "username" );
+		$password = getArg( "password" );
 
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
