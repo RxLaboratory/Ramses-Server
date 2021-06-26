@@ -23,10 +23,17 @@
 
 	// Edit this configuration file before running the install script at /install/index.php
 
+	// === DEV MODE ===
+	// Comment out these lines to disable dev mode !important!
+	ini_set('display_errors', '1');
+	ini_set('display_startup_errors', '1');
+	error_reporting(E_ALL);1
+
 	// ==== SQL SETTINGS ====
 
 	// Host URL
 	$sqlHost = "localhost";
+	$sqlPort = 3306;
 	// Database name
 	$sqlDBName = "ramses";
 	// User
