@@ -194,40 +194,42 @@
 		{
 			$qString = "INSERT INTO {$statusTable} (
 				`uuid`,
-				`completionRatio`,
 				`userId`,
 				`stateId`,
-				`comment`,
-				`version`,
 				`stepId`,
 				`assetId`
 				)
 				VALUES(
 					:uuid ,
-					:completionRatio,
 					(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid ),
 					(SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid ),
-					:comment,
-					:version,
 					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid ),
 					(SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid )
 				)
-				AS newStatus
 				ON DUPLICATE KEY UPDATE
-					`comment` = newStatus.`comment`,
-					`completionRatio` = newStatus.`completionRatio`,
-					`version` = newStatus.`version`,
 					`removed` = 0;";
 
 			$rep = $db->prepare($qString);
 			$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-			$rep->bindValue(':completionRatio', $completionRatio, PDO::PARAM_INT);
 			$rep->bindValue(':stateUuid', $stateUuid, PDO::PARAM_STR);
 			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-			$rep->bindValue(':comment', $comment, PDO::PARAM_STR);
-			$rep->bindValue(':version', $version, PDO::PARAM_INT);
 			$rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
 			$rep->bindValue(':assetUuid', $assetUuid, PDO::PARAM_STR);
+			//$rep->debugDumpParams();
+			$rep->execute();
+			$rep->closeCursor();
+
+			$qString = "UPDATE {$statusTable}
+				SET
+					`completionRatio` = :completionRatio ,
+					`version` = :version ,
+					`comment` = :comment
+				WHERE `uuid` = :uuid ;";
+			$rep = $db->prepare($qString);
+			$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+			$rep->bindValue(':completionRatio', $completionRatio, PDO::PARAM_INT);
+			$rep->bindValue(':version', $version, PDO::PARAM_INT);
+			$rep->bindValue(':comment', $comment, PDO::PARAM_STR);
 			//$rep->debugDumpParams();
 			$rep->execute();
 			$rep->closeCursor();
