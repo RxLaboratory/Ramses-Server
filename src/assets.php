@@ -181,31 +181,37 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "setAssetStatus";
 
-		$uuid = $_GET["uuid"] ?? uuid();
-		$assetUuid = $_GET["assetUuid"] ?? "";
-		$completionRatio = $_GET["completionRatio"] ?? -1;
-		$userUuid = $_GET["userUuid"] ?? $_SESSION["userUuid"];
-		$stateUuid = $_GET["stateUuid"] ?? "";
-		$comment = $_GET["comment"] ?? "";
-		$version = $_GET["version"] ?? 1;
-		$stepUuid = $_GET["stepUuid"] ?? 1;
+		$uuid = getAarg("uuid", uuid() );
+		$assetUuid = getAarg("assetUuid");
+		$completionRatio = getAarg("completionRatio", -1);
+		$userUuid = getAarg("userUuid", $_SESSION["userUuid"]);
+		$stateUuid = getAarg("stateUuid");
+		$comment = getAarg("comment");
+		$version = getAarg("version", 1);
+		$stepUuid = getAarg("stepUuid");
+		$assignedUserUuid = getAarg("assignedUserUuid");
 
 		if (strlen($assetUuid) > 0 && strlen($userUuid) > 0 && strlen($stateUuid) > 0 && strlen($stepUuid) > 0 )
 		{
+			if ($assignedUserUuid == "") $assignUser = "NULL";
+			else $assignUser = "(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :assignedUserUuid )";
+
 			$qString = "INSERT INTO {$statusTable} (
 				`uuid`,
 				`userId`,
 				`stateId`,
 				`stepId`,
-				`assetId`
+				`assetId`,
+				`assignedUserId`
 				)
 				VALUES(
 					:uuid ,
 					(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid ),
 					(SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid ),
 					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid ),
-					(SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid )
-				)
+					(SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid ), " .
+					$assignUser .
+				")
 				ON DUPLICATE KEY UPDATE
 					`removed` = 0;";
 
@@ -215,6 +221,7 @@
 			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
 			$rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
 			$rep->bindValue(':assetUuid', $assetUuid, PDO::PARAM_STR);
+			if ($assignedUserUuid == "") $rep->bindValue(':assignedUserUuid', $assignedUserUuid, PDO::PARAM_STR);
 			//$rep->debugDumpParams();
 			$rep->execute();
 			$rep->closeCursor();

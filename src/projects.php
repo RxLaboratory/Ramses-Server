@@ -253,11 +253,14 @@
 				{$statusTable}.`comment`,
 				{$statusTable}.`version`,
 				{$statusTable}.`date`,
-				{$usersTable}.`uuid` as `userUuid`,
+				{$statusTable}.`published`,
+				`users`.`uuid` as `userUuid`,
+				`assignedUsers`.`uuid` as `assignedUserUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
 				{$stepsTable}.`uuid` as `stepUuid`
 			FROM {$statusTable}
-			JOIN {$usersTable} ON {$usersTable}.`id` = {$statusTable}.`userId`
+			LEFT JOIN {$usersTable} as `users` ON `users`.`id` = {$statusTable}.`userId`
+			LEFT JOIN {$usersTable} as `assignedUsers` ON `assignedUsers`.`id` = {$statusTable}.`assignedUserId`
 			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
 			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
 			WHERE {$statusTable}.`assetId` = '" . $aid . "' AND {$statusTable}.`removed` = 0
@@ -276,6 +279,8 @@
 			$status['userUuid'] = $s['userUuid'];
 			$status['stateUuid'] = $s['stateUuid'];
 			$status['stepUuid'] = $s['stepUuid'];
+			$status['assignedUserUuid'] = $s['assignedUserUuid'];
+			$status['published'] = (int)$s['published'];
 			$status['assetUuid'] = $auuid;
 
 			$statusHistory[] = $status;
@@ -367,15 +372,19 @@
 				{$statusTable}.`comment`,
 				{$statusTable}.`version`,
 				{$statusTable}.`date`,
-				{$usersTable}.`uuid` as `userUuid`,
+				{$statusTable}.`published`,
+				users.`uuid` as `userUuid`,
+				assignedUsers.`uuid` as `assignedUserUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
 				{$stepsTable}.`uuid` as `stepUuid`
 			FROM {$statusTable}
-			JOIN {$usersTable} ON {$usersTable}.`id` = {$statusTable}.`userId`
+			LEFT JOIN {$usersTable} as `users` ON `users`.`id` = {$statusTable}.`userId`
+			LEFT JOIN {$usersTable} as `assignedUsers` ON `assignedUsers`.`id` = {$statusTable}.`assignedUserId`
 			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
 			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
 			WHERE {$statusTable}.`shotId` = '" . $sid . "' AND {$statusTable}.`removed` = 0
 			ORDER BY `date`;";
+
 		$repStatusHistory = $db->query( $qString );
 
 		while ($s = $repStatusHistory->fetch())
@@ -389,6 +398,8 @@
 			$status['userUuid'] = $s['userUuid'];
 			$status['stateUuid'] = $s['stateUuid'];
 			$status['stepUuid'] = $s['stepUuid'];
+			$status['assignedUserUuid'] = $s['assignedUserUuid'];
+			$status['published'] = (int)$s['published'];
 			$status['shotUuid'] = $suuid;
 
 			$statusHistory[] = $status;

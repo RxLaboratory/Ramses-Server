@@ -368,55 +368,64 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "setShotStatus";
 
-		$uuid = $_GET["uuid"] ?? uuid() ;
-		$shotUuid = $_GET["shotUuid"] ?? "";
-		$completionRatio = $_GET["completionRatio"] ?? -1;
-		$userUuid = $_GET["userUuid"] ?? $_SESSION["userUuid"];
-		$stateUuid = $_GET["stateUuid"] ?? "";
-		$comment = $_GET["comment"] ?? "";
-		$version = $_GET["version"] ?? 1;
-		$stepUuid = $_GET["stepUuid"] ?? 1;
+		$uuid = getAarg("uuid", uuid() );
+		$shotUuid =  getAarg("shotUuid");
+		$completionRatio = getAarg("completionRatio", -1);
+		$userUuid = getAarg("userUuid", $_SESSION["userUuid"]);
+		$stateUuid = getAarg("stateUuid");
+		$comment = getAarg("comment");
+		$version = getAarg("version", 1);
+		$stepUuid = getAarg("stepUuid");
+		$assignedUserUuid = getAarg("assignedUserUuid");
 
 		if (strlen($shotUuid) > 0 && strlen($userUuid) > 0 && strlen($stateUuid) > 0 && strlen($stepUuid) > 0 )
 		{
+			if ($assignedUserUuid == "") $assignUser = "NULL";
+			else $assignUser = "(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :assignedUserUuid )";
+
 			$qString = "INSERT INTO {$statusTable} (
 				`uuid`,
-				`completionRatio`,
 				`userId`,
 				`stateId`,
-				`comment`,
-				`version`,
 				`stepId`,
-				`shotId`
+				`shotId`,
+				`assignedUserId`
 				)
 				VALUES(
 					:uuid ,
-					:completionRatio ,
-					(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid),
-					(SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid),
-					:comment,
-					:version,
-					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid),
-					(SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :shotUuid)
-				)
-				AS newStatus
+					(SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid ),
+					(SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid ),
+					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid ),
+					(SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :shotUuid ), " .
+					$assignUser .
+				")
 				ON DUPLICATE KEY UPDATE
-					`comment` = newStatus.`comment`,
-					`completionRatio` = newStatus.`completionRatio`,
-					`version` = newStatus.`version`,
 					`removed` = 0;";
 
 			$rep = $db->prepare($qString);
-			$rep->execute(array(
-				'uuid' => $uuid,
-				'completionRatio' => $completionRatio,
-				'userUuid' => $userUuid,
-				'stateUuid' => $stateUuid,
-				'comment' => $comment,
-				'stepUuid' => $stepUuid,
-				'version' => $version,
-				'shotUuid' => $shotUuid
-			));
+			$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+			$rep->bindValue(':stateUuid', $stateUuid, PDO::PARAM_STR);
+			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
+			$rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
+			$rep->bindValue(':shotUuid', $shotUuid, PDO::PARAM_STR);
+			if ($assignedUserUuid == "") $rep->bindValue(':assignedUserUuid', $assignedUserUuid, PDO::PARAM_STR);
+			//$rep->debugDumpParams();
+			$rep->execute();
+			$rep->closeCursor();
+
+			$qString = "UPDATE {$statusTable}
+				SET
+					`completionRatio` = :completionRatio ,
+					`version` = :version ,
+					`comment` = :comment
+				WHERE `uuid` = :uuid ;";
+			$rep = $db->prepare($qString);
+			$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+			$rep->bindValue(':completionRatio', $completionRatio, PDO::PARAM_INT);
+			$rep->bindValue(':version', $version, PDO::PARAM_INT);
+			$rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+			//$rep->debugDumpParams();
+			$rep->execute();
 			$rep->closeCursor();
 
 			$reply["message"] = "Shot status updated.";

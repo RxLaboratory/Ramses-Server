@@ -33,6 +33,8 @@
 		$completionRatio = getArg ("completionRatio" );
 		$stateUuid = getArg ( "stateUuid" );
 		$uuid = getArg ("uuid" );
+        $published = getAarg("published", 0);
+        $assignedUserUuid = getAarg("assignedUserUuid");
 
 		if ( $uuid != "" && $stateUuid != "" )
 		{
@@ -57,6 +59,22 @@
             {
                 $qString = $qString . ", comment= :comment";
                 $values["comment"] = $comment;
+            }
+
+            if ($published != 0)
+            {
+                $qString = $qString . ", published= :published";
+                $values["published"] = $published;
+            }
+
+            if ($assignedUserUuid != "")
+            {
+                if ($assignedUserUuid == "NULL" ) $qString = $qString . ", assignedUserId= NULL";
+                else 
+                {
+                    $qString = $qString . ", assignedUserId= (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :assignedUserUuid )";
+                    $values["assignedUserUuid"] = $assignedUserUuid;
+                }
             }
 
             $qString = $qString . " WHERE uuid= :uuid ;";
