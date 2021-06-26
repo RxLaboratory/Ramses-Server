@@ -33,8 +33,8 @@
 		$completionRatio = getArg ("completionRatio" );
 		$stateUuid = getArg ( "stateUuid" );
 		$uuid = getArg ("uuid" );
-        $published = getAarg("published", 0);
-        $assignedUserUuid = getAarg("assignedUserUuid");
+        $published = getArg("published", 0);
+        $assignedUserUuid = getArg("assignedUserUuid");
 
 		if ( $uuid != "" && $stateUuid != "" )
 		{

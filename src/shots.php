@@ -368,15 +368,15 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "setShotStatus";
 
-		$uuid = getAarg("uuid", uuid() );
-		$shotUuid =  getAarg("shotUuid");
-		$completionRatio = getAarg("completionRatio", -1);
-		$userUuid = getAarg("userUuid", $_SESSION["userUuid"]);
-		$stateUuid = getAarg("stateUuid");
-		$comment = getAarg("comment");
-		$version = getAarg("version", 1);
-		$stepUuid = getAarg("stepUuid");
-		$assignedUserUuid = getAarg("assignedUserUuid");
+		$uuid = getArg("uuid", uuid() );
+		$shotUuid =  getArg("shotUuid");
+		$completionRatio = getArg("completionRatio", -1);
+		$userUuid = getArg("userUuid", $_SESSION["userUuid"]);
+		$stateUuid = getArg("stateUuid");
+		$comment = getArg("comment");
+		$version = getArg("version", 1);
+		$stepUuid = getArg("stepUuid");
+		$assignedUserUuid = getArg("assignedUserUuid");
 
 		if (strlen($shotUuid) > 0 && strlen($userUuid) > 0 && strlen($stateUuid) > 0 && strlen($stepUuid) > 0 )
 		{
@@ -408,7 +408,7 @@
 			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
 			$rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
 			$rep->bindValue(':shotUuid', $shotUuid, PDO::PARAM_STR);
-			if ($assignedUserUuid == "") $rep->bindValue(':assignedUserUuid', $assignedUserUuid, PDO::PARAM_STR);
+			if ($assignedUserUuid != "") $rep->bindValue(':assignedUserUuid', $assignedUserUuid, PDO::PARAM_STR);
 			//$rep->debugDumpParams();
 			$rep->execute();
 			$rep->closeCursor();

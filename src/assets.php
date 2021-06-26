@@ -181,15 +181,15 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "setAssetStatus";
 
-		$uuid = getAarg("uuid", uuid() );
-		$assetUuid = getAarg("assetUuid");
-		$completionRatio = getAarg("completionRatio", -1);
-		$userUuid = getAarg("userUuid", $_SESSION["userUuid"]);
-		$stateUuid = getAarg("stateUuid");
-		$comment = getAarg("comment");
-		$version = getAarg("version", 1);
-		$stepUuid = getAarg("stepUuid");
-		$assignedUserUuid = getAarg("assignedUserUuid");
+		$uuid = getArg("uuid", uuid() );
+		$assetUuid = getArg("assetUuid");
+		$completionRatio = getArg("completionRatio", -1);
+		$userUuid = getArg("userUuid", $_SESSION["userUuid"]);
+		$stateUuid = getArg("stateUuid");
+		$comment = getArg("comment");
+		$version = getArg("version", 1);
+		$stepUuid = getArg("stepUuid");
+		$assignedUserUuid = getArg("assignedUserUuid");
 
 		if (strlen($assetUuid) > 0 && strlen($userUuid) > 0 && strlen($stateUuid) > 0 && strlen($stepUuid) > 0 )
 		{
@@ -221,7 +221,7 @@
 			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
 			$rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
 			$rep->bindValue(':assetUuid', $assetUuid, PDO::PARAM_STR);
-			if ($assignedUserUuid == "") $rep->bindValue(':assignedUserUuid', $assignedUserUuid, PDO::PARAM_STR);
+			if ($assignedUserUuid != "") $rep->bindValue(':assignedUserUuid', $assignedUserUuid, PDO::PARAM_STR);
 			//$rep->debugDumpParams();
 			$rep->execute();
 			$rep->closeCursor();
