@@ -99,24 +99,13 @@
 			// Only if lead
             if ( isLead() )
             {
-				$qString = "INSERT INTO {$assetsTable} (`name`, `shortName`, `tags`, `uuid`, `assetGroupId`, `comment`)
-				VALUES(
-					:name ,
-					:shortName,
-					:tags,
-					:uuid,
-					(SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE `uuid` = :assetGroupUuid ),
-					:comment
-				)
-				AS newAsset
-				ON DUPLICATE KEY UPDATE
-					`name` = newAsset.`name`,
-					`tags` = newAsset.`tags`,
-					`assetGroupId` = newAsset.`assetGroupId`,
-					`comment` = newAsset.`comment`,
-					`removed` = 0;
-				UPDATE {$assetsTable}
-				SET `shortName` = :shortName
+				$qString = "UPDATE {$assetsTable}
+				SET
+					`shortName` = :shortName,
+					`name`= :name ,
+					`tags`= :tags,
+					`assetGroupId`= (SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE `uuid` = :assetGroupUuid ),
+					`comment`= :comment
 				WHERE `uuid` = :uuid;";
 
 				$values = array('name' => $name,'shortName' => $shortName, 'tags' => $tags, 'assetGroupUuid' => $assetGroupUuid, 'uuid' => $uuid, 'comment' => $comment);
