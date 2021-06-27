@@ -212,6 +212,7 @@ CREATE TABLE `ram_status` (
   `stateId` int(11) NOT NULL,
   `comment` text COLLATE utf8_unicode_ci,
   `version` int(11) NOT NULL DEFAULT '1',
+  `timeSpent` int(10) UNSIGNED NOT NULL DEFAULT '0',
   `published` tinyint(1) NOT NULL DEFAULT '0',
   `assignedUserId` int(11) DEFAULT NULL,
   `stepId` int(11) NOT NULL,
@@ -318,7 +319,6 @@ ALTER TABLE `ram_assetgroups`
 ALTER TABLE `ram_assets`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid` (`uuid`),
-  ADD UNIQUE KEY `assetName` (`name`,`shortName`,`assetGroupId`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD KEY `fk_assets_assgroup_idx` (`assetGroupId`);
 

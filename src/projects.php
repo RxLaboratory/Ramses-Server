@@ -254,6 +254,7 @@
 				{$statusTable}.`version`,
 				{$statusTable}.`date`,
 				{$statusTable}.`published`,
+				{$statusTable}.`timeSpent`,
 				`users`.`uuid` as `userUuid`,
 				`assignedUsers`.`uuid` as `assignedUserUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
@@ -281,6 +282,7 @@
 			$status['stepUuid'] = $s['stepUuid'];
 			$status['assignedUserUuid'] = $s['assignedUserUuid'];
 			$status['published'] = (int)$s['published'];
+			$status['timeSpent'] = (int)$s['timeSpent'];
 			$status['assetUuid'] = $auuid;
 
 			$statusHistory[] = $status;
@@ -373,6 +375,7 @@
 				{$statusTable}.`version`,
 				{$statusTable}.`date`,
 				{$statusTable}.`published`,
+				{$statusTable}.`timeSpent`,
 				users.`uuid` as `userUuid`,
 				assignedUsers.`uuid` as `assignedUserUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
@@ -400,6 +403,7 @@
 			$status['stepUuid'] = $s['stepUuid'];
 			$status['assignedUserUuid'] = $s['assignedUserUuid'];
 			$status['published'] = (int)$s['published'];
+			$status['timeSpent'] = (int)$s['timeSpent'];
 			$status['shotUuid'] = $suuid;
 
 			$statusHistory[] = $status;

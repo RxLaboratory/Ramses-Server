@@ -35,6 +35,8 @@
 		$uuid = getArg ("uuid" );
         $published = getArg("published", 0);
         $assignedUserUuid = getArg("assignedUserUuid");
+        $timeSpent = getArg("timeSpent", -1);
+        $date = getArg("date");
 
 		if ( $uuid != "" && $stateUuid != "" )
 		{
@@ -75,6 +77,18 @@
                     $qString = $qString . ", assignedUserId= (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :assignedUserUuid )";
                     $values["assignedUserUuid"] = $assignedUserUuid;
                 }
+            }
+
+            if ($timeSpent >= 0)
+            {
+                $qString = $qString . ", timeSpent= :timeSpent";
+                $values["timeSpent"] = $timeSpent;
+            }
+
+            if ($date != "")
+            {
+                $qString = $qString . ", date= :date";
+                $values["date"] = $date;
             }
 
             $qString = $qString . " WHERE uuid= :uuid ;";
