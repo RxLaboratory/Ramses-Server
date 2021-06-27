@@ -132,4 +132,32 @@
 		}
 	}
 
+
+    // ========= SET STATUS USER ==========
+	else if (isset($_GET["setStatusUser"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setStatusUser";
+
+		$uuid = getArg ("uuid" );
+		$userUuid = getArg ("userUuid" );
+
+		if (strlen($uuid) > 0)
+		{
+            $rep = $db->prepare("UPDATE {$statusTable}
+                SET `userId` = (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
+                WHERE uuid= :uuid ;");
+            $rep->execute(array('uuid' => $uuid, 'userUuid' => $userUuid));
+            $rep->closeCursor();
+
+            $reply["message"] = "Status user changed.";
+            $reply["success"] = true;
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
 ?>
