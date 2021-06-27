@@ -390,7 +390,6 @@ ALTER TABLE `ram_shots`
 
 ALTER TABLE `ram_states`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `name` (`name`,`shortName`),
   ADD UNIQUE KEY `uuid` (`uuid`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`);
 
@@ -546,7 +545,7 @@ ALTER TABLE `ram_status`
   ADD CONSTRAINT `fk_status_asset` FOREIGN KEY (`assetId`) REFERENCES `ram_assets` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `fk_status_assigneduser` FOREIGN KEY (`assignedUserId`) REFERENCES `ram_users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_status_shot` FOREIGN KEY (`shotId`) REFERENCES `ram_shots` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_status_state` FOREIGN KEY (`stateId`) REFERENCES `ram_states` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_status_state` FOREIGN KEY (`stateId`) REFERENCES `ram_states` (`id`),
   ADD CONSTRAINT `fk_status_step` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_status_user` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
