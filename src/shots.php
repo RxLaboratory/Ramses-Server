@@ -437,4 +437,92 @@
 			$reply["success"] = false;
 		}
 	}
+
+	// ========= ASSIGN ASSET ========
+	else if (isset($_GET["assignAsset"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "assignAsset";
+
+		$uuid = getArg( "uuid" );
+		$assetUuid = getArg( "assetUuid" );
+
+		if ($uuid != "" && $assetUuid != "")
+		{
+			if (isLead())
+			{
+				$qString = "INSERT INTO {$shotassetTable} ( `shotId`, `assetId` )
+					VALUES(
+						(SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :uuid ),
+						(SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid )
+						)
+					ON DUPLICATE KEY UPDATE `removed` = 0;";
+
+				$rep = $db->prepare($qString);
+				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+				$rep->bindValue(':assetUuid', $assetUuid, PDO::PARAM_STR);
+				//$rep->debugDumpParams();
+				$rep->execute();
+				$rep->closeCursor();
+
+				$reply["message"] = "Asset assigned.";
+				$reply["success"] = true;
+
+			}
+			else
+			{
+				$reply["message"] = "Insufficient rights, you need to be Lead to assign assets to shots.";
+                $reply["success"] = false;
+			}
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
+	// ========= UNASSIGN ASSET ========
+	else if (isset($_GET["unassignAsset"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "unassignAsset";
+
+		$uuid = getArg( "uuid" );
+		$assetUuid = getArg( "assetUuid" );
+
+		if ($uuid != "" && $assetUuid != "")
+		{
+			if (isLead())
+			{
+				$qString = "DELETE {$shotassetTable} FROM {$shotassetTable}
+					WHERE
+						shotId = (SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :uuid )
+						AND
+						assetId = (SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid )
+					;";
+
+				$rep = $db->prepare($qString);
+				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+				$rep->bindValue(':assetUuid', $assetUuid, PDO::PARAM_STR);
+				//$rep->debugDumpParams();
+				$rep->execute();
+				$rep->closeCursor();
+
+				$reply["message"] = "Asset unassigned.";
+				$reply["success"] = true;
+
+			}
+			else
+			{
+				$reply["message"] = "Insufficient rights, you need to be Lead to assign assets to shots.";
+                $reply["success"] = false;
+			}
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
 ?>

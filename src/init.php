@@ -59,4 +59,5 @@
 	$usersTable = $tablePrefix . "users";
 	$pipefileTable = $tablePrefix . "pipefile";
 	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
+	$shotassetTable = $tablePrefix . "shotasset";
 ?>
