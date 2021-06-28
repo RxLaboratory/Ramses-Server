@@ -176,6 +176,14 @@ CREATE TABLE `ram_sequences` (
   `comment` text COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_shotasset`;
+CREATE TABLE `ram_shotasset` (
+  `id` int(11) NOT NULL,
+  `shotId` int(11) NOT NULL,
+  `assetId` int(11) NOT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 DROP TABLE IF EXISTS `ram_shots`;
 CREATE TABLE `ram_shots` (
   `id` int(11) NOT NULL,
@@ -383,6 +391,11 @@ ALTER TABLE `ram_sequences`
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   ADD KEY `fk_sequences_projectid_idx` (`projectId`);
 
+ALTER TABLE `ram_shotasset`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_shotasset_shot` (`shotId`),
+  ADD KEY `fk_shotasset_asset` (`assetId`);
+
 ALTER TABLE `ram_shots`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid` (`uuid`),
@@ -481,6 +494,9 @@ ALTER TABLE `ram_projectshot`
 ALTER TABLE `ram_sequences`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE `ram_shotasset`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 ALTER TABLE `ram_shots`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
@@ -537,6 +553,10 @@ ALTER TABLE `ram_projectassetgroup`
 
 ALTER TABLE `ram_sequences`
   ADD CONSTRAINT `fk_sequences_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `ram_shotasset`
+  ADD CONSTRAINT `fk_shotasset_asset` FOREIGN KEY (`assetId`) REFERENCES `ram_assets` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_shotasset_shot` FOREIGN KEY (`shotId`) REFERENCES `ram_shots` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `ram_shots`
   ADD CONSTRAINT `fk_shots_sequence` FOREIGN KEY (`sequenceId`) REFERENCES `ram_sequences` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
