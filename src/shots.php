@@ -455,8 +455,7 @@
 					VALUES(
 						(SELECT {$shotsTable}.`id` FROM {$shotsTable} WHERE {$shotsTable}.`uuid` = :uuid ),
 						(SELECT {$assetsTable}.`id` FROM {$assetsTable} WHERE {$assetsTable}.`uuid` = :assetUuid )
-						)
-					ON DUPLICATE KEY UPDATE `removed` = 0;";
+						);";
 
 				$rep = $db->prepare($qString);
 				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);

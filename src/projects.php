@@ -354,6 +354,7 @@
 			$shot['order'] = (int)$s['order'];
 			$shot['sequenceUuid'] = $s['sequenceUuid'];
 			$shot['statusHistory'] = getShotStatusHistory( $s['id'], $shot['uuid'] );
+			$shot['assetUuids'] = getShotAssets( $s['id'] );
 			
 			$shots[] = $shot;
 		}
@@ -361,6 +362,31 @@
 		$repShots->closeCursor();
 
 		return $shots;
+	}
+
+	function getShotAssets( $shotId )
+	{
+		global $db, $shotassetTable, $assetsTable;
+
+		$assets = array();
+		$qString = "SELECT {$assetsTable}.`uuid`
+			FROM {$shotassetTable}
+			LEFT JOIN {$assetsTable} ON {$assetsTable}.`id` = {$shotassetTable}.`assetId`
+			WHERE {$shotassetTable}.`shotId` = {$shotId} ;";
+
+		$repAssets = $db->prepare( $qString );
+		//$repAssets->debugDumpParams();
+		$repAssets->execute();
+
+		while ($a = $repAssets->fetch())
+		{
+			$assetUuid = $a['uuid'];
+			$assets[] = $assetUuid;
+		}
+
+		$repAssets->closeCursor();
+
+		return $assets;
 	}
 
 	function getShotStatusHistory( $sid, $suuid )
