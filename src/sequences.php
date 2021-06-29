@@ -154,4 +154,53 @@
 		}
 	}
 
+	else if (isset($_GET["setSequenceOrder"]))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setShotOrder";
+
+		$order = getArg("order");
+		$uuid = getArg("uuid");
+
+		if ($uuid != "" && $order != "")
+		{
+			// Only if lead
+			if ( isLead() )
+			{
+				//Move given sequence
+				$qString = "UPDATE {$sequencesTable}
+					SET `order` = :order
+					WHERE `uuid` = :uuid ;";
+
+				$rep = $db->prepare($qString);
+				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+				$rep->bindValue(':order', $order, PDO::PARAM_STR);
+				$ok = $rep->execute();
+				$rep->closeCursor();
+
+				if($ok)
+				{
+					$reply["message"] = "Sequence moved.";
+					$reply["success"] = true;
+				}
+				else 
+				{
+					$reply["message"] = $rep.errorInfo()[2];
+					$reply["success"] = false;
+				}
+				
+			}
+			else
+			{
+				$reply["message"] = "Insufficient rights, you need to be Lead to update shot order.";
+				$reply["success"] = false;
+			}
+		}
+		else
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
 ?>

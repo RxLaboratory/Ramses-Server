@@ -293,17 +293,19 @@
 
 	function getSequences($pid, $puuid)
 	{
-		global $tablePrefix, $db;
+		global $sequencesTable, $db;
 
 		$sequences = array();
 		$qString = "SELECT 
-					" . $tablePrefix . "sequences.`uuid`,
-					" . $tablePrefix . "sequences.`shortName`,
-					" . $tablePrefix . "sequences.`comment`,
-					" . $tablePrefix . "sequences.`name`
-				FROM " . $tablePrefix . "sequences
-				WHERE projectId=" . $pid . " AND removed = 0 
-				ORDER BY " . $tablePrefix . "sequences.`shortName`, " . $tablePrefix . "sequences.`name`;";
+					{$sequencesTable}.`uuid`,
+					{$sequencesTable}.`shortName`,
+					{$sequencesTable}.`comment`,
+					{$sequencesTable}.`name`,
+					{$sequencesTable}.`order`
+				FROM {$sequencesTable}
+				WHERE `projectId` = {$pid} AND `removed` = 0 
+				ORDER BY {$sequencesTable}.`shortName`, {$sequencesTable}.`name`;";
+
 		$repSequences = $db->query( $qString );
 		while($s = $repSequences->fetch())
 		{
@@ -313,6 +315,7 @@
 			$sequence['shortName'] = $s['shortName'];
 			$sequence['comment'] = $s['comment'];
 			$sequence['name'] = $s['name'];
+			$sequence['order'] = (int)$s['order'];
 			$sequence['projectUuid'] = $puuid;
 
 			$sequences[] = $sequence;

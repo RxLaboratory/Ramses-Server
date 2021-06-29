@@ -189,18 +189,18 @@
 			// Only if lead
 			if ( isLead() )
 			{
-			//Move given step
-			$qString = "UPDATE {$shotsTable}
-			SET `order` = :order
-			WHERE `uuid` = :uuid;";
-			$values = array('order'  => $order,'uuid'  => $uuid);
+				//Move given shot
+				$qString = "UPDATE {$shotsTable}
+				SET `order` = :order
+				WHERE `uuid` = :uuid;";
+				$values = array('order'  => $order,'uuid'  => $uuid);
 
-			$rep = $db->prepare($qString);
-			$rep->execute($values);
-			$rep->closeCursor();
+				$rep = $db->prepare($qString);
+				$rep->execute($values);
+				$rep->closeCursor();
 
-			$reply["message"] = "Shot moved.";
-			$reply["success"] = true;
+				$reply["message"] = "Shot moved.";
+				$reply["success"] = true;
 			}
 			else
 			{
