@@ -533,7 +533,7 @@ ALTER TABLE `ram_assetgroups`
   ADD CONSTRAINT `fk_assetgroups_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `ram_assets`
-  ADD CONSTRAINT `fk_assets_assgroup` FOREIGN KEY (`assetGroupId`) REFERENCES `ram_assetgroups` (`id`);
+  ADD CONSTRAINT `fk_assets_assgroup_idx` FOREIGN KEY (`assetGroupId`) REFERENCES `ram_assetgroups` (`id`);
 
 ALTER TABLE `ram_pipefile`
   ADD CONSTRAINT `fk_pipefile_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
