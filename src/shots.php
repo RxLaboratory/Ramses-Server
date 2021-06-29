@@ -176,10 +176,10 @@
 	}
 
 	// ========= SET ORDER ==========
-	else if (isset($_GET["setSshotOrder"]))
+	else if (isset($_GET["setShotOrder"]))
 	{
 		$reply["accepted"] = true;
-		$reply["query"] = "setSshotOrder";
+		$reply["query"] = "setShotOrder";
 
 		$order = $_GET["order"] ?? "";
 		$uuid = $_GET["uuid"] ?? "";
