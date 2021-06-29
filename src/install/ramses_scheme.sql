@@ -220,7 +220,7 @@ CREATE TABLE `ram_steps` (
   `shortName` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
   `autoCreateAssets` tinyint(1) NOT NULL DEFAULT '0',
   `type` enum('pre','asset','shot','post') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'asset',
-  `color` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '#434343',
+  `color` varchar(15) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT '#e3e3e3',
   `projectId` int NOT NULL,
   `order` int NOT NULL DEFAULT '0',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -258,6 +258,7 @@ CREATE TABLE `ram_templatesteps` (
   `autoCreateAssets` tinyint(1) NOT NULL DEFAULT '0',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `type` enum('pre','asset','shot','post') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'asset',
+  `color` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '#e3e3e3',
   `removed` tinyint NOT NULL DEFAULT '0',
   `order` int NOT NULL DEFAULT '0',
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
