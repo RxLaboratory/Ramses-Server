@@ -193,6 +193,8 @@ CREATE TABLE `ram_status` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci,
   `version` int NOT NULL DEFAULT '1',
   `timeSpent` int UNSIGNED NOT NULL DEFAULT '0',
+  `difficulty` enum('veryEasy','easy','medium','hard','veryHard') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'medium',
+  `estimation` decimal(5,2) NOT NULL DEFAULT '-1.00',
   `published` tinyint(1) NOT NULL DEFAULT '0',
   `assignedUserId` int DEFAULT NULL,
   `stepId` int NOT NULL,
@@ -397,7 +399,8 @@ ALTER TABLE `ram_stepapplication`
 ALTER TABLE `ram_steps`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid` (`uuid`),
-  ADD KEY `fk_steps_projectId_idx` (`projectId`);
+  ADD KEY `fk_steps_projectId_idx` (`projectId`),
+  ADD KEY `fk_estimationGroupId` (`estimationMultiplyGroupId`);
 
 ALTER TABLE `ram_stepuser`
   ADD PRIMARY KEY (`id`),
@@ -532,6 +535,7 @@ ALTER TABLE `ram_stepapplication`
   ADD CONSTRAINT `fk_stepapplication_step` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`);
 
 ALTER TABLE `ram_steps`
+  ADD CONSTRAINT `fk_estimationGroupId` FOREIGN KEY (`estimationMultiplyGroupId`) REFERENCES `ram_assetgroups` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `fk_steps_projectId` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `ram_stepuser`

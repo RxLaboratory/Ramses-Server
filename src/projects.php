@@ -275,6 +275,8 @@
 				{$statusTable}.`date`,
 				{$statusTable}.`published`,
 				{$statusTable}.`timeSpent`,
+				{$statusTable}.`difficulty`,
+				{$statusTable}.`estimation`,
 				`users`.`uuid` as `userUuid`,
 				`assignedUsers`.`uuid` as `assignedUserUuid`,
 				{$statesTable}.`uuid` as `stateUuid`,
@@ -303,6 +305,8 @@
 			$status['assignedUserUuid'] = $s['assignedUserUuid'];
 			$status['published'] = (int)$s['published'];
 			$status['timeSpent'] = (int)$s['timeSpent'];
+			$status['difficulty'] = $s['difficulty'];
+			$status['estimation'] = (float)$s['estimation'];
 			$status['assetUuid'] = $auuid;
 
 			$statusHistory[] = $status;

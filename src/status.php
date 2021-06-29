@@ -37,6 +37,8 @@
         $assignedUserUuid = getArg("assignedUserUuid");
         $timeSpent = getArg("timeSpent", -1);
         $date = getArg("date");
+        $estimation = getArg("estimation");
+        $difficulty = getArg("difficulty");
 
 		if ( $uuid != "" && $stateUuid != "" )
 		{
@@ -89,6 +91,18 @@
             {
                 $qString = $qString . ", date= :date";
                 $values["date"] = $date;
+            }
+
+            if ($difficulty != "")
+            {
+                $qString = $qString . ", `difficulty`= :difficulty";
+                $values["difficulty"] = $difficulty;
+            }
+
+            if ($estimation != "")
+            {
+                $qString = $qString . ", `estimation`= :estimation";
+                $values["estimation"] = $estimation;
             }
 
             $qString = $qString . " WHERE uuid= :uuid ;";
