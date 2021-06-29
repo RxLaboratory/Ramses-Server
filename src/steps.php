@@ -96,25 +96,32 @@
 		$uuid = getArg( "uuid" );
 		$type = getArg( "type" );
 		$comment = getArg( "comment" );
+		$color = getArg( "color" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
+		if ($shortName != "" && $uuid != "")
 		{
 			// Only if admin
             if ( isProjectAdmin() )
             {
 				$qString = "UPDATE {$stepsTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
+
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
 				
-				if (strlen($type) > 0)
+				if ($type != "")
 				{
 					$qString = $qString . ", `type`= :type";
                     $values["type"] = $type;
 				}
 
+				if ($color != "")
+				{
+					$qString = $qString . ", `color`= :color";
+                    $values["color"] = $color;
+				}
+
 				$qString = $qString . " WHERE uuid= :uuid ;";
 			
 				$rep = $db->prepare($qString);
-				
                 $rep->execute($values);
                 $rep->closeCursor();
 

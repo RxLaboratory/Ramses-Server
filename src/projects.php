@@ -35,6 +35,7 @@
 				" . $tablePrefix . "steps.`name`,
 				" . $tablePrefix . "steps.`type`,
 				" . $tablePrefix . "steps.`id`,
+				" . $tablePrefix . "steps.`color`,
 				" . $tablePrefix . "steps.`order`
 			FROM " . $tablePrefix . "steps
 			WHERE projectId=" . $pid . " AND removed = 0 
@@ -48,7 +49,8 @@
 			$step['comment'] = $s['comment'];
 			$step['name'] = $s['name'];
 			$step['type'] = $s['type'];
-			$step['order'] = (int) $s['order'];
+			$step['order'] = (int)$s['order'];
+			$step['color'] = $s['color'];
 			$step['projectUuid'] = $puuid;
 
 			$step['users'] = array();
