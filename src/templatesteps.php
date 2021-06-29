@@ -82,7 +82,8 @@
 		}
 		
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`type`,`comment` FROM " . $tablePrefix . "templatesteps WHERE removed = 0 ORDER BY shortName,name;");
+		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`type`,`comment`,`color`
+			FROM {$templatestepsTable} WHERE `removed` = 0 ORDER BY `shortName`,`name`;");
 		$steps = Array();
 		while ($step = $rep->fetch())
 		{
@@ -91,6 +92,7 @@
 			$s['shortName'] = $step['shortName'];
 			$s['comment'] = $step['comment'];
 			$s['type'] = $step['type'];
+			$s['color'] = $step['color'];
 			$s['uuid'] = $step['uuid'];
 			$steps[] = $s;
 		}
@@ -119,6 +121,7 @@
 		$uuid = getArg( "uuid" );
 		$type = getArg( "type" );
 		$comment = getArg( "comment" );
+		$color = getArg( "color" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -130,12 +133,19 @@
 						`name`= :name ,
 						`shortName`= :shortName,
 						`comment`= :comment";
+						
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
 				
-				if (strlen($type) > 0)
+				if ($type != "")
 				{
 					$qString = $qString . ", type= :type";
                     $values["type"] = $type;
+				}
+
+				if ($color != "")
+				{
+					$qString = $qString . ", color= :color";
+                    $values["color"] = $color;
 				}
 
 				$qString = $qString . " WHERE uuid= :uuid ;";
