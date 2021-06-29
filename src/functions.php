@@ -110,6 +110,14 @@
    }
 
    /**
+    * Check if the URL has the given arg
+    */
+   function hasArg( $name )
+   {
+       return isset($_GET[$name]);
+   }
+
+   /**
     * Generates a pseudo-random UUID
     */
    function uuid() {

@@ -24,22 +24,31 @@
 	// ========= Functions ===============
 	function getSteps( $pid, $puuid )
 	{
-		global $tablePrefix, $db;
+		global $stepsTable, $assetgroupsTable, $db, $usersTable, $stepuserTable, $applicationsTable, $stepapplicationTable;
 
 		$steps = array();
 		//get steps
 		$qString = "SELECT 
-				" . $tablePrefix . "steps.`uuid`,
-				" . $tablePrefix . "steps.`shortName`,
-				" . $tablePrefix . "steps.`comment`,
-				" . $tablePrefix . "steps.`name`,
-				" . $tablePrefix . "steps.`type`,
-				" . $tablePrefix . "steps.`id`,
-				" . $tablePrefix . "steps.`color`,
-				" . $tablePrefix . "steps.`order`
-			FROM " . $tablePrefix . "steps
-			WHERE projectId=" . $pid . " AND removed = 0 
+				{$stepsTable}.`uuid`,
+				{$stepsTable}.`shortName`,
+				{$stepsTable}.`comment`,
+				{$stepsTable}.`name`,
+				{$stepsTable}.`type`,
+				{$stepsTable}.`id`,
+				{$stepsTable}.`color`,
+				{$stepsTable}.`estimationMethod`,
+				{$stepsTable}.`estimationVeryEasy`,
+				{$stepsTable}.`estimationEasy`,
+				{$stepsTable}.`estimationMedium`,
+				{$stepsTable}.`estimationHard`,
+				{$stepsTable}.`estimationVeryHard`,
+				{$assetgroupsTable}.`uuid` as multiplyGroupUuid,
+				{$stepsTable}.`order`
+			FROM {$stepsTable}
+			LEFT JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$stepsTable}.`estimationMultiplyGroupId`
+			WHERE {$stepsTable}.`projectId`= {$pid} AND {$stepsTable}.`removed` = 0 
 			ORDER BY `order`, `shortName`, `name`;";
+
 		$repSteps = $db->query( $qString );
 		while ($s = $repSteps->fetch())
 		{
@@ -51,18 +60,26 @@
 			$step['type'] = $s['type'];
 			$step['order'] = (int)$s['order'];
 			$step['color'] = $s['color'];
+			$step['estimationMethod'] = $s['estimationMethod'];
+			$step['estimationVeryEasy'] = (float)$s['estimationVeryEasy'];
+			$step['estimationEasy'] = (float)$s['estimationEasy'];
+			$step['estimationMedium'] = (float)$s['estimationMedium'];
+			$step['estimationHard'] = (float)$s['estimationHard'];
+			$step['estimationVeryHard'] = (float)$s['estimationVeryHard'];
+			$step['multiplyGroupUuid'] = $s['multiplyGroupUuid'];
 			$step['projectUuid'] = $puuid;
 
 			$step['users'] = array();
 
 			//get users
 			$qString = "SELECT 
-			" . $tablePrefix . "users.`uuid`
-			FROM " . $tablePrefix . "stepuser
-			JOIN " . $tablePrefix . "users
-			ON " . $tablePrefix . "stepuser.`userId` = " . $tablePrefix . "users.`id`
-			WHERE stepId=" . $s['id'] . " AND " . $tablePrefix . "users.`removed` = 0 
-			ORDER BY " . $tablePrefix . "users.`name`, " . $tablePrefix . "users.`shortName`;";
+			{$usersTable}.`uuid`
+			FROM {$stepuserTable}
+			JOIN {$usersTable}
+			ON {$stepuserTable}.`userId` = {$usersTable}.`id`
+			WHERE {$stepuserTable}.`stepId`= " . $s['id'] . " AND {$usersTable}.`removed` = 0 
+			ORDER BY {$usersTable}.`name`, {$usersTable}.`shortName`;";
+
 			$repUsers = $db->query( $qString );
 			while ($u = $repUsers->fetch())
 			{
@@ -71,12 +88,13 @@
 
 			//get applications
 			$qString = "SELECT 
-				" . $tablePrefix . "applications.`uuid`
-			FROM " . $tablePrefix . "stepapplication
-			JOIN " . $tablePrefix . "applications
-			ON " . $tablePrefix . "stepapplication.`applicationId` = " . $tablePrefix . "applications.`id`
-			WHERE stepId=" . $s['id'] . " AND " . $tablePrefix . "applications.`removed` = 0 
-			ORDER BY " . $tablePrefix . "applications.`name`, " . $tablePrefix . "applications.`shortName`;";
+				{$applicationsTable}.`uuid`
+			FROM {$stepapplicationTable}
+			JOIN {$applicationsTable}
+			ON {$stepapplicationTable}.`applicationId` = {$applicationsTable}.`id`
+			WHERE {$stepapplicationTable}.`stepId` = " . $s['id'] . " AND {$applicationsTable}.`removed` = 0 
+			ORDER BY {$applicationsTable}.`name`, {$applicationsTable}.`shortName`;";
+
 			$repApplications = $db->query( $qString );
 			while ($a = $repApplications->fetch())
 			{

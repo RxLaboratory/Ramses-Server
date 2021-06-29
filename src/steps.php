@@ -141,6 +141,74 @@
 		}
 	}
 
+	// =========== STEP ESTIMATIONS ==========
+	else if (hasArg( "setStepEstimations" ))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setStepEstimations";
+
+		$uuid = getArg( "uuid" );
+		$method = getArg( "method", "shot" );
+		$veryEasy = getArg( "veryEasy", "0.2" );
+		$easy = getArg( "easy", "0.5" );
+		$medium = getArg( "medium", "1" );
+		$hard = getArg( "hard", "2" );
+		$veryHard = getArg( "veryHard", "3" );
+		$multiplyGroupUuid = getArg( "multiplyGroupUuid" );
+
+		if ( $uuid != "")
+		{
+			// Only if admin
+            if ( isProjectAdmin() )
+            {
+				$qString = "UPDATE {$stepsTable}
+					SET
+						`estimationMethod`= :method ,
+						`estimationVeryEasy`= :veryEasy,
+						`estimationEasy`= :easy,
+						`estimationMedium`= :medium,
+						`estimationHard`= :hard,
+						`estimationVeryHard`= :veryHard,
+						`estimationMultiplyGroupId`= (SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE {$assetgroupsTable}.`uuid` = :multiplyGroupUuid )
+					WHERE `uuid`= :uuid;";
+
+				$rep = $db->prepare($qString);
+				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+				$rep->bindValue(':method', $method, PDO::PARAM_STR);
+				$rep->bindValue(':veryEasy', $veryEasy, PDO::PARAM_STR);
+				$rep->bindValue(':easy', $easy, PDO::PARAM_STR);
+				$rep->bindValue(':medium', $medium, PDO::PARAM_STR);
+				$rep->bindValue(':hard', $hard, PDO::PARAM_STR);
+				$rep->bindValue(':veryHard', $veryHard, PDO::PARAM_STR);
+				$rep->bindValue(':multiplyGroupUuid', $multiplyGroupUuid, PDO::PARAM_STR);
+				//$rep->debugDumpParams();
+				$ok = $rep->execute();
+				$rep->closeCursor();
+
+				if ($ok)
+				{
+					$reply["message"] = "Step updated.";
+					$reply["success"] = true;
+				}
+				else 
+				{
+					$reply["message"] = $rep.errorInfo()[2];
+					$reply["success"] = false;
+				}
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Project Admin to update step information.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
+	}
+
 	// ========= REMOVE STEP ==========
 	else if (isset($_GET["removeStep"]))
 	{

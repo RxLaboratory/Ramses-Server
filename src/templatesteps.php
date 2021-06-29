@@ -82,8 +82,23 @@
 		}
 		
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid`,`type`,`comment`,`color`
-			FROM {$templatestepsTable} WHERE `removed` = 0 ORDER BY `shortName`,`name`;");
+		$rep = $db->query("SELECT
+				`name`,
+				`shortName`,
+				`uuid`,
+				`type`,
+				`comment`,
+				`color`,
+				`estimationMethod`,
+				`estimationVeryEasy`,
+				`estimationEasy`,
+				`estimationMedium`,
+				`estimationHard`,
+				`estimationVeryHard`
+			FROM {$templatestepsTable}
+			WHERE `removed` = 0
+			ORDER BY `shortName`,`name`;");
+
 		$steps = Array();
 		while ($step = $rep->fetch())
 		{
@@ -93,6 +108,12 @@
 			$s['comment'] = $step['comment'];
 			$s['type'] = $step['type'];
 			$s['color'] = $step['color'];
+			$s['estimationMethod'] = $step['estimationMethod'];
+			$s['estimationVeryEasy'] = (float)$step['estimationVeryEasy'];
+			$s['estimationEasy'] = (float)$step['estimationEasy'];
+			$s['estimationMedium'] = (float)$step['estimationMedium'];
+			$s['estimationHard'] = (float)$step['estimationHard'];
+			$s['estimationVeryHard'] = (float)$step['estimationVeryHard'];
 			$s['uuid'] = $step['uuid'];
 			$steps[] = $s;
 		}
@@ -111,7 +132,7 @@
 	}
 
 	// ========= UPDATE STEP ==========
-	else if (isset($_GET["updateTemplateStep"]))
+	else if (hasArg( "updateTemplateStep" ))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateTemplateStep";
@@ -133,22 +154,22 @@
 						`name`= :name ,
 						`shortName`= :shortName,
 						`comment`= :comment";
-						
+
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
 				
 				if ($type != "")
 				{
-					$qString = $qString . ", type= :type";
+					$qString = $qString . ", `type`= :type";
                     $values["type"] = $type;
 				}
 
 				if ($color != "")
 				{
-					$qString = $qString . ", color= :color";
+					$qString = $qString . ", `color`= :color";
                     $values["color"] = $color;
 				}
 
-				$qString = $qString . " WHERE uuid= :uuid ;";
+				$qString = $qString . " WHERE `uuid`= :uuid ;";
 				
 				$rep = $db->prepare($qString);
                 $rep->execute($values);
@@ -159,7 +180,7 @@
 			}
 			else
             {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update step information.";
+                $reply["message"] = "Insufficient rights, you need to be Admin to update template step information.";
                 $reply["success"] = false;
             }
 		}
@@ -169,6 +190,71 @@
 			$reply["success"] = false;
 		}
 
+	}
+
+	// =========== STEP ESTIMATIONS ==========
+	else if (hasArg( "setTemplateStepEstimations" ))
+	{
+		$reply["accepted"] = true;
+		$reply["query"] = "setTemplateStepEstimations";
+
+		$uuid = getArg( "uuid" );
+		$method = getArg( "method", "shot" );
+		$veryEasy = getArg( "veryEasy", "0.2" );
+		$easy = getArg( "easy", "0.5" );
+		$medium = getArg( "medium", "1" );
+		$hard = getArg( "hard", "2" );
+		$veryHard = getArg( "veryHard", "3" );
+
+		if ( $uuid != "")
+		{
+			// Only if admin
+            if ( isAdmin() )
+            {
+				$qString = "UPDATE {$templatestepsTable}
+					SET
+						`estimationMethod`= :method ,
+						`estimationVeryEasy`= :veryEasy,
+						`estimationEasy`= :easy,
+						`estimationMedium`= :medium,
+						`estimationHard`= :hard,
+						`estimationVeryHard`= :veryHard
+					WHERE `uuid`= :uuid;";
+
+				$rep = $db->prepare($qString);
+				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+				$rep->bindValue(':method', $method, PDO::PARAM_STR);
+				$rep->bindValue(':veryEasy', $veryEasy, PDO::PARAM_STR);
+				$rep->bindValue(':easy', $easy, PDO::PARAM_STR);
+				$rep->bindValue(':medium', $medium, PDO::PARAM_STR);
+				$rep->bindValue(':hard', $hard, PDO::PARAM_STR);
+				$rep->bindValue(':veryHard', $veryHard, PDO::PARAM_STR);
+				//$rep->debugDumpParams();
+				$ok = $rep->execute();
+				$rep->closeCursor();
+
+				if ($ok)
+				{
+					$reply["message"] = "Template step updated.";
+					$reply["success"] = true;
+				}
+				else 
+				{
+					$reply["message"] = $rep.errorInfo()[2];
+					$reply["success"] = false;
+				}
+			}
+			else
+            {
+                $reply["message"] = "Insufficient rights, you need to be Admin to update template step information.";
+                $reply["success"] = false;
+            }
+		}
+		else 
+		{
+			$reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+		}
 	}
 
 	// ========= REMOVE STEP ==========
