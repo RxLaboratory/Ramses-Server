@@ -465,6 +465,43 @@
 		return $statusHistory;
 	}
 
+	function getSchedule( $projectId )
+	{
+		global $scheduleTable, $usersTable, $stepsTable, $db;
+
+		$schedule = array();
+
+		$qString = "SELECT
+				{$scheduleTable}.`uuid`,
+				{$scheduleTable}.`date`,
+				{$scheduleTable}.`comment`,
+				{$usersTable}.`uuid` AS userUuid,
+				{$stepsTable}.`uuid` AS stepUuid
+			FROM {$scheduleTable}
+			LEFT JOIN {$stepsTable} ON {$stepsTable}.`id` = {$scheduleTable}.`stepId`
+			LEFT JOIN {$usersTable} ON {$usersTable}.`id` = {$scheduleTable}.`userId`
+			WHERE {$stepsTable}.`projectId` = {$projectId}
+			ORDER BY `date`, `stepUuid`, `userUuid`;";
+		
+		$rep = $db->query($qString);
+		//$rep->debugDumpParams();
+
+		while ($s = $rep->fetch())
+		{
+			$entry['uuid'] = $s['uuid'];
+			$entry['date'] = $s['date'];
+			$entry['comment'] = $s['comment'];
+			$entry['userUuid'] = $s['userUuid'];
+			$entry['stepUuid'] = $s['stepUuid'];
+
+			$schedule[] = $entry;
+		}
+
+		$rep->closeCursor();
+
+		return $schedule;
+	}
+
 	function getProject( $sqlRep, $details=true )
 	{
 		global $tablePrefix, $db;
@@ -479,6 +516,7 @@
 		$project['width'] = (int)$sqlRep['width'];
 		$project['height'] = (int)$sqlRep['height'];
 		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
+		$project['deadline'] = $sqlRep['deadline'];
 
 		if ($details) {
 			$project['pipeFiles'] = getPipeFiles($sqlRep['id'], $sqlRep['uuid']);
@@ -488,6 +526,7 @@
 			$project['assets'] = getAssets($sqlRep['id']);
 			$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
 			$project['shots'] = getShots($sqlRep['id']);
+			$project['schedule'] = getSchedule($sqlRep['id']);
 		} else {
 			$project['pipeFiles'] = Array();
 			$project['steps'] = Array();
@@ -496,6 +535,7 @@
 			$project['assets'] = Array();
 			$project['sequences'] = Array();
 			$project['shots'] = Array();
+			$project['schedule'] = Array();
 		}
 
 		return $project;
@@ -562,7 +602,7 @@
 		
 
 		$rep = $db->query("SELECT
-				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`
+				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`, `deadline`
 			FROM {$projectsTable}
 			WHERE `removed` = 0
 			ORDER BY `shortName`,`name`;");
@@ -590,7 +630,7 @@
 		$uuid = $_GET["uuid"] ?? "";
 	
 		$rep = $db->prepare("SELECT
-				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`
+				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`, `deadline`
 			FROM {$projectsTable}
 			WHERE `uuid` = :uuid ;");
 
@@ -618,6 +658,7 @@
 		$height = getArg( "height" );
 		$aspectRatio = getArg( "aspectRatio" );
 		$comment = getArg( "comment" );
+		$deadline = getArg( "deadline" );
 
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
@@ -657,6 +698,12 @@
                 {
                     $qString = $qString . ", `aspectRatio`= :aspectRatio";
                     $values["aspectRatio"] = $aspectRatio;
+                }
+
+				if (strlen($deadline) > 0)
+                {
+                    $qString = $qString . ", `deadline`= :deadline";
+                    $values["deadline"] = $deadline;
                 }
 
 				$qString = $qString . " WHERE uuid= :uuid ;";

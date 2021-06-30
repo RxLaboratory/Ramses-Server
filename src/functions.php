@@ -29,8 +29,14 @@
      * Checks if the current user has admin rights
      */
     function isAdmin()
-    {
-        return $_SESSION["userRole"] == "admin";
+    {      
+        $ok = $_SESSION["userRole"] == "admin";
+        if (!$ok)
+        {
+            $reply["message"] = "Insufficient rights, you need to be Admin.";
+            $reply["success"] = false;
+        }
+        return $ok;
     }
 
     /**
@@ -38,7 +44,13 @@
      */
     function isProjectAdmin()
     {
-        return $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "project";
+        $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "project";
+        if (!$ok)
+        {
+            $reply["message"] = "Insufficient rights, you need to be Project Admin.";
+            $reply["success"] = false;
+        }
+        return $ok;
     }
 
     /**
@@ -46,7 +58,13 @@
      */
     function isLead()
     {
-        return $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead" || $_SESSION["userRole"] == "project";
+        $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead" || $_SESSION["userRole"] == "project";
+        if (!$ok)
+        {
+            $reply["message"] = "Insufficient rights, you need to be Lead.";
+            $reply["success"] = false;
+        }
+        return $ok;
     }
 
     /**
@@ -117,29 +135,52 @@
        return isset($_GET[$name]);
    }
 
-   /**
+    /**
     * Generates a pseudo-random UUID
     */
-   function uuid() {
-    return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+    function uuid() {
+        return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
 
-      // 32 bits for "time_low"
-      mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        // 32 bits for "time_low"
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff),
 
-      // 16 bits for "time_mid"
-      mt_rand(0, 0xffff),
+        // 16 bits for "time_mid"
+        mt_rand(0, 0xffff),
 
-      // 16 bits for "time_hi_and_version",
-      // four most significant bits holds version number 4
-      mt_rand(0, 0x0fff) | 0x4000,
+        // 16 bits for "time_hi_and_version",
+        // four most significant bits holds version number 4
+        mt_rand(0, 0x0fff) | 0x4000,
 
-      // 16 bits, 8 bits for "clk_seq_hi_res",
-      // 8 bits for "clk_seq_low",
-      // two most significant bits holds zero and one for variant DCE1.1
-      mt_rand(0, 0x3fff) | 0x8000,
+        // 16 bits, 8 bits for "clk_seq_hi_res",
+        // 8 bits for "clk_seq_low",
+        // two most significant bits holds zero and one for variant DCE1.1
+        mt_rand(0, 0x3fff) | 0x8000,
 
-      // 48 bits for "node"
-      mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
-    );
-  }
+        // 48 bits for "node"
+        mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+        );
+    }
+
+    function checkArgs( $arglist )
+    {
+        global $reply;
+
+        $ok = true;
+        foreach( $arglist as $arg )
+        {
+            if ($arg == "")
+            {
+                $ok = false;
+                break;
+            }
+        }
+        if (!$ok)
+        {
+            $reply["message"] = "Invalid request, missing values";
+			$reply["success"] = false;
+        }
+        return $ok;
+    }
+
+
 ?>

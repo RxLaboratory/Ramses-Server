@@ -61,6 +61,7 @@
 			include ("pipes.php");
 			include ("shots.php");
 			include ("status.php");
+			include ("schedule.php");
 		}
 		else if (!$reply["accepted"])
 		{

@@ -60,4 +60,5 @@
 	$pipefileTable = $tablePrefix . "pipefile";
 	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
 	$shotassetTable = $tablePrefix . "shotasset";
+	$scheduleTable = $tablePrefix . "schedule";
 ?>
