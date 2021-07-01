@@ -128,7 +128,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "removeFileType";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
