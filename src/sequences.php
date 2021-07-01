@@ -127,7 +127,7 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "removeSequence";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
