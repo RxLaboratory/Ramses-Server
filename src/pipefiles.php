@@ -22,7 +22,7 @@
 	*/
 
         // ========= CREATE ==========
-	if (isset($_GET["createPipeFile"]))
+	if (hasArg("createPipeFile"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createPipeFile";
@@ -86,7 +86,7 @@
 	}
 
     // ========= REMOVE ==========
-	else if (isset($_GET["removePipeFile"]))
+	else if (hasArg("removePipeFile"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removePipeFile";
@@ -125,7 +125,7 @@
     }
 
     // ========= UPDATE ==========
-	else if (isset($_GET["updatePipeFile"]))
+	else if (hasArg("updatePipeFile"))
 	{
         $uuid = getArg( "uuid" );
 		$shortName = getArg( "shortName" );

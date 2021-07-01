@@ -49,15 +49,15 @@
     }
 
     // ========= CREATE ==========
-    if (isset($_GET["createApplication"]))
+    if (hasArg("createApplication"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "createApplication";
 
-        $name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-        $executableFilePath = $_GET["executableFilePath"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+        $name = getArg("name");
+		$shortName = getArg("shortName");
+        $executableFilePath = getArg("executableFilePath");
+		$uuid = getArg("uuid");
 
         if (strlen($shortName) > 0)
         {
@@ -100,7 +100,7 @@
     }
 
     // ========= UPDATE ==========
-	else if (isset($_GET["updateApplication"]))
+	else if (hasArg("updateApplication"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateApplication";
@@ -148,12 +148,12 @@
 	}
 
 	// ========= REMOVE ==========
-	else if (isset($_GET["removeApplication"]))
+	else if (hasArg("removeApplication"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeApplication";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
@@ -181,9 +181,9 @@
 	}
 
     // ========= GET ==========
-    else if (isset($_GET["getApplications"]) || isset($_GET["init"]))
+    else if (hasArg("getApplications") || hasArg("init"))
     {
-        if (isset($_GET["getApplications"])) {
+        if (hasArg("getApplications")) {
             $reply["accepted"] = true;
             $reply["query"] = "getApplications";
         }
@@ -214,7 +214,7 @@
 
         $rep->closeCursor();
 
-        if (isset($_GET["getApplications"])) {
+        if (hasArg("getApplications")) {
             $reply["content"] = $applications;
             $reply["message"] = "Application list retrieved.";
             $reply["success"] = true;
@@ -225,14 +225,14 @@
     }
 
     // ========= ASSIGN FILE TYPE ==========
-	else if (isset($_GET["assignFileType"]))
+	else if (hasArg("assignFileType"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "assignFileType";
 
-		$fileTypeUuid = $_GET["fileTypeUuid"] ?? "";
-		$applicationUuid = $_GET["applicationUuid"] ?? "";
-		$type = $_GET["type"] ?? "native";
+		$fileTypeUuid = getArg("fileTypeUuid");
+		$applicationUuid = getArg("applicationUuid");
+		$type = getArg("type", "native");
 
 		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
 		{
@@ -269,14 +269,14 @@
 	}
 
 	// ========= REMOVE FILE TYPE ==========
-	else if (isset($_GET["unassignFileType"]))
+	else if (hasArg("unassignFileType"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "unassignFileType";
 
-		$fileTypeUuid = $_GET["fileTypeUuid"] ?? "";
-		$applicationUuid = $_GET["applicationUuid"] ?? "";
-        $type = $_GET["type"] ?? "";
+		$fileTypeUuid = getArg("fileTypeUuid");
+		$applicationUuid = getArg("applicationUuid");
+        $type = getArg("type");
 
 		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
 		{

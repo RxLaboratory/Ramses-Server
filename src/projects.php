@@ -542,7 +542,7 @@
 	}
 
 	// ========= CREATE PROJECT ==========
-	if (isset($_GET["createProject"]))
+	if (hasArg("createProject"))
 	{
 		$reply["accepted"] = true;
         $reply["query"] = "createProject";
@@ -551,9 +551,9 @@
 		$shortName = "";
 		$uuid = "";
 
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$name = getArg("name");
+        $shortName = getArg("shortName");
+        $uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0)
 		{
@@ -593,9 +593,9 @@
 	}
 
 	// ========= GET PROJECTS ==========
-	else if (isset($_GET["getProjects"]) || isset($_GET["init"]))
+	else if ( hasArg("getProjects") || hasArg("init") )
 	{
-		if (isset($_GET["getProjects"])) {
+		if (hasArg("getProjects")) {
 			$reply["accepted"] = true;
 			$reply["query"] = "getProjects";
 		}
@@ -607,12 +607,15 @@
 			WHERE `removed` = 0
 			ORDER BY `shortName`,`name`;");
 
+		//$rep->debugDumpParams();
+
 		$projects = array();
+
 		while ($p = $rep->fetch()) $projects[] = getProject( $p, false );
 
 		$rep->closeCursor();
 
-		if (isset($_GET["getProjects"])) {
+		if ( hasArg("getProjects") ) {
 			$reply["content"] = $projects;
 			$reply["message"] = "Projects list retrieved";
 			$reply["success"] = true;
@@ -622,29 +625,35 @@
 	}
 
 	// ========= GET SINGLE PROJECT ========
-	else if (isset($_GET["getProject"]))
+	else if (hasArg("getProject"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "getProject";
 
-		$uuid = $_GET["uuid"] ?? "";
-	
-		$rep = $db->prepare("SELECT
-				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`, `deadline`
-			FROM {$projectsTable}
-			WHERE `uuid` = :uuid ;");
+		$uuid = getArg("uuid");
 
-		$rep->execute( array('uuid' => $uuid) );
-		$p = $rep->fetch();
-		$rep->closeCursor();
+		if (checkArgs(array($uuid)))
+		{
+			$rep = $db->prepare("SELECT
+					`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`, `deadline`
+				FROM {$projectsTable}
+				WHERE `uuid` = :uuid ;");
 
-		$reply["content"] = getProject( $p );
-		$reply["message"] = "Project retrieved";
-		$reply["success"] = true;
+			$rep->execute( array('uuid' => $uuid) );
+			//$rep->debugDumpParams();
+
+			$p = $rep->fetch();
+
+			$reply["content"] = getProject( $p );
+			$reply["message"] = "Project retrieved";
+			$reply["success"] = true;
+
+			$rep->closeCursor();
+		}
 	}
 
 	// ========= UPDATE PROJECT ==========
-	else if (isset($_GET["updateProject"]))
+	else if (hasArg("updateProject"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateProject";
@@ -730,14 +739,14 @@
 	}
 
 	// ========= REMOVE PROJECT ==========
-	else if (isset($_GET["removeProject"]))
+	else if (hasArg("removeProject"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeProject";
 
 		$uuid = "";
 
-		if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
@@ -766,7 +775,7 @@
 	}
 
 	// ========= ASSOCIATE STEP WITH PROJECT ==========
-	else if (isset($_GET["assignStep"]))
+	else if (hasArg("assignStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "assignStep";
@@ -774,8 +783,8 @@
 		$stepUuid = "";
 		$projectUuid = "";
 
-		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
-		if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
+		$stepUuid = getArg("stepUuid");
+		$projectUuid = getArg("projectUuid");
 
 		if (strlen($stepUuid) > 0 AND strlen($projectUuid) > 0)
 		{

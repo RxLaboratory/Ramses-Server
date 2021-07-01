@@ -22,14 +22,14 @@
 	*/
 
     // ========= CREATE TEMPLATE ASSET GROUP ==========
-	if (isset($_GET["createTemplateAssetGroup"]))
+	if (hasArg("createTemplateAssetGroup"))
 	{
         $reply["accepted"] = true;
 		$reply["query"] = "createTemplateAssetGroup";
 
-        $name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+        $name = getArg("name");
+		$shortName = getArg("shortName");
+		$uuid = getArg("uuid");
 
         if (strlen($shortName) > 0)
 		{
@@ -67,9 +67,9 @@
     }
 
     // ========= GET TEMPLATE ASSET GROUPS ==========
-	else if (isset($_GET["getTemplateAssetGroups"]) || isset($_GET["init"]))
+	else if (hasArg("getTemplateAssetGroups") || hasArg("init"))
 	{
-		if (isset($_GET["getTemplateAssetGroups"]))
+		if (hasArg("getTemplateAssetGroups"))
 		{
 			$reply["accepted"] = true;
 			$reply["query"] = "getTemplateAssetGroups";
@@ -88,7 +88,7 @@
 		}
 		$rep->closeCursor();
 
-		if (isset($_GET["getTemplateAssetGroups"]))
+		if (hasArg("getTemplateAssetGroups"))
 		{
 			$reply["content"] = $assetGroups;
 			$reply["message"] = "Asset groups list retreived";
@@ -100,7 +100,7 @@
 	}
 
 	// ========= UPDATE ASSET GROUP ==========
-	else if (isset($_GET["updateTemplateAssetGroup"]))
+	else if (hasArg("updateTemplateAssetGroup"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateTemplateAssetGroup";
@@ -145,12 +145,12 @@
 	}
 
 	// ========= REMOVE ASSET GROUP ==========
-	else if (isset($_GET["removeTemplateAssetGroup"]))
+	else if (hasArg("removeTemplateAssetGroup"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeTemplateAssetGroup";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{

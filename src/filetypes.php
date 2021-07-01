@@ -22,15 +22,15 @@
 	*/
 
     // ========= CREATE ==========
-    if (isset($_GET["createFileType"]))
+    if (hasArg("createFileType"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "createFileType";
 
-        $name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-        $extensions = $_GET["extensions"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+        $name = getArg("name");
+		$shortName = getArg("shortName");
+        $extensions = getArg("extensions");
+		$uuid = getArg("uuid");
 
         if (strlen($shortName) > 0)
         {
@@ -73,7 +73,7 @@
     }
 
     // ========= UPDATE ==========
-	else if (isset($_GET["updateFileType"]))
+	else if (hasArg("updateFileType"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateFileType";
@@ -123,7 +123,7 @@
 	}
 
 	// ========= REMOVE ==========
-	else if (isset($_GET["removeFileType"]))
+	else if (hasArg("removeFileType"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeFileType";
@@ -156,9 +156,9 @@
 	}
 
     // ========= GET ==========
-    else if (isset($_GET["getFileTypes"]) || isset($_GET["init"]))
+    else if (hasArg("getFileTypes") || hasArg("init"))
     {
-        if (isset($_GET["getFileTypes"])) {
+        if (hasArg("getFileTypes")) {
             $reply["accepted"] = true;
             $reply["query"] = "getFileTypes";
         }
@@ -189,7 +189,7 @@
 
         $rep->closeCursor();
 
-        if (isset($_GET["getFileTypes"])) {
+        if (hasArg("getFileTypes")) {
             $reply["content"] = $filetypes;
             $reply["message"] = "File types list retrieved.";
             $reply["success"] = true;

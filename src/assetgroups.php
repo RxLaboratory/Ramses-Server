@@ -22,7 +22,7 @@
 	*/
 
 	// ========= CREATE ASSET GROUP ==========
-	if (isset($_GET["createAssetGroup"]))
+	if (hasArg("createAssetGroup"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createAssetGroup";
@@ -81,7 +81,7 @@
 	}
 
 	// ========= UPDATE ASSET GROUP ==========
-	else if (isset($_GET["updateAssetGroup"]))
+	else if (hasArg("updateAssetGroup"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateAssetGroup";
@@ -127,12 +127,12 @@
 	}
 
 	// ========= REMOVE ASSET GROUP ==========
-	else if (isset($_GET["removeAssetGroup"]))
+	else if (hasArg("removeAssetGroup"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeAssetGroup";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{

@@ -61,4 +61,50 @@
 	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
 	$shotassetTable = $tablePrefix . "shotasset";
 	$scheduleTable = $tablePrefix . "schedule";
+
+	// Parse body content to make it quickly available later
+	// Check the content type, accept either application/json or application/x-www-form-urlencoded
+	$allHeaders = getallheaders();
+	$cType = $allHeaders['Content-Type'];
+	$contentArray = explode(";", $cType);
+	$contentType = "";
+	$charset = "";
+	$contentAsJson = false;
+	$contentInPost = false;
+	foreach( $contentArray as $c)
+	{
+		$c = trim($c);
+		if ($c == "application/json")
+		{
+			$contentAsJson = true;
+			$contentInPost = true;
+			continue;
+		}
+
+		if ($c == "application/x-www-form-urlencoded")
+		{
+			$contentInPost = true;
+			$contentAsJson = false;
+			continue;
+		}
+
+		if (startsWith($c, "charset="))
+		{
+			$charsetArray = explode($c, "=");
+			if (count($charsetArray) == 2)
+			{
+				$charset = trim($charsetArray[1]);
+			}
+			continue;
+		}
+	}
+
+	// If json, parse it right now
+	$bodyContent = array();
+	if ($contentAsJson)
+	{
+		$rawBody = file_get_contents('php://input');
+		$bodyContent = json_decode($rawBody);
+	}
+	
 ?>

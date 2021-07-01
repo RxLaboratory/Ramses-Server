@@ -22,7 +22,7 @@
 	*/
 
 	// ========= CREATE STATE ==========
-	if (isset($_GET["createState"]))
+	if (hasArg("createState"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createState";
@@ -31,9 +31,9 @@
 		$shortName = "";
 		$uuid = "";
 
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$name = getArg("name");
+        $shortName = getArg("shortName");
+        $uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0)
 		{
@@ -74,9 +74,9 @@
 	}
 
 	// ========= GET STATES ==========
-	else if (isset($_GET["getStates"]) || isset($_GET["init"]))
+	else if (hasArg("getStates") || hasArg("init"))
 	{
-		if (isset($_GET["getStates"])) {
+		if (hasArg("getStates")) {
 			$reply["accepted"] = true;
 			$reply["query"] = "getStates";
 		}
@@ -102,7 +102,7 @@
 		}
 		$rep->closeCursor();
 
-		if (isset($_GET["getStates"])) {
+		if (hasArg("getStates")) {
 			$reply["content"] = $states;
 			$reply["message"] = "States list retreived";
 			$reply["success"] = true;
@@ -112,7 +112,7 @@
 	}
 
 	// ========= UPDATE STATE ==========
-	else if (isset($_GET["updateState"]))
+	else if (hasArg("updateState"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateState";
@@ -171,14 +171,14 @@
 	}
 
 	// ========= REMOVE STATE ==========
-	else if (isset($_GET["removeState"]))
+	else if (hasArg("removeState"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeState";
 
 		$uuid = "";
 
-		if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{

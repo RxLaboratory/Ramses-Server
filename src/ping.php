@@ -22,7 +22,7 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (isset($_GET["ping"]))
+    if (hasArg("ping"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "ping";
@@ -41,7 +41,7 @@
         }
     }
 
-    else if (isset($_GET["init"]))
+    else if (hasArg("init"))
 	{
         $reply["accepted"] = true;
 		$reply["query"] = "init";

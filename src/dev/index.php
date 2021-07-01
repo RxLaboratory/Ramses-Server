@@ -8,10 +8,10 @@
     include('../db.php');
 
     //Set a password to a specific user
-    if (isset($_GET["setPassword"]))
+    if (hasArg("setPassword"))
     {
-        $username = $_GET["username"];
-        $password = $_GET["password"];
+        $username = getArg("username");
+        $password = getArg("password");
 
         //query the database for the user uuid
         $rep = $db->prepare("SELECT uuid FROM " . $tablePrefix . "users WHERE shortName = :username ;");
@@ -36,13 +36,13 @@
         echo "Server password: " . $password;
         echo "<br />Client password: " . $clientPassword;
     }
-    else if (isset($_GET["login"]))
+    else if (hasArg("login"))
     {
         $username = "";
 		$password = "";
 
-		if (isset($_GET["username"])) $username = $_GET["username"];
-		if (isset($_GET["password"])) $password = $_GET["password"];
+		$username = getArg("username");
+		$password = getArg("password");
 
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{

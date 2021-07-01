@@ -22,7 +22,7 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	if (isset($_GET["login"]))
+	if (hasArg("login"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "login";

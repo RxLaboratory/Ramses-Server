@@ -22,7 +22,7 @@
 	*/
 
 	// ========= CREATE STEP ==========
-	if (isset($_GET["createTemplateStep"]))
+	if (hasArg("createTemplateStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createTemplateStep";
@@ -31,9 +31,9 @@
 		$shortName = "";
 		$uuid = "";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg("name");
+		$shortName = getArg("shortName");
+		$uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0)
 		{
@@ -73,9 +73,9 @@
 	}
 
 	// ========= GET STEPS ==========
-	else if (isset($_GET["getTemplateSteps"]) || isset($_GET["init"]))
+	else if (hasArg("getTemplateSteps") || hasArg("init"))
 	{
-		if (isset($_GET["getTemplateSteps"]))
+		if (hasArg("getTemplateSteps"))
 		{
 			$reply["accepted"] = true;
 			$reply["query"] = "getTemplateSteps";
@@ -119,7 +119,7 @@
 		}
 		$rep->closeCursor();
 
-		if (isset($_GET["getTemplateSteps"]))
+		if (hasArg("getTemplateSteps"))
 		{
 			$reply["content"] = $steps;
 			$reply["message"] = "Steps list retreived";
@@ -258,14 +258,14 @@
 	}
 
 	// ========= REMOVE STEP ==========
-	else if (isset($_GET["removeTemplateStep"]))
+	else if (hasArg("removeTemplateStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeTemplateStep";
 
 		$uuid = "";
 
-		if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{

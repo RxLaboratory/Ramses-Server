@@ -22,15 +22,15 @@
 	*/
 
 	// ========= CREATE SEQUENCE ==========
-	if (isset($_GET["createSequence"]))
+	if (hasArg("createSequence"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createSequence";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$projectUuid = $_GET["projectUuid"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg("name");
+		$shortName = getArg("shortName");
+		$projectUuid = getArg("projectUuid");
+		$uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
@@ -81,7 +81,7 @@
 	}
 
 	// ========= UPDATE SEQUENCE ==========
-	else if (isset($_GET["updateSequence"]))
+	else if (hasArg("updateSequence"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateSequence";
@@ -122,7 +122,7 @@
 	}
 
 	// ========= REMOVE ASSET GROUP ==========
-	else if (isset($_GET["removeSequence"]))
+	else if (hasArg("removeSequence"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeSequence";
@@ -154,7 +154,7 @@
 		}
 	}
 
-	else if (isset($_GET["setSequenceOrder"]))
+	else if (hasArg("setSequenceOrder"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "setShotOrder";

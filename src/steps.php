@@ -22,7 +22,7 @@
 	*/
 
 	// ========= CREATE STEP ==========
-	if (isset($_GET["createStep"]))
+	if (hasArg("createStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createStep";
@@ -32,10 +32,10 @@
 		$projectUuid = "";
 		$uuid = "";
 
-		if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["projectUuid"])) $projectUuid = $_GET["projectUuid"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$name = getArg("name");
+        $shortName = getArg("shortName");
+        $projectUuid = getArg("projectUuid");
+        $uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
@@ -86,7 +86,7 @@
 	}
 
 	// ========= UPDATE STEP ==========
-	else if (isset($_GET["updateStep"]))
+	else if (hasArg("updateStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateStep";
@@ -210,14 +210,14 @@
 	}
 
 	// ========= REMOVE STEP ==========
-	else if (isset($_GET["removeStep"]))
+	else if (hasArg("removeStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeStep";
 
 		$uuid = "";
 
-		if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
@@ -245,13 +245,13 @@
 	}
 
 	// ========= SET ORDER ==========
-	else if (isset($_GET["setStepOrder"]))
+	else if (hasArg("setStepOrder"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "setStepOrder";
 
-		$order = $_GET["order"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$order = getArg("order");
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0 && strlen($order) > 0)
 		{
@@ -285,13 +285,13 @@
 	}
 
 	// ========= MOVE ==========
-	else if (isset($_GET["moveStep"]))
+	else if (hasArg("moveStep"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "moveStep";
 
-		$order = $_GET["order"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$order = getArg("order");
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0 && strlen($order) > 0)
 		{
@@ -380,7 +380,7 @@
 	}
 
 	// ========= ASSIGN USER ==========
-	else if (isset($_GET["assignUser"]))
+	else if (hasArg("assignUser"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "assignUser";
@@ -388,8 +388,8 @@
 		$userUuid = "";
 		$stepUuid = "";
 
-		if (isset($_GET["userUuid"])) $userUuid = $_GET["userUuid"];
-		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
+		$userUuid = getArg("userUuid");
+		$stepUuid = getArg("stepUuid");
 
 		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
 		{
@@ -425,7 +425,7 @@
 	}
 
 	// ========= REMOVE USER ==========
-	else if (isset($_GET["unassignUser"]))
+	else if (hasArg("unassignUser"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "unassignUser";
@@ -433,8 +433,8 @@
 		$userUuid = "";
 		$stepUuid = "";
 
-		if (isset($_GET["userUuid"])) $userUuid = $_GET["userUuid"];
-		if (isset($_GET["stepUuid"])) $stepUuid = $_GET["stepUuid"];
+		$userUuid = getArg("userUuid");
+		$stepUuid = getArg("stepUuid");
 
 		if (strlen($stepUuid) > 0 && strlen($userUuid) > 0)
 		{
@@ -468,13 +468,13 @@
 	}
 
 	// ========= ASSIGN APPLICATION ==========
-	else if (isset($_GET["assignApplication"]))
+	else if (hasArg("assignApplication"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "assignApplication";
 
-		$stepUuid = $_GET["stepUuid"] ?? "";
-		$applicationUuid = $_GET["applicationUuid"] ?? "";
+		$stepUuid = getArg("stepUuid");
+		$applicationUuid = getArg("applicationUuid");
 
 		if (strlen($stepUuid) > 0 && strlen($applicationUuid) > 0)
 		{
@@ -510,13 +510,13 @@
 	}
 
 	// ========= REMOVE APPLICATION ==========
-	else if (isset($_GET["unassignApplication"]))
+	else if (hasArg("unassignApplication"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "unassignApplication";
 
-		$stepUuid = $_GET["stepUuid"] ?? "";
-		$applicationUuid = $_GET["applicationUuid"] ?? "";
+		$stepUuid = getArg("stepUuid");
+		$applicationUuid = getArg("applicationUuid");
 
 		if (strlen($stepUuid) > 0 && strlen($applicationUuid) > 0)
 		{

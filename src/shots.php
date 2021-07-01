@@ -25,17 +25,17 @@
 	$sequencesTable = $tablePrefix . "sequences";
 
 	// ========= CREATE ==========
-	if (isset($_GET["createShot"]))
+	if (hasArg("createShot"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createShot";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$sequenceUuid = $_GET["sequenceUuid"] ?? "";
-		$duration = $_GET["duration"] ?? "0";
-		$order = $_GET["order"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg("name");
+		$shortName = getArg("shortName");
+		$sequenceUuid = getArg("sequenceUuid");
+		$duration = getArg("duration");
+		$order = getArg("order");
+		$uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0)
 		{
@@ -113,7 +113,7 @@
 	}
 
 	// ========= UPDATE ==========
-	else if (isset($_GET["updateShot"]))
+	else if (hasArg("updateShot"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateAsset";
@@ -176,13 +176,13 @@
 	}
 
 	// ========= SET ORDER ==========
-	else if (isset($_GET["setShotOrder"]))
+	else if (hasArg("setShotOrder"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "setShotOrder";
 
-		$order = $_GET["order"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$order = getArg("order");
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0 && strlen($order) > 0)
 		{
@@ -216,13 +216,13 @@
 	}
 
 	// ========= MOVE ==========
-	else if (isset($_GET["moveShot"]))
+	else if (hasArg("moveShot"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "moveShot";
 
-		$order = $_GET["order"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$order = getArg("order");
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0 && strlen($order) > 0)
 		{
@@ -314,12 +314,12 @@
 	}
 
 	// ========= REMOVE ==========
-	else if (isset($_GET["removeShot"]))
+	else if (hasArg("removeShot"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeShot";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
@@ -363,7 +363,7 @@
 	}
 
 	// ========= SET STATUS ==========
-	else if (isset($_GET["setShotStatus"]))
+	else if (hasArg("setShotStatus"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "setShotStatus";
@@ -439,7 +439,7 @@
 	}
 
 	// ========= ASSIGN ASSET ========
-	else if (isset($_GET["assignAsset"]))
+	else if (hasArg("assignAsset"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "assignAsset";
@@ -482,7 +482,7 @@
 	}
 
 	// ========= UNASSIGN ASSET ========
-	else if (isset($_GET["unassignAsset"]))
+	else if (hasArg("unassignAsset"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "unassignAsset";

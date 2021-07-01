@@ -23,7 +23,7 @@
 
 
 	// ========= UPDATE STATUS ==========
-	if (isset($_GET["updateStatus"]))
+	if (hasArg("updateStatus"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateStatus";
@@ -123,7 +123,7 @@
 	}
 
 	// ========= REMOVE STATUS ==========
-	else if (isset($_GET["removeStatus"]))
+	else if (hasArg("removeStatus"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeStatus";
@@ -148,7 +148,7 @@
 
 
     // ========= SET STATUS USER ==========
-	else if (isset($_GET["setStatusUser"]))
+	else if (hasArg("setStatusUser"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "setStatusUser";

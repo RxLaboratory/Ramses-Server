@@ -21,7 +21,7 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (isset($_GET["updateUser"]))
+    if (hasArg("updateUser"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "updateUser";
@@ -81,7 +81,7 @@
         }
 
     }
-    else if (isset($_GET["updatePassword"]))
+    else if (hasArg("updatePassword"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "updatePassword";
@@ -90,9 +90,9 @@
         $new = "";
         $uuid = "";
 
-        if (isset($_GET["current"])) $current = $_GET["current"];
-        if (isset($_GET["new"])) $new = $_GET["new"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+        $current = getArg("current");
+        $new = getArg("new");
+        $uuid = getArg("uuid");
 
         if (strlen($new) > 0 AND strlen($uuid) > 0)
         {
@@ -153,9 +153,9 @@
             $reply["success"] = false;
         }
     }
-    else if (isset($_GET["getUsers"]) || isset($_GET["init"]))
+    else if (hasArg("getUsers") || hasArg("init"))
     {
-        if (isset($_GET["getUsers"]) )
+        if (hasArg("getUsers") )
         {
             $reply["accepted"] = true;
             $reply["query"] = "getUsers";    
@@ -181,7 +181,7 @@
 
         $rep->closeCursor();
 
-        if (isset($_GET["getUsers"]) )
+        if (hasArg("getUsers") )
         {
             $reply["content"] = $users;
             $reply["message"] = "Users list retrieved.";
@@ -192,7 +192,7 @@
             $reply["content"]["users"] = $users;
         }
     }
-    else if (isset($_GET["createUser"]))
+    else if (hasArg("createUser"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "createUser";
@@ -202,10 +202,10 @@
         $uuid = "";
         $password = "";
 
-        if (isset($_GET["name"])) $name = $_GET["name"];
-        if (isset($_GET["shortName"])) $shortName = $_GET["shortName"];
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
-        if (isset($_GET["password"])) $password = $_GET["password"];
+        $name = getArg("name");
+        $shortName = getArg("shortName");
+        $uuid = getArg("uuid");
+        $password = getArg("password");
 
         if (strlen($shortName) > 0 and strlen($password) > 0)
         {
@@ -250,14 +250,14 @@
             $reply["success"] = false;
         }
     }
-    else if (isset($_GET["removeUser"]))
+    else if (hasArg("removeUser"))
     {
         $reply["accepted"] = true;
         $reply["query"] = "createUser";
 
         $uuid = "";
 
-        if (isset($_GET["uuid"])) $uuid = $_GET["uuid"];
+        $uuid = getArg("uuid");
 
         if (strlen($uuid) > 0)
         {

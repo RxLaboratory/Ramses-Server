@@ -22,7 +22,7 @@
 	*/
 
     // ========= CREATE ==========
-	if (isset($_GET["createPipe"]))
+	if (hasArg("createPipe"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createPipe";
@@ -79,7 +79,7 @@
 	}
 
     // ========= UPDATE ==========
-	else if (isset($_GET["updatePipe"]))
+	else if (hasArg("updatePipe"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updatePipe";
@@ -136,7 +136,7 @@
 	}
 
     // ========= REMOVE ==========
-	else if (isset($_GET["removePipe"]))
+	else if (hasArg("removePipe"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removePipe";
@@ -172,7 +172,7 @@
 	}
 
 	// ========= ASSIGN ==========
-	else if (isset($_GET["assignPipeFile"]))
+	else if (hasArg("assignPipeFile"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "assignPipeFile";
@@ -220,7 +220,7 @@
 	}
 
 	// ========= UNASSIGN ==========
-	else if (isset($_GET["unassignPipeFile"]))
+	else if (hasArg("unassignPipeFile"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "unassignPipeFile";

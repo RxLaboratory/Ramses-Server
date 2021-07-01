@@ -42,8 +42,7 @@
 		include ("login.php");
 
 		//secured operations, check token first
-		$token = "";
-		if (isset($_GET["token"])) $token = $_GET["token"];
+		$token = getArg("token");
 		if ( isset($_SESSION["sessionToken"]) && $_SESSION["sessionToken"] != "" && $token == $_SESSION["sessionToken"] )
 		{
 			include ("users.php");

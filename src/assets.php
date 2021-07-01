@@ -22,16 +22,16 @@
 	*/
 
 	// ========= CREATE ASSET ==========
-	if (isset($_GET["createAsset"]))
+	if (hasArg("createAsset"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "createAsset";
 
-		$name = $_GET["name"] ?? "";
-		$shortName = $_GET["shortName"] ?? "";
-		$assetGroupUuid = $_GET["assetGroupUuid"] ?? "";
-		$tags = $_GET["tags"] ?? "";
-		$uuid = $_GET["uuid"] ?? "";
+		$name = getArg("name");
+		$shortName = getArg("shortName");
+		$assetGroupUuid = getArg("assetGroupUuid");
+		$tags = getArg("tags");
+		$uuid = getArg("uuid");
 
 		if (strlen($shortName) > 0)
 		{
@@ -82,7 +82,7 @@
 	}
 	
 	// ========= UPDATE ASSET ==========
-	else if (isset($_GET["updateAsset"]))
+	else if (hasArg("updateAsset"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "updateAsset";
@@ -132,12 +132,12 @@
 	}
 
 	// ========= REMOVE ASSET ==========
-	else if (isset($_GET["removeAsset"]))
+	else if (hasArg("removeAsset"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "removeAsset";
 
-		$uuid = $_GET["uuid"] ?? "";
+		$uuid = getArg("uuid");
 
 		if (strlen($uuid) > 0)
 		{
@@ -165,7 +165,7 @@
 	}
 
 	// ========= SET STATUS ==========
-	else if (isset($_GET["setAssetStatus"]))
+	else if (hasArg("setAssetStatus"))
 	{
 		$reply["accepted"] = true;
 		$reply["query"] = "setAssetStatus";
