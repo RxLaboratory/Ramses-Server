@@ -21,16 +21,9 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    // ========= CREATE ENTRY ==========
-    if (hasArg("createSchedule"))
+    function createEntry($uuid, $userUuid, $stepUuid, $date)
     {
-        $reply["accepted"] = true;
-		$reply["query"] = "createSchedule";
-
-        $uuid = getArg("uuid", uuid());
-        $userUuid = getArg("userUuid");
-        $stepUuid = getArg("stepUuid");
-        $date = getArg("date");
+        global $usersTable, $stepsTable, $scheduleTable, $db;
 
         if ( checkArgs( array( $userUuid, $stepUuid, $date ) ) && isLead() )
         {
@@ -48,34 +41,19 @@
             $rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
             $rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
             $rep->bindValue(':date', $date, PDO::PARAM_STR);
-            //$rep->debugDumpParams();
-			$ok = $rep->execute();
-			$rep->closeCursor();
 
-            if ($ok)
-            {
-                $reply["message"] = "Schedule updated.";
-			    $reply["success"] = true;
-            }
-            else 
-            {
-                $reply["message"] = $rep->errorInfo()[2];
-			    $reply["success"] = false;
-            }
+            $ok = sqlRequest( $rep, "Schedule updated.");
+
+            $rep->closeCursor();
+
+            return $ok;
         }
+        return false;
     }
 
-    // ========= UPDATE ENTRY ==========
-    if (hasArg("updateSchedule"))
+    function updateEntry($uuid, $userUuid, $stepUuid, $date, $comment)
     {
-        $reply["accepted"] = true;
-		$reply["query"] = "updateSchedule";
-
-        $uuid = getArg("uuid", uuid());
-        $userUuid = getArg("userUuid");
-        $stepUuid = getArg("stepUuid");
-        $date = getArg("date");
-        $comment = getArg("comment");
+        global $usersTable, $stepsTable, $scheduleTable, $db;
 
         if ( checkArgs( array( $userUuid, $stepUuid, $date ) ) && isLead() )
         {
@@ -93,30 +71,18 @@
             $rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
             $rep->bindValue(':date', $date, PDO::PARAM_STR);
             $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
-            //$rep->debugDumpParams();
-			$ok = $rep->execute();
+            
+            $ok = sqlRequest( $rep, "Schedule updated.");
+
 			$rep->closeCursor();
 
-            if ($ok)
-            {
-                $reply["message"] = "Schedule updated.";
-			    $reply["success"] = true;
-            }
-            else 
-            {
-                $reply["message"] = $rep->errorInfo()[2];
-			    $reply["success"] = false;
-            }
+            return $ok;
         }
     }
 
-    // ========= DELETE ENTRY ==========
-    if (hasArg("removeSchedule"))
+    function deleteEntry( $uuid )
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "removeSchedule";
-
-        $uuid = getArg("uuid", uuid());
+        global $scheduleTable, $db;
 
         if ( checkArgs( array( $uuid ) ) && isLead() )
         {
@@ -125,22 +91,120 @@
 
             $rep = $db->prepare($qString);
             $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-            //$rep->debugDumpParams();
-            $ok = $rep->execute();
-            $rep->closeCursor();
+            
+            $ok = sqlRequest( $rep, "Schedule updated.");
 
-            if ($ok)
-            {
-                $reply["message"] = "Schedule updated.";
-                $reply["success"] = true;
-            }
-            else 
-            {
-                $reply["message"] = $rep->errorInfo()[2];
-                $reply["success"] = false;
-            }
+            $rep->closeCursor();
         }
     }
 
+    // ========= CREATE ENTRY ==========
+    if (hasArg("createSchedule"))
+    {
+        acceptReply( "createSchedule" );
+
+        $uuid = getArg("uuid", uuid());
+        $userUuid = getArg("userUuid");
+        $stepUuid = getArg("stepUuid");
+        $date = getArg("date");
+
+        createEntry($uuid, $userUuid, $stepUuid, $date);
+    }
+
+    // ========= CREATE ENTRIES ==========
+    else if (hasArg("createSchedules"))
+    {
+        acceptReply( "createSchedules" );
+
+        $entries = getArg("entries", array());
+
+        if (count($entries) == 0)
+        {
+            $reply["message"] = "Schedule updated.";
+            $reply["success"] = true;
+        }
+
+        foreach($entries as $entry)
+        {
+            $uuid = getAttr("uuid", $entry, uuid());
+            $userUuid = getAttr("userUuid", $entry);
+            $stepUuid = getAttr("stepUuid", $entry);
+            $date = getAttr("date", $entry);
+
+            createEntry($uuid, $userUuid, $stepUuid, $date);
+        }
+    }
+
+    // ========= UPDATE ENTRY ==========
+    else if (hasArg("updateSchedule"))
+    {
+        acceptReply( "updateSchedule" );
+
+        $uuid = getArg("uuid", uuid());
+        $userUuid = getArg("userUuid");
+        $stepUuid = getArg("stepUuid");
+        $date = getArg("date");
+        $comment = getArg("comment");
+
+        updateEntry($uuid, $userUuid, $stepUuid, $date, $comment);
+    }
+
+    // ========= UPDATE ENTRIES ==========
+    else if (hasArg("updateSchedules"))
+    {
+        acceptReply( "updateSchedules" );
+
+        $entries = getArg("entries", array());
+
+        if (count($entries) == 0)
+        {
+            $reply["message"] = "Schedule updated.";
+            $reply["success"] = true;
+        }
+
+        foreach($entries as $entry)
+        {
+            $uuid = getAttr("uuid", $entry, uuid());
+            $userUuid = getAttr("userUuid", $entry);
+            $stepUuid = getAttr("stepUuid", $entry);
+            $date = getAttr("date", $entry);
+            $comment = getAttr("comment", $entry);
+
+            updateEntry($uuid, $userUuid, $stepUuid, $date, $comment);
+        }
+    }
+
+    // ========= DELETE ENTRY ==========
+    else if (hasArg("removeSchedule"))
+    {
+        acceptReply( "removeSchedule" );
+
+        $uuid = getArg("uuid", uuid());
+
+        deleteEntry( $uuid );
+    }
+
+    // =========== DELETE ENTRIES ======
+    else if (hasArg("removeSchedules"))
+    {
+        acceptReply( "removeSchedules" );
+
+        $uuid = getArg("uuid", uuid());
+
+        $entries = getArg("entries", array());
+
+        if (count($entries) == 0)
+        {
+            $reply["message"] = "Schedule updated.";
+            $reply["success"] = true;
+        }
+
+        foreach($entries as $entry)
+        {
+            $uuid = getAttr("uuid", $entry, uuid());
+
+            deleteEntry( $uuid );
+        }
+    }
 
 ?>

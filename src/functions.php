@@ -111,6 +111,20 @@
         if (strlen($tablePrefix) > 0 && !endsWith($tablePrefix, "_")) $tablePrefix = $tablePrefix . "_";
     }
 
+    function checkForbiddenWords($str)
+    {
+        // These may be forbidden with some providers; use %word% instead and update.
+        // We know it's safe, all queries are correctly prepared here using PDO queries.
+        $forbidden = array("and", "or", "if", "else", "insert", "update", "select", "drop", "alter");
+        foreach($forbidden as $word)
+        {
+            // Replace correctly formatted forbidden words with actual words
+            $str = str_replace("%" . $word . "%", " " . $word, $str);
+        }
+        
+        return $str;
+    }
+
     /**
         * Gets an argument from the url
         */
@@ -130,7 +144,8 @@
         {
             if ($contentAsJson)
             {
-                $decordedArg = $bodyContent[$name];
+                if (isset($bodyContent[$name]))
+                    $decordedArg = $bodyContent[$name];
             }
             else 
             {
@@ -141,16 +156,18 @@
 
         if ($decordedArg == "") return $defaultValue;       
 
-        // These may be forbidden with some providers; use %word% instead and update.
-        // We know it's safe, all queries are correctly prepared here using PDO queries.
-        $forbidden = array("and", "or", "if", "else", "insert", "update", "select", "drop", "alter");
-        foreach($forbidden as $word)
-        {
-            // Replace correctly formatted forbidden words with actual words
-            $decordedArg = str_replace("%" . $word . "%", " " . $word, $decordedArg);
-        }
-        
-        return $decordedArg;
+        return checkForbiddenWords( $decordedArg );
+    }
+
+    function getAttr($name, $obj, $defaultValue = "")
+    {
+        $attr = "";
+        if (isset($obj[$name]))
+            $attr = $obj[$name];
+
+        if ($attr == "") return $defaultValue;
+
+        return $attr;
     }
 
     /**
@@ -208,5 +225,32 @@
         return $ok;
     }
 
+    function sqlRequest( $request, $message, $debug = false )
+    {
+        global $reply;
 
+        if ($debug) $request->debugDumpParams();
+
+        $ok = $request->execute();
+
+        if (!$ok)
+        {
+            $reply["message"] = $rep->errorInfo()[2];
+            $reply["success"] = false;
+        }
+        else if ($message != "")
+        {
+            $reply["message"] = "Schedule updated.";
+            $reply["success"] = true;
+        }
+        
+        return $ok;
+    }
+
+    function acceptReply($queryName)
+    {
+        global $reply;
+        $reply["accepted"] = true;
+		$reply["query"] = $queryName;
+    }
 ?>

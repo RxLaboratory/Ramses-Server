@@ -104,7 +104,7 @@
 	if ($contentAsJson)
 	{
 		$rawBody = file_get_contents('php://input');
-		$bodyContent = json_decode($rawBody);
+		$bodyContent = json_decode($rawBody, true);
 	}
 	
 ?>
