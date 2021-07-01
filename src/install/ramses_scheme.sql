@@ -128,6 +128,7 @@ CREATE TABLE `ram_projects` (
   `width` int NOT NULL DEFAULT '1920',
   `height` int NOT NULL DEFAULT '1080',
   `aspectRatio` float NOT NULL DEFAULT '1.78',
+  `deadline` date DEFAULT NULL,
   `folderPath` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT 'auto',
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `removed` tinyint NOT NULL DEFAULT '0',
