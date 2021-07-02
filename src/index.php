@@ -32,48 +32,78 @@
 
 	//ping
 	include ("ping.php");
-	//queries
-	if ($installed)
-	{
-		//connect to database
-		include('db.php');
 
-		//login first
-		include ("login.php");
-
-		//secured operations, check token first
-		$token = getArg("token");
-		if ( isset($_SESSION["sessionToken"]) && $_SESSION["sessionToken"] != "" && $token == $_SESSION["sessionToken"] )
-		{
-			include ("users.php");
-			include ("projects.php");
-			include ("steps.php");
-			include ("templatesteps.php");
-			include ("states.php");
-			include ("templateassetgroups.php");
-			include ("assetgroups.php");
-			include ("assets.php");
-			include ("sequences.php");
-			include ("filetypes.php");
-			include ("applications.php");
-			include ("pipefiles.php");
-			include ("pipes.php");
-			include ("shots.php");
-			include ("status.php");
-			include ("schedule.php");
-		}
-		else if (!$reply["accepted"])
-		{
-			$reply["message"] = "Invalid token. Are you logged in?";
-		}
-	}
-	else
+	if (!$reply['accepted'])
 	{
-		if ($reply["query"] != "ping")
+		//queries
+		if ($installed)
+		{
+			//connect to database
+			include('db.php');
+
+			//login first
+			include ("login.php");
+
+			if (!$reply['accepted'])
+			{
+				//secured operations, check token first
+				$token = getArg("token");
+				if ( $_SESSION["sessionToken"] != "")
+				{
+					if ($token == $_SESSION["sessionToken"])
+					{
+						if (hasArg("init"))
+						{
+							$reply["accepted"] = true;
+							$reply["query"] = "init";
+
+							// The reply is completed in corresponding categories
+
+							$reply["message"] = "Initial data retrieved.";
+							$reply["success"] = true;
+						}
+
+						include ("users.php");
+						include ("projects.php");
+						include ("steps.php");
+						include ("templatesteps.php");
+						include ("states.php");
+						include ("templateassetgroups.php");
+						include ("assetgroups.php");
+						include ("assets.php");
+						include ("sequences.php");
+						include ("filetypes.php");
+						include ("applications.php");
+						include ("pipefiles.php");
+						include ("pipes.php");
+						include ("shots.php");
+						include ("status.php");
+						include ("schedule.php");
+					}
+					else 
+					{
+						$reply["message"] = "Invalid token! How did you arrive here?";
+						$reply["query"] = "loggedout";
+						$reply["success"] = false;
+						$reply["accepted"] = false;
+					}
+				}
+				else
+				{
+					$reply["message"] = "Your session has expired, you need to log-in.";
+					$reply["query"] = "loggedout";
+					$reply["success"] = false;
+					$reply["accepted"] = false;
+				}
+			}
+		}
+		else
 		{
 			$reply["message"] = "This Ramses server is not installed yet.";
 		}
 	}
+
+	
 
 	echo json_encode($reply);
 ?>

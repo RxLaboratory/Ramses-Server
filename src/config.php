@@ -47,7 +47,14 @@
 	// ==== SESSION SETTINGS ====
 
 	// Session timeout (seconds)
-	$sessionTimeout = 1200;
+	// The client will be disconnected after being idle for this time
+	// 30 minutes by default (1800) are more than enough:
+	// The official client makes a call at least every 2 minutes by default.
+	$sessionTimeout = 1800;
+	// Max Session timeout (seconds)
+	// The client will be disconnected no matter what after this time
+	// 5 hours by default( 18000 )
+	$cookieTimeout = 18000;
 
 	// ==== SECURITY ====
 

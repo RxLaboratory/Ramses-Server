@@ -69,23 +69,6 @@
 			$step['multiplyGroupUuid'] = $s['multiplyGroupUuid'];
 			$step['projectUuid'] = $puuid;
 
-			$step['users'] = array();
-
-			//get users
-			$qString = "SELECT 
-			{$usersTable}.`uuid`
-			FROM {$stepuserTable}
-			JOIN {$usersTable}
-			ON {$stepuserTable}.`userId` = {$usersTable}.`id`
-			WHERE {$stepuserTable}.`stepId`= " . $s['id'] . " AND {$usersTable}.`removed` = 0 
-			ORDER BY {$usersTable}.`name`, {$usersTable}.`shortName`;";
-
-			$repUsers = $db->query( $qString );
-			while ($u = $repUsers->fetch())
-			{
-				$step['users'][] = $u['uuid'];
-			}
-
 			//get applications
 			$qString = "SELECT 
 				{$applicationsTable}.`uuid`
@@ -104,6 +87,30 @@
 			$steps[] = $step;
 		}
 		return $steps;
+	}
+
+	function getProjectUsers( $projectId )
+	{
+		global $db, $usersTable, $projectuserTable;
+
+		$users = array();
+
+		//get users
+		$qString = "SELECT 
+			{$usersTable}.`uuid`
+		FROM {$projectuserTable}
+		JOIN {$usersTable}
+		ON {$projectuserTable}.`userId` = {$usersTable}.`id`
+		WHERE {$projectuserTable}.`projectId`= {$projectId} AND {$usersTable}.`removed` = 0 
+		ORDER BY {$usersTable}.`name`, {$usersTable}.`shortName`;";
+
+		$repUsers = $db->query( $qString );
+		while ($u = $repUsers->fetch())
+		{
+			$users[] = $u['uuid'];
+		}
+
+		return $users;
 	}
 
 	function getPipes( $pid, $puuid )
@@ -517,6 +524,7 @@
 		$project['height'] = (int)$sqlRep['height'];
 		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
 		$project['deadline'] = $sqlRep['deadline'];
+		$project['users'] = getProjectUsers( $sqlRep['id'] );
 
 		if ($details) {
 			$project['pipeFiles'] = getPipeFiles($sqlRep['id'], $sqlRep['uuid']);
@@ -818,5 +826,59 @@
 			$reply["message"] = "Invalid request, missing values";
 			$reply["success"] = false;
 		}
+	}
+
+	// ========= ASSIGN USER ==========
+	else if (hasArg("assignUser"))
+	{
+		acceptReply( "assignUser" );
+
+		$userUuid = getArg("userUuid");
+		$projectUuid = getArg("projectUuid");
+
+		if ( checkArgs(array($userUuid, $projectUuid)) && isProjectAdmin())
+		{
+
+			$qString = "INSERT INTO {$projectuserTable} (`projectId`, `userId`) VALUES (
+				( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
+				( SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
+				) ON DUPLICATE KEY UPDATE {$projectuserTable}.`id` = {$projectuserTable}.`id` ;";
+
+			$rep = $db->prepare($qString);
+			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
+			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
+
+			sqlRequest( $rep, "User assigned to project." );
+
+			$rep->closeCursor();
+		}
+
+	}
+
+	// ========= REMOVE USER ==========
+	else if (hasArg("unassignUser"))
+	{
+		acceptReply( "unassignUser" );
+
+		$userUuid = getArg("userUuid");
+		$projectUuid = getArg("projectUuid");
+
+		if ( checkArgs(array($userUuid, $projectUuid)) && isProjectAdmin())
+		{
+
+			$q = "DELETE {$projectuserTable}  FROM {$projectuserTable} WHERE
+			projectId= ( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid )
+			AND
+			userId= ( SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
+			;";
+			$rep = $db->prepare($q);
+			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
+			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
+
+			sqlRequest( $rep, "User unassigned from project." );
+
+			$rep->closeCursor();
+		}
+
 	}
 ?>

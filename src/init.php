@@ -2,37 +2,39 @@
     $ramsesVersion = "0.0.1-dev";
 	$installed = !file_exists("install/index.php");
 
-	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
-	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
-	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
-	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
-
-
 	// server should keep session data for AT LEAST  sessionTimeout
 	ini_set('session.gc_maxlifetime', $sessionTimeout);
 
 	// each client should remember their session id for EXACTLY sessionTimeout
-	session_set_cookie_params($sessionTimeout);
+	session_set_cookie_params($cookieTimeout);
 
 	session_start();
+	
+	// Init session variables
+	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
+	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
+	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
+	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
+	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
 
 	$now = time();
-	if (isset($_SESSION['discard_after']) && $now > $_SESSION['discard_after'])
+
+	if ($now > $_SESSION['discard_after'])
 	{
 		// this session has worn out its welcome; kill it and start a brand new one
-		$_SESSION["sessionToken"] = "";
-		$_SESSION["userRole"] = "standard";
-		$_SESSION["userUuid"] = "";
-		$_SESSION["login"] = false;
 		session_unset();
 		session_destroy();
 		session_start();
+
+		if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
+		if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
+		if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
+		if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
+		if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
+	
 	}
-	else
-	{
-		// either new or old, it should live at most for sessionTimeout
-		$_SESSION['discard_after'] = $now + $sessionTimeout;
-	}
+	
+	$_SESSION['discard_after'] = $now + $sessionTimeout;
 
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
@@ -53,7 +55,7 @@
 	$statusTable = $tablePrefix . "status";
 	$stepapplicationTable = $tablePrefix . "stepapplication";
 	$stepsTable = $tablePrefix . "steps";
-	$stepuserTable = $tablePrefix . "stepuser";
+	$projectuserTable = $tablePrefix . "projectuser";
 	$templateassetgroupsTable = $tablePrefix . "templateassetgroups";
 	$templatestepsTable = $tablePrefix . "templatesteps";
 	$usersTable = $tablePrefix . "users";
@@ -65,46 +67,50 @@
 	// Parse body content to make it quickly available later
 	// Check the content type, accept either application/json or application/x-www-form-urlencoded
 	$allHeaders = getallheaders();
-	$cType = $allHeaders['Content-Type'];
-	$contentArray = explode(";", $cType);
-	$contentType = "";
-	$charset = "";
-	$contentAsJson = false;
-	$contentInPost = false;
-	foreach( $contentArray as $c)
+	if (isset($allHeaders['Content-Type']))
 	{
-		$c = trim($c);
-		if ($c == "application/json")
+		$cType = $allHeaders['Content-Type'];
+		$contentArray = explode(";", $cType);
+		$contentType = "";
+		$charset = "";
+		$contentAsJson = false;
+		$contentInPost = false;
+		foreach( $contentArray as $c)
 		{
-			$contentAsJson = true;
-			$contentInPost = true;
-			continue;
-		}
-
-		if ($c == "application/x-www-form-urlencoded")
-		{
-			$contentInPost = true;
-			$contentAsJson = false;
-			continue;
-		}
-
-		if (startsWith($c, "charset="))
-		{
-			$charsetArray = explode($c, "=");
-			if (count($charsetArray) == 2)
+			$c = trim($c);
+			if ($c == "application/json")
 			{
-				$charset = trim($charsetArray[1]);
+				$contentAsJson = true;
+				$contentInPost = true;
+				continue;
 			}
-			continue;
+
+			if ($c == "application/x-www-form-urlencoded")
+			{
+				$contentInPost = true;
+				$contentAsJson = false;
+				continue;
+			}
+
+			if (startsWith($c, "charset="))
+			{
+				$charsetArray = explode($c, "=");
+				if (count($charsetArray) == 2)
+				{
+					$charset = trim($charsetArray[1]);
+				}
+				continue;
+			}
+		}
+
+		// If json, parse it right now
+		$bodyContent = array();
+		if ($contentAsJson)
+		{
+			$rawBody = file_get_contents('php://input');
+			$bodyContent = json_decode($rawBody, true);
 		}
 	}
-
-	// If json, parse it right now
-	$bodyContent = array();
-	if ($contentAsJson)
-	{
-		$rawBody = file_get_contents('php://input');
-		$bodyContent = json_decode($rawBody, true);
-	}
+	
 	
 ?>
