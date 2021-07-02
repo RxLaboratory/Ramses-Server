@@ -136,6 +136,26 @@ CREATE TABLE `ram_projects` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_projectuser`;
+CREATE TABLE `ram_projectuser` (
+  `id` int NOT NULL,
+  `projectId` int NOT NULL,
+  `userId` int NOT NULL,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `removed` tinyint NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+DROP TABLE IF EXISTS `ram_schedule`;
+CREATE TABLE `ram_schedule` (
+  `id` int NOT NULL,
+  `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  `userId` int NOT NULL,
+  `stepId` int NOT NULL,
+  `date` datetime NOT NULL,
+  `comment` text COLLATE utf8_unicode_ci,
+  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 DROP TABLE IF EXISTS `ram_sequences`;
 CREATE TABLE `ram_sequences` (
   `id` int NOT NULL,
@@ -236,15 +256,6 @@ CREATE TABLE `ram_steps` (
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `removed` tinyint NOT NULL DEFAULT '0',
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
-DROP TABLE IF EXISTS `ram_stepuser`;
-CREATE TABLE `ram_stepuser` (
-  `id` int NOT NULL,
-  `stepId` int NOT NULL,
-  `userId` int NOT NULL,
-  `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `removed` tinyint NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `ram_templateassetgroups`;
@@ -359,6 +370,20 @@ ALTER TABLE `ram_projects`
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `shortname` (`shortName`);
 
+ALTER TABLE `ram_projectuser`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id_UNIQUE` (`id`),
+  ADD UNIQUE KEY `unique_projectuser` (`projectId`,`userId`) USING BTREE,
+  ADD KEY `fk_projectuser_userId` (`userId`) USING BTREE,
+  ADD KEY `fk_projectuser_projectId` (`projectId`) USING BTREE;
+
+ALTER TABLE `ram_schedule`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_usr_step_date` (`date`,`stepId`,`userId`),
+  ADD UNIQUE KEY `uuid_unique` (`uuid`),
+  ADD KEY `fk_schedule_user` (`userId`),
+  ADD KEY `fk_schedule_step` (`stepId`);
+
 ALTER TABLE `ram_sequences`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
@@ -402,13 +427,6 @@ ALTER TABLE `ram_steps`
   ADD UNIQUE KEY `uuid` (`uuid`),
   ADD KEY `fk_steps_projectId_idx` (`projectId`),
   ADD KEY `fk_estimationGroupId` (`estimationMultiplyGroupId`);
-
-ALTER TABLE `ram_stepuser`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD UNIQUE KEY `unique_stepuser` (`stepId`,`userId`),
-  ADD KEY `fk_stepuser_stepId_idx` (`stepId`),
-  ADD KEY `fk_stepuser_userId_idx` (`userId`);
 
 ALTER TABLE `ram_templateassetgroups`
   ADD PRIMARY KEY (`id`),
@@ -457,6 +475,12 @@ ALTER TABLE `ram_pipes`
 ALTER TABLE `ram_projects`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE `ram_projectuser`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `ram_schedule`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
 ALTER TABLE `ram_sequences`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
@@ -476,9 +500,6 @@ ALTER TABLE `ram_stepapplication`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `ram_steps`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
-ALTER TABLE `ram_stepuser`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `ram_templateassetgroups`
@@ -513,6 +534,14 @@ ALTER TABLE `ram_pipes`
   ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
+ALTER TABLE `ram_projectuser`
+  ADD CONSTRAINT `fk_projectuser_projectId` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_projectuser_userId` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `ram_schedule`
+  ADD CONSTRAINT `fk_schedule_step` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_schedule_user` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 ALTER TABLE `ram_sequences`
   ADD CONSTRAINT `fk_sequences_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -538,10 +567,6 @@ ALTER TABLE `ram_stepapplication`
 ALTER TABLE `ram_steps`
   ADD CONSTRAINT `fk_estimationGroupId` FOREIGN KEY (`estimationMultiplyGroupId`) REFERENCES `ram_assetgroups` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `fk_steps_projectId` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
-ALTER TABLE `ram_stepuser`
-  ADD CONSTRAINT `fk_stepuser_stepId` FOREIGN KEY (`stepId`) REFERENCES `ram_steps` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_stepuser_userId` FOREIGN KEY (`userId`) REFERENCES `ram_users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
