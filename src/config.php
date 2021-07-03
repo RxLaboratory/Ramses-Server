@@ -24,10 +24,9 @@
 	// Edit this configuration file before running the install script at /install/index.php
 
 	// === DEV MODE ===
-	// Comment out these lines to disable dev mode !important!
-	ini_set('display_errors', '1');
-	ini_set('display_startup_errors', '1');
-	error_reporting(E_ALL);
+	// Activates printing the SQL & PHP errors.
+	// For security reasons, it is important to set this to false in production mode
+	$devMode = false;
 
 	// ==== SQL SETTINGS ====
 

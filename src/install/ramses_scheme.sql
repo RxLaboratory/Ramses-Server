@@ -568,6 +568,7 @@ ALTER TABLE `ram_stepapplication`
 ALTER TABLE `ram_steps`
   ADD CONSTRAINT `fk_estimationGroupId` FOREIGN KEY (`estimationMultiplyGroupId`) REFERENCES `ram_assetgroups` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `fk_steps_projectId` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

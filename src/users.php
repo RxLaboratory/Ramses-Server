@@ -23,8 +23,7 @@
 
     if (hasArg("updateUser"))
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "updateUser";
+        acceptReply( "updateUser" );
 
         $name = getArg( "name" );
         $shortName = getArg( "shortName" );
@@ -33,53 +32,33 @@
         $folderPath = getArg( "folderPath" );
         $comment = getArg( "comment" );
 
-        if ( $shortName != "" && $uuid != "")
+        if ( checkArgs( array( $shortName, $uuid ) ) && ( isSelf($uuid) || isAdmin() ) )
         {
             // Only if self or admin
             if ( isSelf($uuid) || isAdmin() )
             {
-                $qString = "INSERT INTO {$usersTable} (`shortName`, `name`, `role`, `folderPath`, `uuid`, `password`, `comment`)
-                    VALUES(
-                        :shortName,
-                        :name,
-                        :role,
-                        :folderPath,
-                        :uuid,
-                        '',
-                        :comment
-                        )
-                    AS newUser
-                    ON DUPLICATE KEY UPDATE
-                        `name` = newUser.`name`,
-                        `role` = newUser.`role`,
-                        `folderPath` = newUser.`folderPath`,
-                        `comment` = newUser.`comment`,
-                        `removed` = 0;
-                    UPDATE {$usersTable}
-                    SET `shortName` = :shortName
+                $qString = "UPDATE {$usersTable}
+                    SET
+                        `shortName` = :shortName,
+                        `name` = :name,
+                        `role` = :role,
+                        `folderPath` = :folderPath,
+                        `comment` = :comment
                     WHERE `uuid` = :uuid;";
-
-                $values = array('shortName' => $shortName, 'name' => $name, 'uuid' => $uuid, 'role' => $role, 'folderPath' => $folderPath, 'comment' => $comment);
-
+               
                 $rep = $db->prepare($qString);
-                $rep->execute($values);
+                $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+                $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
+                $rep->bindValue(':name', $name, PDO::PARAM_STR);
+                $rep->bindValue(':role', $role, PDO::PARAM_STR);
+                $rep->bindValue(':folderPath', $folderPath, PDO::PARAM_STR);
+                $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+
+                sqlRequest( $rep,  "User {$shortName} updated." );
+
                 $rep->closeCursor();
-
-                $reply["message"] = "User \"" . $shortName . "\" updated.";
-                $reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update other users.";
-                $reply["success"] = false;
             }
         }
-        else
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
-
     }
     else if (hasArg("updatePassword"))
     {

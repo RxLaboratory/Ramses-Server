@@ -29,7 +29,9 @@
      * Checks if the current user has admin rights
      */
     function isAdmin()
-    {      
+    {
+        global $reply;
+
         $ok = $_SESSION["userRole"] == "admin";
         if (!$ok)
         {
@@ -44,6 +46,8 @@
      */
     function isProjectAdmin()
     {
+        global $reply;
+
         $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "project";
         if (!$ok)
         {
@@ -58,6 +62,8 @@
      */
     function isLead()
     {
+        global $reply;
+
         $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead" || $_SESSION["userRole"] == "project";
         if (!$ok)
         {
@@ -72,7 +78,15 @@
      */
     function isSelf($uuid)
     {
-        return $uuid == $_SESSION["userUuid"];
+        global $reply;
+
+        $ok = $uuid == $_SESSION["userUuid"];
+        if (!$ok)
+        {
+            $reply["message"] = "Insufficient rights.";
+            $reply["success"] = false;
+        }
+        return $ok;
     }
 
     /**
@@ -150,7 +164,7 @@
             else 
             {
                 if (isset($_POST[$name]))
-                    $decordedArg = $_POST[$name];
+                    $decordedArg = rawurldecode ( $_POST[$name] );
             }
         }
 
@@ -240,7 +254,7 @@
         }
         else if ($message != "")
         {
-            $reply["message"] = "Schedule updated.";
+            $reply["message"] = $message;
             $reply["success"] = true;
         }
         

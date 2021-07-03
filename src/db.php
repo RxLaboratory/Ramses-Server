@@ -11,7 +11,7 @@
 	}
 	catch (Exception $e)
 	{
-		echo "Oops";
-		die('Error : ' . $e->getMessage());
+		echo "Oops, something went wrong with the database. Here's the error: <br />";
+		die('Error: ' . $e->getMessage());
 	}
 ?>

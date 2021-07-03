@@ -657,6 +657,8 @@ INSERT INTO `ram_users` (`id`, `uuid`, `name`, `shortName`, `password`, `folderP
 (18, '2501ebfa-ff80-5561-9ab6-c6856740fb18', 'Tester', 'test', '90c701eadef189be16c421d61a9e3a37561222c426f95bd2888a36008871108c3dacffe3b11374581ac3589bc1ac7f5aaf1f83100157341249cfd039f29211ef', 'auto', 'project', 0, 0, ''),
 (19, '17e0d398-ef34-5a76-adb4-fe629182dfc0', 'Ramses Daemon', 'Ramses', 'd1e638c2a39e9f7bb51213211ef2e2ec1a424fdd3f5380c07f543c70ba183b70ce8610ae4852cbafd8f0878bd77fce800044585562917131f60c70a994072b99', 'auto', 'standard', 0, 0, NULL),
 (20, '5a37aa7f-5b58-5694-a492-76e31fdfaece', 'J. Doe', 'NEW', 'e8c87de21cdc15bd25213bf5408fcabe5cf4d935e5a6078588b2fa52c183bd2f9197122456e787a2d508a55aadf97a6efc8a38e2482127ac345277dc1d1fdee8', 'auto', 'standard', 1, 0, '');
+
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

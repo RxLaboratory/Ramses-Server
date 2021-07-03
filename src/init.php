@@ -2,6 +2,13 @@
     $ramsesVersion = "0.0.1-dev";
 	$installed = !file_exists("install/index.php");
 
+	if ($devMode)
+	{
+		ini_set('display_errors', '1');
+		ini_set('display_startup_errors', '1');
+		error_reporting(E_ALL);
+	}
+
 	// server should keep session data for AT LEAST  sessionTimeout
 	ini_set('session.gc_maxlifetime', $sessionTimeout);
 

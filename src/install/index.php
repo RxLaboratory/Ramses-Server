@@ -6,28 +6,73 @@
 	*/
 
     //connect to database
+
+    echo ( "Connecting to the database...<br />" );
+
     include('../config.php');
-    include('../db.php');
     include('../functions.php');
+    include('../db.php');
+
+    echo ( "Database found and working!<br />" );
 
     setupTablePrefix();
 
-    $sql = file_get_contents('ramses_scheme.sql');
+    echo ( "Writing the new database scheme...<br />" );
 
+    $sql = file_get_contents('ramses_scheme.sql');
+    // Run the installer SQL Script
     $qr = $db->exec($sql);
-    $qr;
+    
+    if ( $qr === false )
+    {
+        echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
+        die( print_r($db->errorInfo(), true) );
+    }
+
+    echo ( "Database tables are ready!<br />" );
 
     //Setup admin user
-    $uuid = "bVda5hjqDNLFJia9DCmwwH2p";
+    $uuid = uuid();
     $shortName = "Admin";
     $name = "Administrator";
-    $pswd = hashPassword("0b17bfa7938d75031d1754ab56c27062d967e92ca04f2ba5b4ebf920528936b95f9a9fc96a2ef8fb921463cd97aa94026079891f6f4c6e273ce5956c9da72c92", $uuid);
-    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,role) VALUES ( :name , :shortName , :uuid, :password, 'admin' ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-    $values = array('name' => $name,'shortName' => $shortName, 'password' => $pswd, 'uuid' => $uuid);
-    $rep = $db->prepare($qString);
-    $rep->execute($values);
-    $rep->closeCursor();
+    $pswd = hashPassword("0b17bfa7938d75031d1754ab56c27062d967e92ca04f2ba5b4ebf920528936b95f9a9fc96a2ef8fb921463cd97aa94026079891f6f4c6e273ce5956c9da72c92", $uuid);   
+    $comment = "The default Administrator user. Don't forget to rename it and change its password!";
     
+    $qString = "INSERT INTO
+        {$tablePrefix}users (
+            `name`,
+            `shortName`,
+            `uuid`,
+            `password`,
+            `role`,
+            `comment`)
+        VALUES (
+            :name ,
+            :shortName ,
+            :uuid,
+            :password,
+            'admin',
+            :comment );";
 
-    echo "Ramses installed, you can now remove the <code>install</code> directory.<br />The default user is \"Admin\" with password \"password\".<br />Do not forget to change this name and password!";
+    echo( $qString );
+
+    $rep = $db->prepare($qString);
+    $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+    $rep->bindValue(':name', $name, PDO::PARAM_STR);
+    $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
+    $rep->bindValue(':password', $pswd, PDO::PARAM_STR);
+    $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+
+    $rep->debugDumpParams();
+
+    $ok = $rep->execute();
+    $rep->closeCursor();
+
+    if (!$ok)
+    {
+        echo( "Could not create the administrator, here's the error:<br />" );
+        die( print_r($db->errorInfo(), true) );
+    }
+    
+    echo ( "Ramses installed, you can now remove the <code>install</code> directory.<br />The default user is \"Admin\" with password \"password\".<br />Do not forget to change this name and password!" );
 ?>
