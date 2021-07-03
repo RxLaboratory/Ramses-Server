@@ -31,6 +31,20 @@
 
     echo ( "Database tables are ready!<br />" );
 
+    echo ( "Inserting default data...<br />" );
+
+    $sql = file_get_contents('ramses_data.sql');
+    // Run the data SQL Script
+    $qr = $db->exec($sql);
+    
+    if ( $qr === false )
+    {
+        echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
+        die( print_r($db->errorInfo(), true) );
+    }
+
+    echo ( "The new data is ready!<br />" );
+
     //Setup admin user
     $uuid = uuid();
     $shortName = "Admin";
@@ -54,16 +68,12 @@
             'admin',
             :comment );";
 
-    echo( $qString );
-
     $rep = $db->prepare($qString);
     $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
     $rep->bindValue(':name', $name, PDO::PARAM_STR);
     $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
     $rep->bindValue(':password', $pswd, PDO::PARAM_STR);
     $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
-
-    $rep->debugDumpParams();
 
     $ok = $rep->execute();
     $rep->closeCursor();
@@ -74,5 +84,5 @@
         die( print_r($db->errorInfo(), true) );
     }
     
-    echo ( "Ramses installed, you can now remove the <code>install</code> directory.<br />The default user is \"Admin\" with password \"password\".<br />Do not forget to change this name and password!" );
+    echo ( "<p>Ramses installed, you can now <strong>remove the <code>install</code> directory</strong>.</p>The default user is <strong>\"Admin\" with password \"password\"</strong>.<br />Do not forget to change this name and password!</p>" );
 ?>
