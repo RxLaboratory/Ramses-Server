@@ -311,7 +311,7 @@ ALTER TABLE `ram_applicationfiletype`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `apptype_unique` (`applicationId`,`filetypeId`,`type`),
-  ADD KEY `fk_applicationfiletype_filetype_idx` (`filetypeId`);
+  ADD KEY `fk_applicationfiletype_filetype` (`filetypeId`);
 
 ALTER TABLE `ram_applications`
   ADD PRIMARY KEY (`id`),
@@ -323,13 +323,13 @@ ALTER TABLE `ram_assetgroups`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD KEY `fk_assetgroups_projectid_idx` (`projectId`);
+  ADD KEY `fk_assetgroups_projectid` (`projectId`);
 
 ALTER TABLE `ram_assets`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid` (`uuid`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD KEY `fk_assets_assgroup_idx` (`assetGroupId`);
+  ADD KEY `fk_assets_assgroup` (`assetGroupId`);
 
 ALTER TABLE `ram_colorspaces`
   ADD PRIMARY KEY (`id`),
@@ -347,22 +347,22 @@ ALTER TABLE `ram_pipefile`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD KEY `fk_pipefile_colorspace_idx` (`colorSpaceId`),
-  ADD KEY `fk_ram_pipefile_filetype_idx` (`filetypeId`);
+  ADD KEY `fk_pipefile_colorspace` (`colorSpaceId`),
+  ADD KEY `fk_ram_pipefile_filetype` (`filetypeId`);
 
 ALTER TABLE `ram_pipefilepipe`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `association_UNIQUE` (`pipeId`,`pipeFileId`),
-  ADD KEY `fk_pipefilepipe_pipe_idx` (`pipeId`),
-  ADD KEY `fk_pipefilepipe_pipefile_idx` (`pipeFileId`);
+  ADD KEY `fk_pipefilepipe_pipe` (`pipeId`),
+  ADD KEY `fk_pipefilepipe_pipefile` (`pipeFileId`);
 
 ALTER TABLE `ram_pipes`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `step_UNIQUE` (`outputStepId`,`inputStepId`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD KEY `fk_pipes_input_idx` (`inputStepId`);
+  ADD KEY `fk_pipes_input` (`inputStepId`);
 
 ALTER TABLE `ram_projects`
   ADD PRIMARY KEY (`id`),
@@ -373,9 +373,9 @@ ALTER TABLE `ram_projects`
 ALTER TABLE `ram_projectuser`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD UNIQUE KEY `unique_projectuser` (`projectId`,`userId`) USING BTREE,
-  ADD KEY `fk_projectuser_userId` (`userId`) USING BTREE,
-  ADD KEY `fk_projectuser_projectId` (`projectId`) USING BTREE;
+  ADD UNIQUE KEY `unique_projectuser` (`projectId`,`userId`),
+  ADD KEY `fk_projectuser_userId` (`userId`),
+  ADD KEY `fk_projectuser_projectId` (`projectId`);
 
 ALTER TABLE `ram_schedule`
   ADD PRIMARY KEY (`id`),
@@ -388,7 +388,7 @@ ALTER TABLE `ram_sequences`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD KEY `fk_sequences_projectid_idx` (`projectId`);
+  ADD KEY `fk_sequences_projectid` (`projectId`);
 
 ALTER TABLE `ram_shotasset`
   ADD PRIMARY KEY (`id`),
@@ -398,7 +398,7 @@ ALTER TABLE `ram_shotasset`
 ALTER TABLE `ram_shots`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid` (`uuid`),
-  ADD KEY `fk_shots_sequence_idx` (`sequenceId`);
+  ADD KEY `fk_shots_sequence` (`sequenceId`);
 
 ALTER TABLE `ram_states`
   ADD PRIMARY KEY (`id`),
@@ -409,23 +409,23 @@ ALTER TABLE `ram_status`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD KEY `fk_status_user_idx` (`userId`),
-  ADD KEY `fk_status_state_idx` (`stateId`),
-  ADD KEY `fk_status_step_idx` (`stepId`),
-  ADD KEY `fk_status_asset_idx` (`assetId`),
-  ADD KEY `fk_status_shot_idx` (`shotId`),
+  ADD KEY `fk_status_user` (`userId`),
+  ADD KEY `fk_status_state` (`stateId`),
+  ADD KEY `fk_status_step` (`stepId`),
+  ADD KEY `fk_status_asset` (`assetId`),
+  ADD KEY `fk_status_shot` (`shotId`),
   ADD KEY `fk_status_assigneduser` (`assignedUserId`);
 
 ALTER TABLE `ram_stepapplication`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `stepapp_UNIQUE` (`applicationId`,`stepId`),
-  ADD KEY `fk_stepapplication_step_idx` (`stepId`);
+  ADD KEY `fk_stepapplication_step` (`stepId`);
 
 ALTER TABLE `ram_steps`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid` (`uuid`),
-  ADD KEY `fk_steps_projectId_idx` (`projectId`),
+  ADD KEY `fk_steps_projectId` (`projectId`),
   ADD KEY `fk_estimationGroupId` (`estimationMultiplyGroupId`);
 
 ALTER TABLE `ram_templateassetgroups`
@@ -520,7 +520,7 @@ ALTER TABLE `ram_assetgroups`
   ADD CONSTRAINT `fk_assetgroups_projectid` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `ram_assets`
-  ADD CONSTRAINT `fk_assets_assgroup_idx` FOREIGN KEY (`assetGroupId`) REFERENCES `ram_assetgroups` (`id`);
+  ADD CONSTRAINT `fk_assets_assgroup` FOREIGN KEY (`assetGroupId`) REFERENCES `ram_assetgroups` (`id`);
 
 ALTER TABLE `ram_pipefile`
   ADD CONSTRAINT `fk_pipefile_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
