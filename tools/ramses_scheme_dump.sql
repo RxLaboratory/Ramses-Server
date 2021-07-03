@@ -2,36 +2,14 @@ SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-SET foreign_key_checks = 0;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8 */;
 
-DROP TABLE IF EXISTS `ram_applicationfiletype`;
-DROP TABLE IF EXISTS `ram_applications`;
-DROP TABLE IF EXISTS `ram_assetgroups`;
-DROP TABLE IF EXISTS `ram_assets`;
-DROP TABLE IF EXISTS `ram_colorspaces`;
-DROP TABLE IF EXISTS `ram_filetypes`;
-DROP TABLE IF EXISTS `ram_pipefile`;
-DROP TABLE IF EXISTS `ram_pipefilepipe`;
-DROP TABLE IF EXISTS `ram_pipes`;
-DROP TABLE IF EXISTS `ram_projects`;
-DROP TABLE IF EXISTS `ram_projectuser`;
-DROP TABLE IF EXISTS `ram_schedule`;
-DROP TABLE IF EXISTS `ram_sequences`;
-DROP TABLE IF EXISTS `ram_shots`;
-DROP TABLE IF EXISTS `ram_states`;
-DROP TABLE IF EXISTS `ram_status`;
-DROP TABLE IF EXISTS `ram_shotasset`;
-DROP TABLE IF EXISTS `ram_stepapplication`;
-DROP TABLE IF EXISTS `ram_steps`;
-DROP TABLE IF EXISTS `ram_templateassetgroups`;
-DROP TABLE IF EXISTS `ram_templatesteps`;
-DROP TABLE IF EXISTS `ram_users`;
 
+DROP TABLE IF EXISTS `ram_applicationfiletype`;
 CREATE TABLE `ram_applicationfiletype` (
   `id` int NOT NULL,
   `applicationId` int NOT NULL,
@@ -41,6 +19,7 @@ CREATE TABLE `ram_applicationfiletype` (
   `removed` tinyint NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_applications`;
 CREATE TABLE `ram_applications` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -53,6 +32,7 @@ CREATE TABLE `ram_applications` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_assetgroups`;
 CREATE TABLE `ram_assetgroups` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -65,6 +45,7 @@ CREATE TABLE `ram_assetgroups` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_assets`;
 CREATE TABLE `ram_assets` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -78,6 +59,7 @@ CREATE TABLE `ram_assets` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_colorspaces`;
 CREATE TABLE `ram_colorspaces` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -89,6 +71,7 @@ CREATE TABLE `ram_colorspaces` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_filetypes`;
 CREATE TABLE `ram_filetypes` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -102,6 +85,7 @@ CREATE TABLE `ram_filetypes` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_pipefile`;
 CREATE TABLE `ram_pipefile` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -114,6 +98,7 @@ CREATE TABLE `ram_pipefile` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_pipefilepipe`;
 CREATE TABLE `ram_pipefilepipe` (
   `id` int NOT NULL,
   `pipeId` int NOT NULL,
@@ -122,6 +107,7 @@ CREATE TABLE `ram_pipefilepipe` (
   `removed` tinyint NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_pipes`;
 CREATE TABLE `ram_pipes` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -132,6 +118,7 @@ CREATE TABLE `ram_pipes` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_projects`;
 CREATE TABLE `ram_projects` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -149,6 +136,7 @@ CREATE TABLE `ram_projects` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_projectuser`;
 CREATE TABLE `ram_projectuser` (
   `id` int NOT NULL,
   `projectId` int NOT NULL,
@@ -157,6 +145,7 @@ CREATE TABLE `ram_projectuser` (
   `removed` tinyint NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_schedule`;
 CREATE TABLE `ram_schedule` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -167,6 +156,7 @@ CREATE TABLE `ram_schedule` (
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_sequences`;
 CREATE TABLE `ram_sequences` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -179,6 +169,7 @@ CREATE TABLE `ram_sequences` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_shotasset`;
 CREATE TABLE `ram_shotasset` (
   `id` int NOT NULL,
   `shotId` int NOT NULL,
@@ -186,6 +177,7 @@ CREATE TABLE `ram_shotasset` (
   `latestUpdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_shots`;
 CREATE TABLE `ram_shots` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -199,6 +191,7 @@ CREATE TABLE `ram_shots` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_states`;
 CREATE TABLE `ram_states` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -211,6 +204,7 @@ CREATE TABLE `ram_states` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_status`;
 CREATE TABLE `ram_status` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -232,6 +226,7 @@ CREATE TABLE `ram_status` (
   `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_stepapplication`;
 CREATE TABLE `ram_stepapplication` (
   `id` int NOT NULL,
   `applicationId` int NOT NULL,
@@ -240,6 +235,7 @@ CREATE TABLE `ram_stepapplication` (
   `removed` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_steps`;
 CREATE TABLE `ram_steps` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -262,6 +258,7 @@ CREATE TABLE `ram_steps` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_templateassetgroups`;
 CREATE TABLE `ram_templateassetgroups` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -273,6 +270,7 @@ CREATE TABLE `ram_templateassetgroups` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_templatesteps`;
 CREATE TABLE `ram_templatesteps` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -293,6 +291,7 @@ CREATE TABLE `ram_templatesteps` (
   `comment` text CHARACTER SET utf8 COLLATE utf8_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_users`;
 CREATE TABLE `ram_users` (
   `id` int NOT NULL,
   `uuid` varchar(36) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
@@ -573,4 +572,3 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-SET foreign_key_checks = 1;
