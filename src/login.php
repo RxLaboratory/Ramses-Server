@@ -43,9 +43,9 @@
 				//check password
 				//hash
 				$uuid = $testPass["uuid"];
-				$password = hashPassword( $password, $uuid );
+				$pswd = $uuid . $password;
 
-				if ($testPass["password"] == $password)
+				if ( password_verify($pswd, $testPass["password"]) )
 				{
 					//login
 					$role = $testPass["role"];

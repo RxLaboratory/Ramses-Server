@@ -10,7 +10,6 @@ SET foreign_key_checks = 0;
 /*!40101 SET NAMES utf8mb4 */;
 
 
-TRUNCATE TABLE `ram_applicationfiletype`;
 INSERT INTO `ram_applicationfiletype` (`id`, `applicationId`, `filetypeId`, `type`, `latestUpdate`, `removed`) VALUES
 (2, 1, 19, 'import', '2021-07-03 11:46:06', 0),
 (3, 1, 1, 'import', '2021-07-03 11:46:10', 0),
@@ -420,7 +419,6 @@ INSERT INTO `ram_applicationfiletype` (`id`, `applicationId`, `filetypeId`, `typ
 (449, 7, 55, 'import', '2021-07-03 12:32:37', 0),
 (450, 6, 55, 'import', '2021-07-03 12:32:40', 0);
 
-TRUNCATE TABLE `ram_applications`;
 INSERT INTO `ram_applications` (`id`, `uuid`, `name`, `shortName`, `executableFilePath`, `latestUpdate`, `removed`, `order`, `comment`) VALUES
 (1, 'a5ef7a35-3901-55bf-83a3-dab447d2514d', 'Krita', 'KRITA', '', '2021-07-03 11:45:39', 0, 0, ''),
 (2, '7b8d2675-4704-53eb-8524-2181bd1c2e31', 'Inkscape', 'INKSCP', '', '2021-07-03 11:50:47', 0, 0, ''),
@@ -439,10 +437,6 @@ INSERT INTO `ram_applications` (`id`, `uuid`, `name`, `shortName`, `executableFi
 (15, '140f6f9c-1f2c-5989-a2b4-867bd4460123', 'The Foundry Nule', 'NUKE', '', '2021-07-03 12:24:26', 0, 0, ''),
 (16, '8e3f3080-5b37-57c1-8090-60688611fbe2', 'Lightworks', 'LWKS', '', '2021-07-03 12:26:22', 0, 0, '');
 
-TRUNCATE TABLE `ram_assetgroups`;
-TRUNCATE TABLE `ram_assets`;
-TRUNCATE TABLE `ram_colorspaces`;
-TRUNCATE TABLE `ram_filetypes`;
 INSERT INTO `ram_filetypes` (`id`, `uuid`, `name`, `shortName`, `extensions`, `previewable`, `latestUpdate`, `removed`, `order`, `comment`) VALUES
 (1, '3a03d734-50f5-51c9-93a4-d9e8470fc24b', 'OpenEXR Image Data', 'exr', 'exr', 0, '2021-07-03 11:20:09', 0, 0, ''),
 (2, 'cbc5367c-c929-5c3b-8dc5-98bcde8db40c', 'GIF Image or animation', 'GIF', 'gif', 1, '2021-07-03 11:20:41', 0, 0, ''),
@@ -500,16 +494,6 @@ INSERT INTO `ram_filetypes` (`id`, `uuid`, `name`, `shortName`, `extensions`, `p
 (54, '3b7be413-5940-55f2-9ff5-597418225d44', 'Open Media Framework', 'omf', 'omf', 0, '2021-07-03 12:28:48', 0, 0, ''),
 (55, '6a6e19e0-f6ac-5227-b42f-f12f3aec470f', 'Waveform', 'wav', 'wav', 1, '2021-07-03 12:32:03', 0, 0, '');
 
-TRUNCATE TABLE `ram_pipefile`;
-TRUNCATE TABLE `ram_pipefilepipe`;
-TRUNCATE TABLE `ram_pipes`;
-TRUNCATE TABLE `ram_projects`;
-TRUNCATE TABLE `ram_projectuser`;
-TRUNCATE TABLE `ram_schedule`;
-TRUNCATE TABLE `ram_sequences`;
-TRUNCATE TABLE `ram_shotasset`;
-TRUNCATE TABLE `ram_shots`;
-TRUNCATE TABLE `ram_states`;
 INSERT INTO `ram_states` (`id`, `uuid`, `name`, `shortName`, `color`, `latestUpdate`, `completionRatio`, `removed`, `comment`) VALUES
 (1, 'f1b78562-0964-5e04-adcc-5f9f7b61d155', 'Nothing to do', 'NO', '#484848', '2021-07-03 11:22:55', 0, 0, 'There\'s nothing to do at this step.'),
 (2, '2fa28213-b2ce-5227-92ea-604ea4a72e7b', 'Ready to do', 'TODO', '#00aaff', '2021-07-03 11:22:59', 0, 0, 'This step is ready, one can work on this.'),
@@ -522,10 +506,6 @@ INSERT INTO `ram_states` (`id`, `uuid`, `name`, `shortName`, `color`, `latestUpd
 (9, '2f758137-549f-52cd-b995-6a88ec52c453', 'Needs a retake', 'RTK', '#ff1930', '2021-07-03 11:23:39', 70, 0, 'Something has to be fixed.'),
 (10, '33d3fdaa-e232-5b10-9d4b-132a4425335c', 'Rendering', 'RDR', '#6a39ff', '2021-07-03 11:23:42', 90, 0, 'This is currently rendering, soon we\'ll be able to watch this beautiful work!');
 
-TRUNCATE TABLE `ram_status`;
-TRUNCATE TABLE `ram_stepapplication`;
-TRUNCATE TABLE `ram_steps`;
-TRUNCATE TABLE `ram_templateassetgroups`;
 INSERT INTO `ram_templateassetgroups` (`id`, `uuid`, `name`, `shortName`, `latestUpdate`, `removed`, `order`, `comment`) VALUES
 (1, '4f1ab268-3535-564a-9922-a359fcd4d143', 'Main Characters', 'CHAR', '2021-07-03 11:01:36', 0, 0, ''),
 (2, 'a5e1d117-6a22-54ef-a569-5f805b327062', 'Secondary Characters', 'CHAR2', '2021-07-03 11:01:46', 0, 0, ''),
@@ -535,7 +515,6 @@ INSERT INTO `ram_templateassetgroups` (`id`, `uuid`, `name`, `shortName`, `lates
 (6, '26a63e3e-11aa-5812-9161-2f15a7841527', 'Paintings', 'PAINT', '2021-07-03 11:05:19', 0, 0, 'Matte paintings and other backgrounds'),
 (7, '34d813d1-95fd-5c85-8a4f-142adf47b0c2', 'Accessories', 'ACCSRS', '2021-07-03 11:04:57', 0, 0, 'Non-playing, not animated props');
 
-TRUNCATE TABLE `ram_templatesteps`;
 INSERT INTO `ram_templatesteps` (`id`, `uuid`, `name`, `shortName`, `autoCreateAssets`, `latestUpdate`, `type`, `color`, `estimationMethod`, `estimationVeryEasy`, `estimationEasy`, `estimationMedium`, `estimationHard`, `estimationVeryHard`, `removed`, `order`, `comment`) VALUES
 (1, 'f96be95e-3ed9-5394-a372-ba79a07b978f', 'Storyboard', 'STRBRD', 0, '2021-07-03 10:50:21', 'pre', '#50b8c8', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (2, '897bc267-151b-5c10-9a52-46933e2dd0b8', 'Character Design', 'CD', 0, '2021-07-03 10:51:00', 'asset', '#73e7ab', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
@@ -560,13 +539,13 @@ INSERT INTO `ram_templatesteps` (`id`, `uuid`, `name`, `shortName`, `autoCreateA
 (21, 'ee48e49b-ef49-558d-8bc0-f451a5be6f10', 'Music', 'MUSIC', 0, '2021-07-03 11:00:33', 'post', '#ff8692', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (22, '516050fa-26cc-58c7-84c8-d9c79aad8e77', 'Color Correction', 'CC', 0, '2021-07-03 11:00:58', 'post', '#a14fff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, '');
 
-TRUNCATE TABLE `ram_users`;
 INSERT INTO `ram_users` (`id`, `uuid`, `name`, `shortName`, `password`, `latestUpdate`, `folderPath`, `role`, `removed`, `order`, `comment`) VALUES
-(2, '9804963f-5a6f-5987-8adc-3a70ac6a1a68', 'Ramses Daemon', 'Ramses', 'ede73db25361308a0283571f9b83c4c2b932de2ce39abb8a627110806897856912e3769f23a79616295c60e57d9a77f636efa188a761086606cb7decf5d4866e', '2021-07-03 12:35:30', 'auto', 'admin', 0, 0, 'This is the little daemon which works discretely for you in the backyard of the Rx Asset Management System.'),
-(3, 'e49e0411-19c8-5c85-8b33-d57ca9d72086', 'Nicolas Duduf', 'Duduf', '40163d08d8addac661b9f664a732e5c7205de79187e5c26cdb3a9e44ebe435e8a84ef2c71e3680675ec683322ff2b0665765ef148f78d0d0f61d76a30f225aea', '2021-07-03 12:38:17', 'auto', 'standard', 0, 0, 'Duduf is the developer of Ramses! As Ramses is free, he really needs your support, please have a look at https://patreon.com/duduf or make a donation to RxLab on https://rainboxlab.org\nThanks!');
+(2, '9804963f-5a6f-5987-8adc-3a70ac6a1a68', 'Ramses Daemon', 'Ramses', '$2y$13$Woc8BBF.13i1dsKuNjX.y.SN4afvi/hUpaevDViqt7.WO.HZSR/3G', '2021-07-03 13:16:59', 'auto', 'admin', 0, 0, 'This is the little daemon which works discretely for you in the backyard of the Rx Asset Management System.'),
+(3, 'e49e0411-19c8-5c85-8b33-d57ca9d72086', 'Nicolas Duduf', 'Duduf', '$2y$13$jPdpAs8S54iy0SCk9zl07OZVn/P/JDoaykdfSLgw7EOolzWu.9pEe', '2021-07-03 13:16:42', 'auto', 'standard', 0, 0, 'Duduf is the developer of Ramses! As Ramses is free, he really needs your support, please have a look at https://patreon.com/duduf or make a donation to RxLab on https://rainboxlab.org\nThanks!');
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
 SET foreign_key_checks = 1;

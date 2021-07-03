@@ -26,7 +26,7 @@
 	// === DEV MODE ===
 	// Activates printing the SQL & PHP errors.
 	// For security reasons, it is important to set this to false in production mode
-	$devMode = false;
+	$devMode = true;
 
 	// ==== SQL SETTINGS ====
 
@@ -54,10 +54,4 @@
 	// The client will be disconnected no matter what after this time
 	// 5 hours by default( 18000 )
 	$cookieTimeout = 18000;
-
-	// ==== SECURITY ====
-
-	// This key is used for password and other sensible data encryption.
-	// It should be a random and unique string to your server instance.
-	$serverKey = "BkDgj2dqLJbZY4US";
 ?>

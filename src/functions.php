@@ -94,8 +94,7 @@
      */
     function hashPassword($p, $u)
     {
-        GLOBAL $serverKey;
-        return hash( "sha3-512", $u . $p . $serverKey );
+        return password_hash(  $u . $p ,  PASSWORD_DEFAULT, ['cost' => 13]);
     }
 
     /**
