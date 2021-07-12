@@ -27,11 +27,6 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "createStep";
 
-		$name = "";
-		$shortName = "";
-		$projectUuid = "";
-		$uuid = "";
-
 		$name = getArg("name");
         $shortName = getArg("shortName");
         $projectUuid = getArg("projectUuid");
