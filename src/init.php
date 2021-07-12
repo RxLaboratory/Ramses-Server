@@ -1,5 +1,5 @@
 <?php
-    $ramsesVersion = "0.0.1-dev";
+    $ramsesVersion = "0.1.1-alpha";
 	$installed = !file_exists("install/index.php");
 
 	if ($devMode)
