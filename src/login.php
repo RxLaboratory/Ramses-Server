@@ -38,14 +38,11 @@
 			$testPass = $rep->fetch();
 			$rep->closeCursor();
 
+			$uuid = $testPass["uuid"];
 			if (isset($testPass["uuid"]))
 			{
 				//check password
-				//hash
-				$uuid = $testPass["uuid"];
-				$pswd = $uuid . $password;
-
-				if ( password_verify($pswd, $testPass["password"]) )
+				if ( checkPassword($password, $uuid, $testPass["password"]) )
 				{
 					//login
 					$role = $testPass["role"];

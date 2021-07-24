@@ -90,11 +90,17 @@
     }
 
     /**
-     * Hashes a password using the user shortname
+     * Hashes a password adding the user id at the beginning
      */
-    function hashPassword($p, $u)
+    function hashPassword($pswd, $uuid)
     {
-        return password_hash(  $u . $p ,  PASSWORD_DEFAULT, ['cost' => 13]);
+        return password_hash(  $uuid . $pswd ,  PASSWORD_DEFAULT, ['cost' => 13]);
+    }
+
+    function checkPassword( $pswd, $uuid, $testPswd )
+    {
+        $pswd = $uuid . $pswd;
+        return password_verify($pswd, $testPswd);
     }
 
     /**
