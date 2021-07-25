@@ -85,11 +85,7 @@
                 $testPass = $rep->fetch();
                 $rep->closeCursor();
 
-                //hash current password
-                $current = hashPassword( $current, $uuid );
-
-                $ok = $testPass["password"] == $current;
-                
+                $ok = checkPassword( $current, $uuid, $testPass["password"] );
                 if (!$ok)
                 {
                     $reply["message"] = "Wrong current password.";
