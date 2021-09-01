@@ -115,7 +115,7 @@
      * Checks the hashed role got from the database and returns the plain text role
      */
     function checkRole ( $r )
-    { 
+    {
         if ($r == 'admin') return 'admin';
         if ($r == 'project') return 'project';
         if ($r == 'lead') return 'lead';
