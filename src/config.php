@@ -30,6 +30,9 @@
 
 	// ==== SQL SETTINGS ====
 
+	// either 'mysql' or 'sqlite'
+	$sqlMode = 'mysql';
+
 	// Host URL
 	$sqlHost = "localhost";
 	$sqlPort = 3306;
