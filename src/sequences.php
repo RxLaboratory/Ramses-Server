@@ -35,7 +35,7 @@
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				// Create sequence
 				$qString = "INSERT INTO " . $tablePrefix . "sequences (name,shortName,projectId,uuid) 
@@ -67,11 +67,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create sequences.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -94,7 +89,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$sequencesTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment WHERE uuid= :uuid ;";
 				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
@@ -107,11 +102,6 @@
 				$reply["message"] = "Sequence \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update sequence information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

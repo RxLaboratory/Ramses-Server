@@ -36,7 +36,7 @@
 		if (strlen($shortName) > 0)
 		{
 			// Only if lead
-            if ( isLead() )
+            if ( isLead() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "INSERT INTO {$assetsTable} (`name`, `shortName`, `assetGroupId`, `tags`, `uuid`)
 				VALUES (
@@ -68,11 +68,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Lead to create assets.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -97,7 +92,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if lead
-            if ( isLead() )
+            if ( isLead() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$assetsTable}
 				SET
@@ -117,11 +112,6 @@
 				$reply["message"] = "Asset \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Lead to update asset information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

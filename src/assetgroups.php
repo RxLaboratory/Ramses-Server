@@ -35,7 +35,7 @@
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				// Create step
 				$qString = "INSERT INTO " . $tablePrefix . "assetgroups (name,shortName,projectId,uuid) 
@@ -67,11 +67,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create asset groups.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -94,7 +89,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin()&& validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$assetgroupsTable}
 					SET
@@ -112,11 +107,6 @@
 				$reply["message"] = "Asset Group \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update asset group information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

@@ -32,10 +32,13 @@
         $extensions = getArg("extensions");
 		$uuid = getArg("uuid");
 
+        // remove leading .
+        if ( strpos( $shortName, '.' ) == 0 ) $shortName = substr( $shortName, 1);
+
         if (strlen($shortName) > 0)
         {
             // Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
                 $qString = "INSERT INTO " . $tablePrefix . "filetypes (`name`,`shortName`,`extensions`,`uuid`) VALUES ( :name , :shortName , :extensions , ";
                 $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'extensions' => $extensions);
@@ -59,11 +62,6 @@
                 $reply["message"] = "File type \"" . $shortName . "\" created.";
                 $reply["success"] = true;
             }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to create file types.";
-                $reply["success"] = false;
-            }
         }
         else
         {
@@ -85,10 +83,13 @@
 		$uuid = getArg( "uuid" );
 		$comment = getArg( "comment" );
 
+        // remove leading .
+        if ( strpos( $shortName, '.' ) == 0 ) $shortName = substr( $shortName, 1);
+
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$filetypesTable}
 				SET
@@ -109,11 +110,6 @@
 				$reply["message"] = "File type \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update file type information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

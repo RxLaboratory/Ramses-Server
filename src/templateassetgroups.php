@@ -33,7 +33,7 @@
 
         if (strlen($shortName) > 0)
 		{
-            if (isAdmin())
+            if (isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
                 if (strlen($uuid) > 0)
 				{
@@ -52,11 +52,6 @@
 
                 $reply["message"] = "Asset Group " . $shortName . " added.";
 				$reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create asset groups.";
-                $reply["success"] = false;
             }
         }
         else
@@ -113,7 +108,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$templateassetgroupsTable}
 					SET
@@ -130,11 +125,6 @@
 				$reply["message"] = "Asset Group \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update asset group information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

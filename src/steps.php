@@ -35,7 +35,7 @@
 		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin()  && validateName( $name ) && validateShortName( $shortName ) )
             {
 				// Create step
 				$qString = "INSERT INTO " . $tablePrefix . "steps (name,shortName,projectId,uuid) 
@@ -67,11 +67,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create steps.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -96,7 +91,7 @@
 		if ($shortName != "" && $uuid != "")
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin()  && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$stepsTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
 
@@ -123,11 +118,6 @@
 				$reply["message"] = "Step \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update step information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

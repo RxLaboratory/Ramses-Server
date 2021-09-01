@@ -570,7 +570,7 @@
 		if (strlen($shortName) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				if (strlen($uuid) > 0)
 				{
@@ -591,11 +591,6 @@
 				$reply["success"] = true;
 
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create projects.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -684,7 +679,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ))
             {
 				$qString = "UPDATE {$projectsTable}
 					SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
@@ -736,11 +731,6 @@
 				$reply["message"] = "Project \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update project information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

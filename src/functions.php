@@ -364,4 +364,40 @@
         $reply["accepted"] = true;
 		$reply["query"] = $queryName;
     }
+
+    function validateName( $name )
+    {
+        global $reply;
+
+        if (preg_match( "/^[ a-zA-Z0-9+-]{1,256}$/i", $name ))
+            return true;
+
+        $reply["message"] = "Wrong name, sorry: names must have less than 256 characters and contain only one of these characters: [ A-Z, 0-9, +, - ] (and spaces).";
+        $reply["success"] = false;
+    }
+
+    function validateEmail( $email )
+    {
+        global $reply;
+
+        // accept empty emails
+        if ( $email == '' ) return true;
+
+        if ( preg_match( "/^[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i", $email ) )
+            return true;
+
+        $reply["message"] = "Wrong email, sorry.";
+        $reply["success"] = false;
+    }
+
+    function validateShortName( $shortName )
+    {
+        global $reply;
+        
+        if ( preg_match( "/^[a-zA-Z0-9+-]{1,10}$/i", $shortName ) )
+            return true;
+
+        $reply["message"] = "Wrong ID, sorry: IDs must have less than 10 characters and contain only one of these characters: [ A-Z, 0-9, +, - ].";
+        $reply["success"] = false;
+    }
 ?>

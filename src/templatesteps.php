@@ -27,10 +27,6 @@
 		$reply["accepted"] = true;
 		$reply["query"] = "createTemplateStep";
 
-		$name = "";
-		$shortName = "";
-		$uuid = "";
-
 		$name = getArg("name");
 		$shortName = getArg("shortName");
 		$uuid = getArg("uuid");
@@ -38,7 +34,7 @@
 		if (strlen($shortName) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				if (strlen($uuid) > 0)
 				{
@@ -59,11 +55,6 @@
 				$reply["success"] = true;
 
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create steps.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -147,7 +138,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$templatestepsTable}
 					SET
@@ -178,11 +169,6 @@
 				$reply["message"] = "Step \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update template step information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

@@ -62,7 +62,7 @@
         if (strlen($shortName) > 0)
         {
             // Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
                 $qString = "INSERT INTO " . $tablePrefix . "applications (`name`,`shortName`,`executableFilePath`,`uuid`) VALUES ( :name , :shortName , :executableFilePath , ";
                 $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'executableFilePath' => $executableFilePath);
@@ -85,11 +85,6 @@
     
                 $reply["message"] = "Application \"" . $shortName . "\" created.";
                 $reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to create applications.";
-                $reply["success"] = false;
             }
         }
         else
@@ -114,7 +109,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$applicationsTable}
 				SET
@@ -134,11 +129,6 @@
 				$reply["message"] = "Application \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update application information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

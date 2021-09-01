@@ -36,7 +36,7 @@
         if ($shortName != '' && $projectUuid != '')
 		{
 			//only if lead
-			if (isProjectAdmin())
+			if (isProjectAdmin() && validateShortName( $shortName ))
 			{
 				$queryStr = "INSERT INTO {$pipefileTable} (`shortName`, `projectId`, filetypeId, `colorSpaceId`, `uuid`)
 					VALUES (
@@ -72,11 +72,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
-                $reply["success"] = false;
-            }
 		}
 		else 
 		{
@@ -136,7 +131,7 @@
         if ( $uuid != "" && ($shortName != "" or $fileTypeUuid != "" or $colorSpaceUuid != ""))
 		{
 			// Only if admin
-            if ( isProjectAdmin() )
+            if ( isProjectAdmin() && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$pipefileTable} SET `comment` = :comment, ";
                 $setArray = array();

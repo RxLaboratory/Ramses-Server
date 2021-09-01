@@ -38,7 +38,7 @@
 		if (strlen($shortName) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName )  )
             {
 				//if an id is provided
 				if (strlen($uuid) > 0)
@@ -60,11 +60,6 @@
 				$reply["message"] = "State " . $shortName . " added.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create states.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -127,7 +122,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ))
             {
 
 				$qString = "UPDATE {$statesTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
@@ -156,11 +151,6 @@
 				$reply["message"] = "State \"" . $shortName . "\" updated.";
 				$reply["success"] = true;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update state information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{

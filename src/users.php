@@ -35,8 +35,8 @@
 
         if ( checkArgs( array( $shortName, $uuid ) ) && ( isSelf($uuid) || isAdmin() ) )
         {
-            // Only if self or admin
-            if ( isSelf($uuid) || isAdmin() )
+            // Validate name, shortname and email
+            if ( validateName( $name ) && validateShortName( $shortName ) && validateEmail( $email ) )
             {
                 $qString = "UPDATE {$usersTable}
                     SET
@@ -54,7 +54,7 @@
                 $name = encrypt( $name );
                 $shortName = encrypt( $shortName );
                 $email = encrypt( $email );
-               
+                
                 $rep = $db->prepare($qString);
                 $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
                 $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
@@ -192,7 +192,7 @@
         if (strlen($shortName) > 0 and strlen($password) > 0)
         {
             // Only if admin
-            if ( isAdmin() )
+            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) && validateEmail( $email ) )
             {
                 $password = hashPassword($password, $uuid);
 
@@ -222,13 +222,6 @@
                 $reply["message"] = "User created.";
                 $reply["success"] = true;
             }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create users.";
-                $reply["success"] = false;
-            }
-
-            
         }
         else
         {

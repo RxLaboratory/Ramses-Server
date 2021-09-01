@@ -40,7 +40,7 @@
 		if (strlen($shortName) > 0)
 		{
 			// Only if lead
-            if ( isLead() )
+            if ( isLead() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "INSERT INTO {$shotsTable} (`name`, `shortName`, `sequenceId`, `duration`, `order`, `uuid`)
 				VALUES (
@@ -99,11 +99,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Lead to create shots.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
@@ -128,7 +123,7 @@
 		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
 		{
 			// Only if lead
-            if ( isLead() )
+            if ( isLead() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				$qString = "UPDATE {$shotsTable}
 					SET
@@ -161,11 +156,6 @@
 
 				$reply["success"] = $ok;
 			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Lead to update shot information.";
-                $reply["success"] = false;
-            }
 		}
 		else
 		{
