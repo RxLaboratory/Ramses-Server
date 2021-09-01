@@ -31,6 +31,7 @@
         $role = getArg( "role" );
         $folderPath = getArg( "folderPath" );
         $comment = getArg( "comment" );
+        $email = getArg( "email" );
 
         if ( checkArgs( array( $shortName, $uuid ) ) && ( isSelf($uuid) || isAdmin() ) )
         {
@@ -43,11 +44,16 @@
                         `name` = :name,
                         `role` = :role,
                         `folderPath` = :folderPath,
-                        `comment` = :comment
+                        `comment` = :comment,
+                        `email` = :email
                     WHERE `uuid` = :uuid;";
 
                 // hash the role
                 $role = hashRole( $role );
+                // encrypt data
+                $name = encrypt( $name );
+                $shortName = encrypt( $shortName );
+                $email = encrypt( $email );
                
                 $rep = $db->prepare($qString);
                 $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
@@ -56,8 +62,9 @@
                 $rep->bindValue(':role', $role, PDO::PARAM_STR);
                 $rep->bindValue(':folderPath', $folderPath, PDO::PARAM_STR);
                 $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+                $rep->bindValue(':email', $email, PDO::PARAM_STR);
 
-                sqlRequest( $rep,  "User {$shortName} updated." );
+                sqlRequest( $rep,  "User updated." );
 
                 $rep->closeCursor();
             }
@@ -139,7 +146,7 @@
             $reply["query"] = "getUsers";    
         }
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment` FROM " . $tablePrefix . "users WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment`,`email` FROM " . $tablePrefix . "users WHERE removed = 0;");
         $rep->execute();
 
         $users = Array();
@@ -147,15 +154,13 @@
         while ($user = $rep->fetch())
         {
             $u = Array();
-			$u['name'] = $user['name'];
-			$u['shortName'] = $user['shortName'];
+			$u['name'] = decrypt( $user['name'] );
+			$u['shortName'] = decrypt( $user['shortName'] );
 			$u['comment'] = $user['comment'];
 			$u['uuid'] = $user['uuid'];
 			$u['folderPath'] = $user['folderPath'];
-
-            $role = checkRole( $user['role'] );
-
-			$u['role'] = $role;
+			$u['email'] = decrypt( $user['email'] );
+			$u['role'] = checkRole( $user['role'] );
 
 			$users[] = $u;
         }
@@ -180,6 +185,7 @@
 
         $name = getArg("name");
         $shortName = getArg("shortName");
+        $email = getArg("email");
         $uuid = getArg("uuid");
         $password = getArg("password");
 
@@ -190,26 +196,30 @@
             {
                 $password = hashPassword($password, $uuid);
 
+                $name = encrypt( $name );
+                $shortName = encrypt( $shortName );
+                $email = encrypt( $email );
+
                 if (strlen($uuid) > 0)
                 {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password)
-                        VALUES ( :name , :shortName , :uuid, :password )
-                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), removed = 0, uuid = VALUES(uuid);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password);
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email)
+                        VALUES ( :name , :shortName , :uuid, :password, :email )
+                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid);";
+                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password, 'email' => $email );
                 }
                 else
                 {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password)
-                        VALUES ( :name , :shortName , uuid(), :password )
-                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), removed = 0, uuid = VALUES(uuid);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'password' => $password);
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email)
+                        VALUES ( :name , :shortName , uuid(), :password, :email )
+                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid);";
+                    $values = array('name' => $name,'shortName' => $shortName, 'password' => $password, 'email' => $email);
                 }
     
                 $rep = $db->prepare($qString);
                 $rep->execute($values);
                 $rep->closeCursor();         
     
-                $reply["message"] = "User \"" . $shortName . "\" created.";
+                $reply["message"] = "User created.";
                 $reply["success"] = true;
             }
             else

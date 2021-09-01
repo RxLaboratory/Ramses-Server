@@ -17,6 +17,13 @@
 
     setupTablePrefix();
 
+    echo ( "Generating encryption keys...<br />" );
+
+    $encrypt_key = createEncryptionKey();
+    $encrypt_key_txt = base64_encode($encrypt_key);
+    echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
+    echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
+
     echo ( "Writing the new database scheme...<br />" );
 
     $sql = file_get_contents('ramses_scheme.sql');

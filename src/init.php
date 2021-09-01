@@ -1,6 +1,10 @@
 <?php
     $ramsesVersion = "0.2.0-alpha";
-	$installed = !file_exists("install/index.php");
+	$installed = file_exists("config_security.php");
+
+	// The encryption key
+	if( $installed ) include( 'config_security.php' );
+	else $encrypt_key = '';
 
 	if ($devMode)
 	{
@@ -70,7 +74,7 @@
 	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
 	$shotassetTable = $tablePrefix . "shotasset";
 	$scheduleTable = $tablePrefix . "schedule";
-	$serverMetadataTable = $tablePrefix . "serverMetadata";
+	$serverMetadataTable = $tablePrefix . "servermetadata";
 
 	// Parse body content to make it quickly available later
 	// Check the content type, accept either application/json or application/x-www-form-urlencoded

@@ -7,6 +7,8 @@
 
     //connect to database
 
+    ob_start();
+
     echo ( "<pre>" );
     echo ( "Connecting to the database...<br />" );
 
@@ -21,6 +23,9 @@
 
     echo ( "Initializing update...<br />" );
     echo ( " ▸ Creating server metadata table if needed.<br />" );
+
+    ob_flush();
+    flush();
 
     // ==== Server metadata table ====
 
@@ -41,6 +46,9 @@
     }
     echo ( "     ▪ OK!<br />" );
 
+    ob_flush();
+    flush();
+
     // ==== Get current version ====
 
     echo ( " ▸ Checking current version.<br />" );
@@ -58,6 +66,9 @@
     }
 
     echo ( "     ▪ OK! We're updating from <strong><i>{$currentVersion}</i></strong> to <strong><i>{$ramsesVersion}</i></strong>.<br />" );
+
+    ob_flush();
+    flush();
 
     // ==== Update ====
 
@@ -87,4 +98,6 @@
     
     echo ( "<p><strong>Server is updated to version <i>" . $ramsesVersion . "</i> and ready!</strong><br />You may now remove the update folder.</p>" );
     echo ( "</pre>" );
+
+    ob_end_flush();
 ?>

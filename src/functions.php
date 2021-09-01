@@ -1,4 +1,73 @@
 <?php
+
+    function createEncryptionKey ()
+    {
+        $key_size = 32; // 256 bits
+        $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
+
+        $configSecFile = fopen("../config_security.php", "w");
+        $encryption_key_txt = base64_encode($encryption_key);
+        fwrite($configSecFile, "<?php \$encrypt_key = base64_decode('{$encryption_key_txt}'); ?>");
+        fclose($configSecFile);
+        chmod( "../config_security.php", 0600 );
+
+        return $encryption_key;
+    }
+
+    /**
+     * Encrypts some text to store in the database
+     */
+    function encrypt( $txt )
+    {
+        global $encrypt_key;
+        if ( $encrypt_key == '' ) return '';
+
+        // Generate an initialization vector
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+
+        $enc_txt = openssl_encrypt(
+            $txt,                 // data
+            'AES-256-CBC',        // cipher and mode
+            $encrypt_key,         // secret key
+            0,                    // options (not used)
+            $iv                   // initialisation vector
+        );
+
+        return base64_encode($enc_txt . '::' . $iv);
+    }
+
+    /**
+     * Decrypts text stored in the database (base64)
+     */
+    function decrypt( $data )
+    {
+        global $encrypt_key;
+        if ( $encrypt_key == '' ) return '';
+
+        list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
+
+        $dec_txt = openssl_decrypt(
+            $encrypted_data,
+            'AES-256-CBC',
+            $encrypt_key,
+            0,
+            $iv
+        );
+
+        return $dec_txt;
+    }
+
+    /**
+     * Checks if a data is already encrypted
+     */
+    function isEncrypted( $data )
+    {
+        $test = base64_decode($data, true);
+        if (!$test) return false;
+        if( !strpos($test, '::') ) return false;
+        return true;
+    }
+
     /**
      * Logs in and returns the new session token
      */

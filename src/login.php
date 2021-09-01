@@ -33,14 +33,21 @@
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE shortName = :username AND removed = 0;");
+			$rep = $db->prepare("SELECT `password`,`name`,`shortName`,`email`,`folderPath`,`uuid`,`role` FROM " . $tablePrefix . "users WHERE removed = 0;");
 			$rep->execute(array('username' => $username));
-			$testPass = $rep->fetch();
-			$rep->closeCursor();
 
-			$uuid = $testPass["uuid"];
-			if (isset($testPass["uuid"]))
+			$found = false;
+
+			while ( $testPass = $rep->fetch() )
 			{
+				// Check username
+				$testUserName = decrypt( $testPass['shortName'] );
+
+				if ( $testUserName != $username ) continue;
+
+				$found = true;
+				$uuid = $testPass["uuid"];
+
 				//check password
 				if ( checkPassword($password, $uuid, $testPass["password"]) )
 				{
@@ -51,14 +58,15 @@
 					$token = login($uuid, $role);
 					//reply content
 					$content = array();
-					$content["name"] = $testPass["name"];
-					$content["shortName"] = $testPass["shortName"];
+					$content["name"] = decrypt( $testPass["name"] );
+					$content["shortName"] = $testUserName;
 					$content["uuid"] = $uuid;
 					$content["folderPath"] = $testPass["folderPath"];
 					$content["role"] = $role;
 					$content["token"] = $token;
+					$content["email"] = decrypt( $testPass["email"] );
 					$reply["content"] = $content;
-					$reply["message"] = "Successful login. Welcome " . $testPass["name"] . "!";
+					$reply["message"] = "Successful login. Welcome " . $content["name"] . "!";
 					$reply["success"] = true;
 				}
 				else
@@ -68,7 +76,9 @@
 					logout();
 				}
 			}
-			else 
+			$rep->closeCursor();
+			
+			if (!$found)
 			{
 				$reply["message"] = "Invalid username";
 				$reply["success"] = false;
