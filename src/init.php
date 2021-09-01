@@ -1,5 +1,5 @@
 <?php
-    $ramsesVersion = "0.1.3-alpha";
+    $ramsesVersion = "0.2.0-alpha";
 	$installed = !file_exists("install/index.php");
 
 	if ($devMode)
@@ -70,6 +70,7 @@
 	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
 	$shotassetTable = $tablePrefix . "shotasset";
 	$scheduleTable = $tablePrefix . "schedule";
+	$serverMetadataTable = $tablePrefix . "serverMetadata";
 
 	// Parse body content to make it quickly available later
 	// Check the content type, accept either application/json or application/x-www-form-urlencoded

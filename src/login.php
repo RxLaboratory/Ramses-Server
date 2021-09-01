@@ -46,6 +46,8 @@
 				{
 					//login
 					$role = $testPass["role"];
+					// Role is hashed, find it
+					$role = checkRole($role);
 					$token = login($uuid, $role);
 					//reply content
 					$content = array();

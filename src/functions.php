@@ -104,6 +104,29 @@
     }
 
     /**
+     * Hashes the role to store it in the database
+     */
+    function hashRole( $r )
+    {
+        return hashPassword( $r, 'role' );
+    }
+
+    /**
+     * Checks the hashed role got from the database and returns the plain text role
+     */
+    function checkRole ( $r )
+    { 
+        if ($r == 'admin') return 'admin';
+        if ($r == 'project') return 'project';
+        if ($r == 'lead') return 'lead';
+        if ($r == 'standard') return 'standard';
+        if ( checkPassword( 'admin', 'role', $r ) ) return 'admin';
+        if ( checkPassword( 'project', 'role', $r) ) return 'project';
+        if ( checkPassword( 'lead', 'role', $r) ) return 'lead';
+        return 'standard';
+    }
+
+    /**
      * Tests if a string starts with a substring
      */
     function startsWith( $string, $substring ) {

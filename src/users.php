@@ -45,6 +45,9 @@
                         `folderPath` = :folderPath,
                         `comment` = :comment
                     WHERE `uuid` = :uuid;";
+
+                // hash the role
+                $role = hashRole( $role );
                
                 $rep = $db->prepare($qString);
                 $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
@@ -149,7 +152,10 @@
 			$u['comment'] = $user['comment'];
 			$u['uuid'] = $user['uuid'];
 			$u['folderPath'] = $user['folderPath'];
-			$u['role'] = $user['role'];
+
+            $role = checkRole( $user['role'] );
+
+			$u['role'] = $role;
 
 			$users[] = $u;
         }
@@ -171,11 +177,6 @@
     {
         $reply["accepted"] = true;
         $reply["query"] = "createUser";
-
-        $name = "";
-        $shortName = "";
-        $uuid = "";
-        $password = "";
 
         $name = getArg("name");
         $shortName = getArg("shortName");
