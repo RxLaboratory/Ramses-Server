@@ -5,6 +5,9 @@
 		Database access
 	*/
 
+	// sqlMode may not be set if the config file is from an old version
+	if (!isset($sqlMode)) $sqlMode = 'mysql';
+
 	try
 	{
 		if ( $sqlMode == 'mysql' )
