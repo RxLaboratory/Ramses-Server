@@ -44,7 +44,8 @@
         global $encrypt_key;
         if ( $encrypt_key == '' ) return '';
 
-        list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
+        list($encrypted_data, $iv) = explode('::', base64_decode($data) . '::', 2);
+        $iv = str_replace('::','',$iv);      
 
         $dec_txt = openssl_decrypt(
             $encrypted_data,
