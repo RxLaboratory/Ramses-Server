@@ -52,7 +52,6 @@
                 $role = hashRole( $role );
                 // encrypt data
                 $name = encrypt( $name );
-                $shortName = encrypt( $shortName );
                 $email = encrypt( $email );
                 
                 $rep = $db->prepare($qString);
@@ -155,7 +154,7 @@
         {
             $u = Array();
 			$u['name'] = decrypt( $user['name'] );
-			$u['shortName'] = decrypt( $user['shortName'] );
+			$u['shortName'] = $user['shortName'];
 			$u['comment'] = $user['comment'];
 			$u['uuid'] = $user['uuid'];
 			$u['folderPath'] = $user['folderPath'];
@@ -197,7 +196,6 @@
                 $password = hashPassword($password, $uuid);
 
                 $name = encrypt( $name );
-                $shortName = encrypt( $shortName );
                 $email = encrypt( $email );
 
                 if (strlen($uuid) > 0)

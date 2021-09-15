@@ -2,18 +2,22 @@
     if ( $currentVersion == '0.1.3-alpha' )
     {
         // ==== Encryption keys ====
+        if ( !file_exists("../config_security.php") )
+        {
+            echo ( " ▸ Generating new encryption key.<br />" );
 
-        echo ( " ▸ Generating new encryption key.<br />" );
+            $encrypt_key = createEncryptionKey();
+            $encrypt_key_txt = base64_encode($encrypt_key);
+            echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
+            echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
 
-        $encrypt_key = createEncryptionKey();
-        $encrypt_key_txt = base64_encode($encrypt_key);
-        echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
-        echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
+            echo ( "     ▪ OK!<br />" );
 
-        echo ( "     ▪ OK!<br />" );
+            ob_flush();
+            flush();
+        }
 
-        ob_flush();
-        flush();
+        include('../config_security.php');
 
         // ==== Update Table Structure ====
 
@@ -48,7 +52,7 @@
         flush();
 
         // get users
-        $rep = $db->query( "SELECT `id`, `role`, `name`, `shortname`, `email` FROM {$usersTable};" );
+        $rep = $db->query( "SELECT `id`, `role`, `name`, `email` FROM {$usersTable};" );
         
         while ($user = $rep->fetch())
 		{
@@ -56,14 +60,12 @@
             $role = hashRole( $role );
 
             $name = $user['name'];
-            $shortname = $user['shortname'];
             $email = $user['email'];
 
             // Only if not already encrypted
-            if( !isEncrypted( $shortname ) )
+            if( !isEncrypted( $name ) )
             {
                 $name = encrypt( $name );
-                $shortname = encrypt( $shortname );
                 $email = encrypt( $email );
             }
 
@@ -71,12 +73,11 @@
 
             $roleQuery = $db->prepare("UNLOCK TABLES;
                 UPDATE {$usersTable}
-                SET `role`= :role, `name`= :name, `shortname`= :shortname, `email`= :email
+                SET `role`= :role, `name`= :name, `email`= :email
                 WHERE `id`= :id;" );
 
             $roleQuery->bindValue(':role', $role, PDO::PARAM_STR);
             $roleQuery->bindValue(':name', $name, PDO::PARAM_STR);
-            $roleQuery->bindValue(':shortname', $shortname, PDO::PARAM_STR);
             $roleQuery->bindValue(':email', $email, PDO::PARAM_STR);
             $roleQuery->bindValue(':id', $id, PDO::PARAM_INT);
             $ok = $roleQuery->execute();

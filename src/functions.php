@@ -2,13 +2,34 @@
 
     function createEncryptionKey ()
     {
+        // Compute appropriate cost for passwords
+        $timeTarget = 0.1; // 100 milliseconds 
+        $cost = 7;
+        do {
+            $cost++;
+            $start = microtime(true);
+            password_hash("test", PASSWORD_BCRYPT, ["cost" => $cost]);
+            $end = microtime(true);
+        } while (($end - $start) < $timeTarget);
+
+
+        // Generate unique encryption key
         $key_size = 32; // 256 bits
         $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
 
         $configSecFile = fopen("../config_security.php", "w");
         $encryption_key_txt = base64_encode($encryption_key);
-        fwrite($configSecFile, "<?php \$encrypt_key = base64_decode('{$encryption_key_txt}'); ?>");
+        $ok = fwrite($configSecFile, "<?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?>");
         fclose($configSecFile);
+
+        if (!$ok || !file_exists("../config_security.php"))
+        {
+            echo( "    ▫ Failed. Could not write the key file. We need write permissions in the ramses folder." );
+            echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config_security.php</strong> file,");
+            echo("<br />upload this new file to the server, and refresh this page.</p>");
+            die("<strong><code>&lt;?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?&gt;</strong></code>");
+        }
+
         chmod( "../config_security.php", 0600 );
 
         return $encryption_key;
@@ -33,6 +54,8 @@
             $iv                   // initialisation vector
         );
 
+        // The IV may contain the separator ('::'), base64 encoding it fixes the issue
+        $iv = base64_encode( $iv );
         return base64_encode($enc_txt . '::' . $iv);
     }
 
@@ -44,8 +67,8 @@
         global $encrypt_key;
         if ( $encrypt_key == '' ) return '';
 
-        list($encrypted_data, $iv) = explode('::', base64_decode($data) . '::', 2);
-        $iv = str_replace('::','',$iv);      
+        list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
+        $iv = base64_decode( $iv );    
 
         $dec_txt = openssl_decrypt(
             $encrypted_data,
@@ -164,7 +187,8 @@
      */
     function hashPassword($pswd, $uuid)
     {
-        return password_hash(  $uuid . $pswd ,  PASSWORD_DEFAULT, ['cost' => 13]);
+        global $pass_cost;
+        return password_hash(  $uuid . $pswd ,  PASSWORD_DEFAULT, ['cost' => $pass_cost]);
     }
 
     function checkPassword( $pswd, $uuid, $testPswd )
@@ -178,7 +202,7 @@
      */
     function hashRole( $r )
     {
-        return hashPassword( $r, 'role' );
+        return password_hash(  $r ,  PASSWORD_DEFAULT, ['cost' => 4]);
     }
 
     /**
@@ -190,9 +214,9 @@
         if ($r == 'project') return 'project';
         if ($r == 'lead') return 'lead';
         if ($r == 'standard') return 'standard';
-        if ( checkPassword( 'admin', 'role', $r ) ) return 'admin';
-        if ( checkPassword( 'project', 'role', $r) ) return 'project';
-        if ( checkPassword( 'lead', 'role', $r) ) return 'lead';
+        if ( checkPassword( 'admin', '', $r ) ) return 'admin';
+        if ( checkPassword( 'project', '', $r) ) return 'project';
+        if ( checkPassword( 'lead', '', $r) ) return 'lead';
         return 'standard';
     }
 

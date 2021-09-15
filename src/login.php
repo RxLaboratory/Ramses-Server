@@ -33,18 +33,13 @@
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $db->prepare("SELECT `password`,`name`,`shortName`,`email`,`folderPath`,`uuid`,`role` FROM " . $tablePrefix . "users WHERE removed = 0;");
+			$rep = $db->prepare("SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM " . $tablePrefix . "users WHERE `shortName` = :username AND removed = 0;");
 			$rep->execute(array('username' => $username));
 
-			$found = false;
+			$testPass = $rep->fetch();
 
-			while ( $testPass = $rep->fetch() )
+			if ( $testPass )
 			{
-				// Check username
-				$testUserName = decrypt( $testPass['shortName'] );
-
-				if ( $testUserName != $username ) continue;
-
 				$found = true;
 				$uuid = $testPass["uuid"];
 
@@ -59,7 +54,7 @@
 					//reply content
 					$content = array();
 					$content["name"] = decrypt( $testPass["name"] );
-					$content["shortName"] = $testUserName;
+					$content["shortName"] = $username;
 					$content["uuid"] = $uuid;
 					$content["folderPath"] = $testPass["folderPath"];
 					$content["role"] = $role;
@@ -76,14 +71,14 @@
 					logout();
 				}
 			}
-			$rep->closeCursor();
-			
-			if (!$found)
+			else
 			{
 				$reply["message"] = "Invalid username";
 				$reply["success"] = false;
 				logout();
 			}
+			$rep->closeCursor();
+			
 		}			
 		else
 		{
