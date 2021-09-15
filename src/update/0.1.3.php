@@ -21,13 +21,21 @@
 
         // ==== Update Table Structure ====
 
-        echo ( " ▸ Updating user table.<br />" );
+        echo ( " ▸ Updating Database structure.<br />" );
         
         $rep = $db->query( "LOCK TABLES {$usersTable} WRITE;
+
             ALTER TABLE {$usersTable}
             ADD COLUMN `email` VARCHAR(255) NULL AFTER `password`,
             CHANGE COLUMN `role` `role` VARCHAR(255) NOT NULL DEFAULT 'standard',
             CHANGE COLUMN `shortName` `shortName` VARCHAR(255) NOT NULL ;
+
+            ALTER TABLE {$pipesTable} DROP FOREIGN KEY fk_pipes_input;
+            ALTER TABLE {$pipesTable} DROP FOREIGN KEY fk_pipes_output;
+            ALTER TABLE {$pipesTable} DROP INDEX `step_UNIQUE`;
+            ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+            ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+
             UNLOCK TABLES;");
         
         $ok = $rep->execute();

@@ -81,58 +81,32 @@
     // ========= UPDATE ==========
 	else if (hasArg("updatePipe"))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updatePipe";
+		acceptReply( "updatePipe" );
 
 		$inputUuid = getArg ( "inputUuid" );
 		$outputUuid = getArg ( "outputUuid" );
 		$uuid = getArg ( "uuid" );
 		$comment = getArg ( "comment" );
 
-		if ( $uuid != "" && ($inputUuid != "" or $outputUuid != ""))
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				$qString = "UPDATE {$pipesTable} SET `comment` = :comment, ";
-                $setArray = array();
-				$values = array('uuid' => $uuid, 'comment' => $comment);
-				
-				if ($inputUuid != "")
-				{
-					$setArray[] = "`inputStepId`= (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :inputUuid )";
-                    $values["inputUuid"] = $inputUuid;
-				}
-                if ($outputUuid != "")
-				{
-					$setArray[] = "`outputStepId`= (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :outputUuid )";
-                    $values["outputUuid"] = $outputUuid;
-				}
+		// Only if admin
+		if ( checkArgs( array( $uuid ) ) && isProjectAdmin() )
+		{	
+			$qString = "UPDATE {$pipesTable} SET `comment` = :comment";
+			if ($inputUuid != "") $qString = $qString . ", `inputStepId` = (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :inputUuid )";
+			if ($outputUuid != "") $qString = $qString . ", `outputStepId` = (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :outputUuid )";
+			$qString = $qString . " WHERE `uuid` = :uuid;";
 
-
-				$qString = $qString . join(",", $setArray) . " WHERE `uuid`= :uuid ;";
+			$q = $db->prepare( $qString );
 			
-				$rep = $db->prepare($qString);
-				
-                $ok = $rep->execute($values);
-				$rep->closeCursor();
+			$q->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+			$q->bindValue(':comment', $comment, PDO::PARAM_STR);
+			if ($inputUuid != "") $q->bindValue(':inputUuid', $inputUuid, PDO::PARAM_STR);
+			if ($outputUuid != "") $q->bindValue(':outputUuid', $outputUuid, PDO::PARAM_STR);
 
-				if ($ok) $reply["message"] = "Pipe updated.";
-				else $reply["message"] = $rep->errorInfo();
+			sqlRequest( $q, "Pipe updated." );
+			$q->closeCursor();
+		}
 
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update pipe information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
 	}
 
     // ========= REMOVE ==========
