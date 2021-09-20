@@ -180,7 +180,8 @@
 			pipeFiles.`shortName`,
 			pipeFiles.`comment`,
 			fileTypes.`uuid` as fileTypeUuid,
-			colorSpaces.`uuid` as colorSpaceUuid
+			colorSpaces.`uuid` as colorSpaceUuid,
+			customSettings
 		FROM {$pipefileTable} AS pipeFiles
 			LEFT JOIN {$colorspacesTable} AS colorSpaces
 				ON pipeFiles.`colorSpaceId` = colorSpaces.`id`
@@ -197,6 +198,7 @@
 			$pipeFile['comment'] = $p['comment'];
 			$pipeFile['fileTypeUuid'] = $p['fileTypeUuid'];
 			$pipeFile['colorSpaceUuid'] = $p['colorSpaceUuid'];
+			$pipeFile['customSettings'] = $p['customSettings'];
 			$pipeFile['projectUuid'] = $projectUuid;
 			$pipeFiles[] = $pipeFile;
 		}

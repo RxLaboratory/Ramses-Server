@@ -36,6 +36,8 @@
             ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
             ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
 
+            ALTER TABLE {$pipefileTable} ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`; 
+
             UNLOCK TABLES;");
         
         $ok = $rep->execute();
@@ -76,6 +78,11 @@
                 $name = encrypt( $name );
                 $email = encrypt( $email );
             }
+            if( !isEncrypted( $email ) )
+            {
+                $email = encrypt( $email );
+            }
+
 
             $id = (int)$user['id'];
 

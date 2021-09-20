@@ -43,7 +43,7 @@
 					:shortName,
 					( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
 					( SELECT {$filetypesTable}.`id` FROM {$filetypesTable} WHERE {$filetypesTable}.`uuid` = :fileTypeUuid ),
-					( SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE {$colorspacesTable}.`uuid` = :colorSpaceUuid ),";
+					( SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE {$colorspacesTable}.`uuid` = :colorSpaceUuid )";
 
 				$values = array(
 					'shortName' => $shortName,
@@ -127,6 +127,7 @@
 		$fileTypeUuid = getArg ( "fileTypeUuid" );
 		$colorSpaceUuid = getArg ( "colorSpaceUuid" );
 		$comment = getArg ( "comment" );
+		$customSettings = getArg( "customSettings" );
 
         if ( $uuid != "" && ($shortName != "" or $fileTypeUuid != "" or $colorSpaceUuid != ""))
 		{
@@ -151,6 +152,11 @@
 				{
 					$setArray[] = "`colorSpaceId`= (SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE `uuid` = :colorSpaceUuid )";
                     $values["colorSpaceUuid"] = $colorSpaceUuid;
+				}
+				if ($customSettings != "")
+				{
+					$setArray[] = "`customSettings`= :customSettings";
+                    $values["customSettings"] = $customSettings;
 				}
  
 				$qString = $qString . join(",", $setArray) . " WHERE `uuid`= :uuid ;";
