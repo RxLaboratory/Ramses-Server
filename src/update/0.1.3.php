@@ -36,7 +36,9 @@
             ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
             ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
 
-            ALTER TABLE {$pipefileTable} ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`; 
+            ALTER TABLE {$pipefileTable} ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
+
+            ALTER TABLE {$usersTable} ADD `color` VARCHAR(15) NOT NULL DEFAULT '#e3e3e3' AFTER `role`;
 
             UNLOCK TABLES;");
         

@@ -32,6 +32,7 @@
         $folderPath = getArg( "folderPath" );
         $comment = getArg( "comment" );
         $email = getArg( "email" );
+        $color = getArg( "color", "#e3e3e3" );
 
         if ( checkArgs( array( $shortName, $uuid ) ) && ( isSelf($uuid) || isAdmin() ) )
         {
@@ -45,7 +46,8 @@
                         `role` = :role,
                         `folderPath` = :folderPath,
                         `comment` = :comment,
-                        `email` = :email
+                        `email` = :email,
+                        `color` = :color
                     WHERE `uuid` = :uuid;";
 
                 // hash the role
@@ -56,6 +58,7 @@
                 
                 $rep = $db->prepare($qString);
                 $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+                $rep->bindValue(':color', $color, PDO::PARAM_STR);
                 $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
                 $rep->bindValue(':name', $name, PDO::PARAM_STR);
                 $rep->bindValue(':role', $role, PDO::PARAM_STR);
@@ -145,7 +148,7 @@
             $reply["query"] = "getUsers";    
         }
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment`,`email` FROM " . $tablePrefix . "users WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment`,`email`,`color` FROM " . $tablePrefix . "users WHERE removed = 0;");
         $rep->execute();
 
         $users = Array();
@@ -160,6 +163,7 @@
 			$u['folderPath'] = $user['folderPath'];
 			$u['email'] = decrypt( $user['email'] );
 			$u['role'] = checkRole( $user['role'] );
+			$u['color'] = $user['color'];
 
 			$users[] = $u;
         }
@@ -187,6 +191,7 @@
         $email = getArg("email");
         $uuid = getArg("uuid");
         $password = getArg("password");
+        $color = getArg( "color", "#e3e3e3" );
 
         if (strlen($shortName) > 0 and strlen($password) > 0)
         {
@@ -200,17 +205,17 @@
 
                 if (strlen($uuid) > 0)
                 {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email)
-                        VALUES ( :name , :shortName , :uuid, :password, :email )
-                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password, 'email' => $email );
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email,color)
+                        VALUES ( :name , :shortName , :uuid, :password, :email, :color )
+                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid), color = VALUES(color);";
+                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password, 'email' => $email, 'color' => $color );
                 }
                 else
                 {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email)
-                        VALUES ( :name , :shortName , uuid(), :password, :email )
-                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'password' => $password, 'email' => $email);
+                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email,color)
+                        VALUES ( :name , :shortName , uuid(), :password, :email, :color )
+                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid), color = VALUES(color);";
+                    $values = array('name' => $name,'shortName' => $shortName, 'password' => $password, 'email' => $email, 'color' => $color);
                 }
     
                 $rep = $db->prepare($qString);
