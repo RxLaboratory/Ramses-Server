@@ -23,10 +23,11 @@
 
         echo ( " ▸ Updating Database structure.<br />" );
         
-        $rep = $db->query( "LOCK TABLES {$usersTable} WRITE;
+        $rep = $db->query( "LOCK TABLES {$usersTable} WRITE, {$pipesTable} WRITE, {$pipefileTable} WRITE;
 
             ALTER TABLE {$usersTable}
             ADD COLUMN `email` VARCHAR(255) NULL AFTER `password`,
+            ADD COLUMN `color` VARCHAR(15) NOT NULL DEFAULT '#e3e3e3' AFTER `role`,
             CHANGE COLUMN `role` `role` VARCHAR(255) NOT NULL DEFAULT 'standard',
             CHANGE COLUMN `shortName` `shortName` VARCHAR(255) NOT NULL ;
 
@@ -37,8 +38,6 @@
             ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
 
             ALTER TABLE {$pipefileTable} ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
-
-            ALTER TABLE {$usersTable} ADD `color` VARCHAR(15) NOT NULL DEFAULT '#e3e3e3' AFTER `role`;
 
             UNLOCK TABLES;");
         

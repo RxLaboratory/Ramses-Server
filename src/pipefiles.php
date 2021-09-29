@@ -24,59 +24,35 @@
         // ========= CREATE ==========
 	if (hasArg("createPipeFile"))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createPipeFile";
+		acceptReply( "createPipeFile" );
 
-        $uuid = getArg( "uuid" );
+        $uuid = getArg( "uuid", uuid() );
 		$shortName = getArg( "shortName" );
 		$fileTypeUuid = getArg ( "fileTypeUuid" );
 		$colorSpaceUuid = getArg ( "colorSpaceUuid" );
 		$projectUuid = getArg( "projectUuid" );
 
-        if ($shortName != '' && $projectUuid != '')
+        if ( checkArgs( array( $shortName, $projectUuid ) ) && isProjectAdmin() && validateShortName( $shortName ) )
 		{
-			//only if lead
-			if (isProjectAdmin() && validateShortName( $shortName ))
-			{
-				$queryStr = "INSERT INTO {$pipefileTable} (`shortName`, `projectId`, filetypeId, `colorSpaceId`, `uuid`)
-					VALUES (
-					:shortName,
-					( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
-					( SELECT {$filetypesTable}.`id` FROM {$filetypesTable} WHERE {$filetypesTable}.`uuid` = :fileTypeUuid ),
-					( SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE {$colorspacesTable}.`uuid` = :colorSpaceUuid )";
+			$queryStr = "INSERT INTO {$pipefileTable} (`shortName`, `projectId`, filetypeId, `colorSpaceId`, `uuid`)
+				VALUES (
+				:shortName,
+				( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
+				( SELECT {$filetypesTable}.`id` FROM {$filetypesTable} WHERE {$filetypesTable}.`uuid` = :fileTypeUuid ),
+				( SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE {$colorspacesTable}.`uuid` = :colorSpaceUuid ),
+				:uuid )
+				ON DUPLICATE KEY UPDATE {$pipefileTable}.`removed` = 0 ;";
 
-				$values = array(
-					'shortName' => $shortName,
-					'projectUuid' => $projectUuid,
-					'fileTypeUuid' => $fileTypeUuid,
-					'colorSpaceUuid' => $colorSpaceUuid
-				);
+			$rep = $db->prepare($queryStr);
+			$rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
+			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
+			$rep->bindValue(':fileTypeUuid', $fileTypeUuid, PDO::PARAM_STR);
+			$rep->bindValue(':colorSpaceUuid', $colorSpaceUuid, PDO::PARAM_STR);
+			$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
 
-				if ( $uuid != "" )
-				{
-					$queryStr = $queryStr . ":uuid ";
-					$values['uuid'] = $uuid;
-				}
-				else
-				{
-					$qStqueryStrring = $queryStr . "uuid() ";
-				}
+			sqlRequest( $rep,  "Pipe file updated." );
 
-				$queryStr = $queryStr . ") ON DUPLICATE KEY UPDATE {$pipefileTable}.`removed` = 0 ;";
-				$rep = $db->prepare($queryStr);
-				$ok = $rep->execute( $values );
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Pipe file created.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
+			$rep->closeCursor();
 		}
 	}
 
