@@ -24,6 +24,8 @@
     echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
     echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
 
+    include('../config_security.php');
+
     echo ( "Writing the new database scheme...<br />" );
 
     $sql = file_get_contents('ramses_scheme.sql');
@@ -56,6 +58,7 @@
     $uuid = uuid();
     $shortName = "Admin";
     $name = encrypt("Administrator");
+    $email = encrypt("");
     $pswd = hashPassword("0b17bfa7938d75031d1754ab56c27062d967e92ca04f2ba5b4ebf920528936b95f9a9fc96a2ef8fb921463cd97aa94026079891f6f4c6e273ce5956c9da72c92", $uuid);   
     $comment = "The default Administrator user. Don't forget to rename it and change its password!";
     $role = hashRole('admin');
@@ -67,23 +70,26 @@
             `uuid`,
             `password`,
             `role`,
-            `comment`)
+            `comment`,
+            `email` )
         VALUES (
             :name ,
-            :shortName,
+            :shortName ,
             :uuid,
             :password,
             :role,
-            :comment );
+            :comment,
+            :email );
         COMMIT;";
 
     $rep = $db->prepare($qString);
     $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-    $rep->bindValue(':role', $role, PDO::PARAM_STR);
     $rep->bindValue(':name', $name, PDO::PARAM_STR);
     $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
     $rep->bindValue(':password', $pswd, PDO::PARAM_STR);
     $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+    $rep->bindValue(':role', $role, PDO::PARAM_STR);
+    $rep->bindValue(':email', $email, PDO::PARAM_STR);
 
     $ok = $rep->execute();
     $rep->closeCursor();
