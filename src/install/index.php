@@ -26,33 +26,37 @@
 
     include('../config_security.php');
 
-    echo ( "Writing the new database scheme...<br />" );
-
-    $sql = file_get_contents('ramses_scheme.sql');
-    // Run the installer SQL Script
-    $qr = $db->exec($sql);
-    
-    if ( $qr === false )
+    // Set the DB if MySQL (if SQLite, the file is already available)
+    if ($sqlMode != "sqlite")
     {
-        echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-        die( print_r($db->errorInfo(), true) );
+        echo ( "Writing the new database scheme...<br />" );
+
+        $sql = file_get_contents('ramses_scheme.sql');
+        // Run the installer SQL Script
+        $qr = $db->exec($sql);
+        
+        if ( $qr === false )
+        {
+            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
+            die( print_r($db->errorInfo(), true) );
+        }
+
+        echo ( "Database tables are ready!<br />" );
+
+        echo ( "Inserting default data...<br />" );
+
+        $sql = file_get_contents('ramses_data.sql');
+        // Run the data SQL Script
+        $qr = $db->exec($sql);
+        
+        if ( $qr === false )
+        {
+            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
+            die( print_r($db->errorInfo(), true) );
+        }
+
+        echo ( "The new data is ready!<br />" );
     }
-
-    echo ( "Database tables are ready!<br />" );
-
-    echo ( "Inserting default data...<br />" );
-
-    $sql = file_get_contents('ramses_data.sql');
-    // Run the data SQL Script
-    $qr = $db->exec($sql);
-    
-    if ( $qr === false )
-    {
-        echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-        die( print_r($db->errorInfo(), true) );
-    }
-
-    echo ( "The new data is ready!<br />" );
 
     //Setup admin user
     $uuid = uuid();
