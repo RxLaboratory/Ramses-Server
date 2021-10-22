@@ -22,45 +22,21 @@
 	*/
 
 	// ========= CREATE STEP ==========
-	if (hasArg("createTemplateStep"))
+	if ( acceptReply("createTemplateStep", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createTemplateStep";
-
 		$name = getArg("name");
 		$shortName = getArg("shortName");
-		$uuid = getArg("uuid");
+		$uuid = getArg("uuid", uuid());
 
-		if (strlen($shortName) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
-            {
-				if (strlen($uuid) > 0)
-				{
-					$qString = "INSERT INTO " . $tablePrefix . "templatesteps (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-					$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
-				}
-				else
-				{
-					$qString = "INSERT INTO " . $tablePrefix . "templatesteps (name,shortName,uuid) VALUES ( :name , :shortName , uuid() ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-					$values = array('name' => $name,'shortName' => $shortName);
-				}
+		$q = new DBQuery();
+		$q->insert( "templatesteps", array( 'name', 'shortName', 'uuid' ));
 
-				$rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "uuid", $uuid, true );
 
-				$reply["message"] = "Step " . $shortName . " added.";
-				$reply["success"] = true;
-
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Template Step '{$shortName}' added.");
+		$q->close();
 	}
 
 	// ========= GET STEPS ==========
@@ -123,11 +99,8 @@
 	}
 
 	// ========= UPDATE STEP ==========
-	else if (hasArg( "updateTemplateStep" ))
+	else if (acceptReply("updateTemplateStep", 'admin'))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateTemplateStep";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
@@ -135,55 +108,32 @@
 		$comment = getArg( "comment" );
 		$color = getArg( "color" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
-            {
-				$qString = "UPDATE {$templatestepsTable}
-					SET
-						`name`= :name ,
-						`shortName`= :shortName,
-						`comment`= :comment";
+		$q = new DBQuery();
+		$q->update(
+			"templatesteps",
+			array(
+				'name',
+				'shortName',
+				'comment',
+				'type',
+				'color'
+			),
+			$uuid
+		);
 
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
-				
-				if ($type != "")
-				{
-					$qString = $qString . ", `type`= :type";
-                    $values["type"] = $type;
-				}
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
+		$q->bindStr( "type", $type );
+		$q->bindStr( "color", $color );
 
-				if ($color != "")
-				{
-					$qString = $qString . ", `color`= :color";
-                    $values["color"] = $color;
-				}
-
-				$qString = $qString . " WHERE `uuid`= :uuid ;";
-				
-				$rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();
-
-				$reply["message"] = "Step \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
+		$q->execute("Template Step \"{$shortName}\" updated.");
+		$q->close();			
 	}
 
 	// =========== STEP ESTIMATIONS ==========
-	else if (hasArg( "setTemplateStepEstimations" ))
+	else if ( acceptReply("setTemplateStepEstimations", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "setTemplateStepEstimations";
-
 		$uuid = getArg( "uuid" );
 		$method = getArg( "method", "shot" );
 		$veryEasy = getArg( "veryEasy", "0.2" );
@@ -192,89 +142,36 @@
 		$hard = getArg( "hard", "2" );
 		$veryHard = getArg( "veryHard", "3" );
 
-		if ( $uuid != "")
-		{
-			// Only if admin
-            if ( isAdmin() )
-            {
-				$qString = "UPDATE {$templatestepsTable}
-					SET
-						`estimationMethod`= :method ,
-						`estimationVeryEasy`= :veryEasy,
-						`estimationEasy`= :easy,
-						`estimationMedium`= :medium,
-						`estimationHard`= :hard,
-						`estimationVeryHard`= :veryHard
-					WHERE `uuid`= :uuid;";
+		$q = new DBQuery();
+		$q->update(
+			"templatesteps",
+			array(
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard'
+			),
+			$uuid
+		);
 
-				$rep = $db->prepare($qString);
-				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-				$rep->bindValue(':method', $method, PDO::PARAM_STR);
-				$rep->bindValue(':veryEasy', $veryEasy, PDO::PARAM_STR);
-				$rep->bindValue(':easy', $easy, PDO::PARAM_STR);
-				$rep->bindValue(':medium', $medium, PDO::PARAM_STR);
-				$rep->bindValue(':hard', $hard, PDO::PARAM_STR);
-				$rep->bindValue(':veryHard', $veryHard, PDO::PARAM_STR);
-				//$rep->debugDumpParams();
-				$ok = $rep->execute();
-				$rep->closeCursor();
+		$q->bindStr( "estimationMethod", $method );
+		$q->bindStr( "estimationVeryEasy", $veryEasy );
+		$q->bindStr( "estimationEasy", $easy );
+		$q->bindStr( "estimationMedium", $medium );
+		$q->bindStr( "estimationHard", $hard );
+		$q->bindStr( "estimationVeryHard", $veryHard );
 
-				if ($ok)
-				{
-					$reply["message"] = "Template step updated.";
-					$reply["success"] = true;
-				}
-				else 
-				{
-					$reply["message"] = $rep.errorInfo()[2];
-					$reply["success"] = false;
-				}
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update template step information.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Template Step estimations updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE STEP ==========
-	else if (hasArg("removeTemplateStep"))
+	else if (acceptReply("removeTemplateStep", 'admin'))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeTemplateStep";
-
-		$uuid = "";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "templatesteps SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Step " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove steps.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q = new DBQuery();
+		$q->remove( "templatesteps", $uuid );
 	}
 ?>

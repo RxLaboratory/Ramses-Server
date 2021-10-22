@@ -371,7 +371,8 @@
 
         if (!$ok)
         {
-            $reply["message"] = $rep->errorInfo()[2];
+            if ($devMode) $reply["message"] = "SQL Request:\n" . $request->debugDumpParams() . "\n\n" . $rep->errorInfo()[2];
+            else $reply["message"] = "Database query failed. Activate Dev Mode on the server for more information.";
             $reply["success"] = false;
         }
         else if ($message != "")
@@ -383,11 +384,25 @@
         return $ok;
     }
 
-    function acceptReply($queryName)
+    function acceptReply($queryName, $role = "")
     {
         global $reply;
+
+        // Already accepted
+        if ($reply["accepted"]) return false;
+        // Not this query
+        if (!hasArg($queryName)) return false;
+
+        // Got the right one!
+        $reply["query"] = $queryName;
         $reply["accepted"] = true;
-		$reply["query"] = $queryName;
+
+        // Check privileges
+        if ($role == 'admin') if (!isAdmin()) return false;
+        if ($role == 'projectAdmin') if (!isProjectAdmin()) return false;
+        if ($role == 'lead') if (!isLead()) return false;
+
+        return true;
     }
 
     function validateName( $name )
@@ -397,7 +412,8 @@
         if (preg_match( "/^[ a-zA-Z0-9+-]{1,256}$/i", $name ))
             return true;
 
-        $reply["message"] = "Wrong name, sorry: names must have less than 256 characters and contain only one of these characters: [ A-Z, 0-9, +, - ] (and spaces).";
+        $reply["message"] = "Wrong name, sorry: names must have less than 256 characters and contain only one of these characters: [ A-Z, 0-9, +, - ] (and spaces).
+            The name was: \"{$name}\"";
         $reply["success"] = false;
     }
 
@@ -424,5 +440,11 @@
 
         $reply["message"] = "Wrong ID, sorry: IDs must have less than 10 characters and contain only one of these characters: [ A-Z, 0-9, +, - ].";
         $reply["success"] = false;
+    }
+    
+    function dateTimeStr()
+    {
+        $currentDate = new DateTime();
+        return $currentDate->format('Y-m-d H:i:s');
     }
 ?>

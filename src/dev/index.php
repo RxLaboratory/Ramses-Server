@@ -14,7 +14,7 @@
         $password = getArg("password");
 
         //query the database for the user uuid
-        $rep = $db->prepare("SELECT uuid FROM " . $tablePrefix . "users WHERE shortName = :username ;");
+        $rep = $db->prepare("SELECT uuid FROM {$tablePrefix}users WHERE shortName = :username ;");
         $rep->execute(array('username' => $username));
         $testPass = $rep->fetch();
         $rep->closeCursor();
@@ -26,7 +26,7 @@
         $password = hashPassword( $clientPassword, $uuid );
 
         //set in the database
-        $rep = $db->prepare("UPDATE " . $tablePrefix . "users SET password = :password WHERE uuid= :uuid ;" );
+        $rep = $db->prepare("UPDATE {$tablePrefix}users SET password = :password WHERE uuid= :uuid ;" );
         $ok = $rep->execute(array('uuid' => $uuid, 'password' => $password));
         //$rep->debugDumpParams();
         $rep->closeCursor();
@@ -47,7 +47,7 @@
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM " . $tablePrefix . "users WHERE shortName = :username ;");
+			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM {$tablePrefix}users WHERE shortName = :username ;");
 			$rep->execute(array('username' => $username));
 			$testPass = $rep->fetch();
 			$rep->closeCursor();

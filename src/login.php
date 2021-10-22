@@ -33,7 +33,7 @@
 		if (strlen($username) > 0 AND strlen($password) > 0)
 		{
 			//query the database
-			$rep = $db->prepare("SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM " . $tablePrefix . "users WHERE `shortName` = :username AND removed = 0;");
+			$rep = $db->prepare("SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM {$tablePrefix}users WHERE `shortName` = :username AND removed = 0;");
 			$rep->execute(array('username' => $username));
 
 			$testPass = $rep->fetch();

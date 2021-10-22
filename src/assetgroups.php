@@ -38,11 +38,11 @@
             if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				// Create step
-				$qString = "INSERT INTO " . $tablePrefix . "assetgroups (name,shortName,projectId,uuid) 
+				$qString = "INSERT INTO {$tablePrefix}assetgroups (name,shortName,projectId,uuid) 
 				VALUES (
 					:name,
 					:shortName , 
-					(SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE uuid = :projectUuid ),";
+					(SELECT {$tablePrefix}projects.id FROM {$tablePrefix}projects WHERE uuid = :projectUuid ),";
 
 				$values = array('name' => $name,'shortName' => $shortName, 'projectUuid' => $projectUuid);
 				
@@ -129,7 +129,7 @@
 			//only if admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "assetgroups SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$tablePrefix}assetgroups SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

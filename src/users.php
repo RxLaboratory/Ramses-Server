@@ -21,10 +21,8 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (hasArg("updateUser"))
+    if ( acceptReply( "updateUser" ) )
     {
-        acceptReply( "updateUser" );
-
         $name = getArg( "name" );
         $shortName = getArg( "shortName" );
         $uuid = getArg( "uuid" );
@@ -34,111 +32,98 @@
         $email = getArg( "email" );
         $color = getArg( "color", "#e3e3e3" );
 
-        if ( checkArgs( array( $shortName, $uuid ) ) && ( isSelf($uuid) || isAdmin() ) )
+        if ( isSelf($uuid) || isAdmin() )
         {
-            // Validate name, shortname and email
-            if ( validateName( $name ) && validateShortName( $shortName ) && validateEmail( $email ) )
-            {
-                $qString = "UPDATE {$usersTable}
-                    SET
-                        `shortName` = :shortName,
-                        `name` = :name,
-                        `role` = :role,
-                        `folderPath` = :folderPath,
-                        `comment` = :comment,
-                        `email` = :email,
-                        `color` = :color
-                    WHERE `uuid` = :uuid;";
+            $q = new DBQuery();
+            $q->update(
+                "users",
+                array(
+                    'shortName',
+                    'name',
+                    'role',
+                    'folderPath',
+                    'comment',
+                    'email',
+                    'color'
+                ),
+                $uuid
+            );
 
-                // hash the role
-                $role = hashRole( $role );
-                // encrypt data
-                $name = encrypt( $name );
-                $email = encrypt( $email );
-                
-                $rep = $db->prepare($qString);
-                $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-                $rep->bindValue(':color', $color, PDO::PARAM_STR);
-                $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
-                $rep->bindValue(':name', $name, PDO::PARAM_STR);
-                $rep->bindValue(':role', $role, PDO::PARAM_STR);
-                $rep->bindValue(':folderPath', $folderPath, PDO::PARAM_STR);
-                $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
-                $rep->bindValue(':email', $email, PDO::PARAM_STR);
+            // hash the role
+            $role = hashRole( $role );
+            // encrypt data
+            $name = encrypt( $name );
+            $email = encrypt( $email );
 
-                sqlRequest( $rep,  "User updated." );
-
-                $rep->closeCursor();
-            }
+            $q->bindStr( "name", $name );
+            $q->bindShortName( $shortName );
+            $q->bindEmail( $email );
+            $q->bindStr( "color", $color );
+            $q->bindStr( "role", $role );
+            $q->bindStr( "folderPath", $folderPath );
+            $q->bindStr( "comment", $comment );
+            
+            $q->execute("User \"{$shortName}\" updated.");
+		    $q->close();
         }
     }
-    else if (hasArg("updatePassword"))
+    else if (acceptReply("updatePassword"))
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "updatePassword";
-
-        $current = "";
-        $new = "";
-        $uuid = "";
-
         $current = getArg("current");
         $new = getArg("new");
         $uuid = getArg("uuid");
 
-        if (strlen($new) > 0 AND strlen($uuid) > 0)
+        $q = new DBQuery();
+
+        $ok = false;
+        //if self, we need to check the current password
+        if ( isSelf($uuid) && strlen($current) > 0 )
         {
-            $ok = false;
-            //if self, we need to check the current password
-            if ( isSelf($uuid) && strlen($current) > 0 )
+            //check password
+            $r = $q->get('users', array('password'), $uuid);
+            $ok = checkPassword( $current, $uuid, $r["password"] );
+            if (!$ok)
             {
-                //check password
-                $rep = $db->prepare("SELECT password FROM " . $tablePrefix . "users WHERE uuid= :uuid ;");
-                $rep->execute(array('uuid' => $uuid));
-                $testPass = $rep->fetch();
-                $rep->closeCursor();
-
-                $ok = checkPassword( $current, $uuid, $testPass["password"] );
-                if (!$ok)
-                {
-                    $reply["message"] = "Wrong current password.";
-                    $reply["success"] = false;
-                }
-            }
-            else if ( isSelf($uuid) ) // if self and no current password
-            {
-                $reply["message"] = "Missing current password.";
+                $reply["message"] = "Wrong current password.";
                 $reply["success"] = false;
-            }
-            else if ( isAdmin() ) // if admin, no need for current password
-            {
-                $ok = true;
-            }
-            else // not self, not admin
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to change other users' passwords.";
-                $reply["success"] = false;
-            }      
-
-            //update password
-            if ($ok)
-            {
-                //hash new password
-                $new = hashPassword( $new, $uuid );
-
-                $qString = "UPDATE " . $tablePrefix . "users SET password= :new WHERE uuid= :uuid ;";
-                $rep = $db->prepare($qString);
-                $rep->execute(array('new' => $new, 'uuid' => $uuid));
-                $rep->closeCursor();
-
-                $reply["message"] = "Password succesfully updated.";
-                $reply["success"] = true;
             }
         }
-        else
+        else if ( isSelf($uuid) ) // if self and no current password
         {
-            $reply["message"] = "Invalid request, missing values.";
+            $reply["message"] = "Missing current password.";
             $reply["success"] = false;
         }
+        else if ( isAdmin() ) // if admin, no need for current password
+        {
+            $ok = true;
+        }
+        else // not self, not admin
+        {
+            $reply["message"] = "Insufficient rights, you need to be Admin to change other users' passwords.";
+            $reply["success"] = false;
+        }      
+
+        //update password
+        if ($ok)
+        {
+            //hash new password
+            $new = hashPassword( $new, $uuid );
+
+            $q = new DBQuery();
+            $q->update(
+                "users",
+                array(
+                    'password'
+                ),
+                $uuid
+            );
+           
+            $q->bindStr( "password", $new );
+
+            $q->execute("Password succesfully updated.");
+		    $q->close();
+        }
+
     }
     else if (hasArg("getUsers") || hasArg("init"))
     {
@@ -148,7 +133,7 @@
             $reply["query"] = "getUsers";    
         }
         
-        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment`,`email`,`color` FROM " . $tablePrefix . "users WHERE removed = 0;");
+        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment`,`email`,`color` FROM {$tablePrefix}users WHERE removed = 0;");
         $rep->execute();
 
         $users = Array();
@@ -181,90 +166,37 @@
             $reply["content"]["users"] = $users;
         }
     }
-    else if (hasArg("createUser"))
+    else if ( acceptReply("createUser", 'admin') )
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "createUser";
-
         $name = getArg("name");
         $shortName = getArg("shortName");
         $email = getArg("email");
-        $uuid = getArg("uuid");
+        $uuid = getArg("uuid", uuid());
         $password = getArg("password");
         $color = getArg( "color", "#e3e3e3" );
 
-        if (strlen($shortName) > 0 and strlen($password) > 0)
-        {
-            // Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) && validateEmail( $email ) )
-            {
-                $password = hashPassword($password, $uuid);
+        // Ecnryption and hash
+        $password = hashPassword($password, $uuid);
+        $name = encrypt( $name );
+        $email = encrypt( $email );
 
-                $name = encrypt( $name );
-                $email = encrypt( $email );
+        $q = new DBQuery();
+        $q->insert( "users", array( 'name', 'shortName', 'uuid', 'password', 'email', 'color' ));
 
-                if (strlen($uuid) > 0)
-                {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email,color)
-                        VALUES ( :name , :shortName , :uuid, :password, :email, :color )
-                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid), color = VALUES(color);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'password' => $password, 'email' => $email, 'color' => $color );
-                }
-                else
-                {
-                    $qString = "INSERT INTO " . $tablePrefix . "users (name,shortName,uuid,password,email,color)
-                        VALUES ( :name , :shortName , uuid(), :password, :email, :color )
-                        ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), email = VALUES(email), removed = 0, uuid = VALUES(uuid), color = VALUES(color);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'password' => $password, 'email' => $email, 'color' => $color);
-                }
-    
-                $rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();         
-    
-                $reply["message"] = "User created.";
-                $reply["success"] = true;
-            }
-        }
-        else
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
+        $q->bindStr( 'name', $name, true );
+        $q->bindShortName( $shortName );
+        $q->bindStr( "uuid", $uuid, true );
+        $q->bindStr( "password", $password, true );
+        $q->bindStr( "email", $email );
+        $q->bindStr( "color", $color );
+
+        $q->execute("User '{$shortName}' created.");
+        $q->close();
     }
-    else if (hasArg("removeUser"))
+    else if ( acceptReply("removeUser", 'admin') )
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "createUser";
-
-        $uuid = "";
-
         $uuid = getArg("uuid");
-
-        if (strlen($uuid) > 0)
-        {
-            //only if admin
-            if (isAdmin())
-            {
-                $rep = $db->prepare("UPDATE " . $tablePrefix . "users SET removed = 1 WHERE uuid= :uuid ;");
-                $rep->execute(array('uuid' => $uuid));
-                $rep->closeCursor();
-    
-                $reply["message"] = "User " . $uuid . " removed.";
-                $reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove users.";
-                $reply["success"] = false;
-            }
-            
-        }
-        else
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
+        $q = new DBQuery();
+		$q->remove( "users", $uuid );
     }
-
 ?>

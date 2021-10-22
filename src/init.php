@@ -2,6 +2,9 @@
     $ramsesVersion = "0.2.0-alpha";
 	$installed = file_exists("config_security.php");
 
+	// Set the timezone to UTC so it matches the SQL db
+	date_default_timezone_set('UTC');
+
 	// The encryption key
 	if( $installed ) include( 'config_security.php' );
 	else $encrypt_key = '';

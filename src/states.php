@@ -43,12 +43,12 @@
 				//if an id is provided
 				if (strlen($uuid) > 0)
 				{
-					$qString = "INSERT INTO " . $tablePrefix . "states (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+					$qString = "INSERT INTO {$tablePrefix}states (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
 					$values = array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid);
 				}
 				else
 				{
-					$qString = "INSERT INTO " . $tablePrefix . "status (name,shortName,uuid) VALUES ( :name , :shortName , uuid() ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+					$qString = "INSERT INTO {$tablePrefix}status (name,shortName,uuid) VALUES ( :name , :shortName , uuid() ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
 					$values = array('name' => $name, 'shortName' => $shortName);
 				}
 
@@ -175,7 +175,7 @@
 			//only if admin
 			if (isAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "states SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$tablePrefix}states SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

@@ -40,7 +40,7 @@
             // Only if admin
             if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
-                $qString = "INSERT INTO " . $tablePrefix . "filetypes (`name`,`shortName`,`extensions`,`uuid`) VALUES ( :name , :shortName , :extensions , ";
+                $qString = "INSERT INTO {$tablePrefix}filetypes (`name`,`shortName`,`extensions`,`uuid`) VALUES ( :name , :shortName , :extensions , ";
                 $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'extensions' => $extensions);
 
                 if (strlen($uuid) > 0)
@@ -131,7 +131,7 @@
 			//only if project admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "filetypes SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$tablePrefix}filetypes SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 
@@ -162,7 +162,7 @@
         
         $rep = $db->prepare("SELECT
                 `name`,`shortName`,`extensions`,`previewable`,`uuid`, `comment`
-            FROM " . $tablePrefix . "filetypes
+            FROM {$tablePrefix}filetypes
             WHERE removed = 0
             ORDER BY `shortName`, `name`
             ;");

@@ -134,7 +134,7 @@
 			//only if admin
 			if (isLead())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "assets SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$tablePrefix}assets SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

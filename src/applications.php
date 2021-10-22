@@ -29,11 +29,11 @@
         $qString = "SELECT
                 ". $tablePrefix . "filetypes.`uuid`,
                 ". $tablePrefix . "applicationfiletype.`type`
-            FROM " . $tablePrefix . "applicationfiletype
-            JOIN " . $tablePrefix . "filetypes
-            ON " . $tablePrefix . "applicationfiletype.`fileTypeId` = " . $tablePrefix . "filetypes.`id`
-            WHERE applicationId= " . $aid . " AND " . $tablePrefix . "filetypes.`removed` = 0
-            ORDER BY " . $tablePrefix . "filetypes.`name`, " . $tablePrefix . "filetypes.`shortName` ;";
+            FROM {$tablePrefix}applicationfiletype
+            JOIN {$tablePrefix}filetypes
+            ON {$tablePrefix}applicationfiletype.`fileTypeId` = {$tablePrefix}filetypes.`id`
+            WHERE applicationId= " . $aid . " AND {$tablePrefix}filetypes.`removed` = 0
+            ORDER BY {$tablePrefix}filetypes.`name`, {$tablePrefix}filetypes.`shortName` ;";
 
         $repFileTypes = $db->query( $qString );
         while ($ft = $repFileTypes->fetch())
@@ -64,7 +64,7 @@
             // Only if admin
             if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
-                $qString = "INSERT INTO " . $tablePrefix . "applications (`name`,`shortName`,`executableFilePath`,`uuid`) VALUES ( :name , :shortName , :executableFilePath , ";
+                $qString = "INSERT INTO {$tablePrefix}applications (`name`,`shortName`,`executableFilePath`,`uuid`) VALUES ( :name , :shortName , :executableFilePath , ";
                 $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'executableFilePath' => $executableFilePath);
 
                 if (strlen($uuid) > 0)
@@ -150,7 +150,7 @@
 			//only if project admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "applications SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$tablePrefix}applications SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 
@@ -181,7 +181,7 @@
         
         $rep = $db->prepare("SELECT
                 `name`,`shortName`,`executableFilePath`,`id`,`uuid`,`comment`
-            FROM " . $tablePrefix . "applications
+            FROM {$tablePrefix}applications
             WHERE removed = 0
             ORDER BY `name`, `shortName`
             ;");
@@ -229,11 +229,11 @@
 			//only if lead
 			if (isProjectAdmin())
 			{
-				$qString = "INSERT INTO " . $tablePrefix . "applicationfiletype (`applicationId`, `fileTypeId`, `type`) VALUES (
-					( SELECT " . $tablePrefix . "applications.`id` FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.`uuid` = :applicationUuid ),
-					( SELECT " . $tablePrefix . "filetypes.`id` FROM " . $tablePrefix . "filetypes WHERE " . $tablePrefix . "filetypes.`uuid` = :fileTypeUuid ),
+				$qString = "INSERT INTO {$tablePrefix}applicationfiletype (`applicationId`, `fileTypeId`, `type`) VALUES (
+					( SELECT {$tablePrefix}applications.`id` FROM {$tablePrefix}applications WHERE {$tablePrefix}applications.`uuid` = :applicationUuid ),
+					( SELECT {$tablePrefix}filetypes.`id` FROM {$tablePrefix}filetypes WHERE {$tablePrefix}filetypes.`uuid` = :fileTypeUuid ),
                     :type
-					) ON DUPLICATE KEY UPDATE " . $tablePrefix . "applicationfiletype.`removed` = 0 ;";
+					) ON DUPLICATE KEY UPDATE {$tablePrefix}applicationfiletype.`removed` = 0 ;";
 
 				$rep = $db->prepare($qString);
 
@@ -273,10 +273,10 @@
 			//only if lead
 			if (isProjectAdmin())
 			{
-				$q = "DELETE " . $tablePrefix . "applicationfiletype FROM " . $tablePrefix . "applicationfiletype WHERE
-                        applicationId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
+				$q = "DELETE {$tablePrefix}applicationfiletype FROM {$tablePrefix}applicationfiletype WHERE
+                        applicationId= ( SELECT {$tablePrefix}applications.id FROM {$tablePrefix}applications WHERE {$tablePrefix}applications.uuid = :applicationUuid )
                     AND
-                        filetypeId= ( SELECT " . $tablePrefix . "filetypes.id FROM " . $tablePrefix . "filetypes WHERE " . $tablePrefix . "filetypes.uuid = :fileTypeUuid ) ;";
+                        filetypeId= ( SELECT {$tablePrefix}filetypes.id FROM {$tablePrefix}filetypes WHERE {$tablePrefix}filetypes.uuid = :fileTypeUuid ) ;";
                 $values = array( 'applicationUuid' => $applicationUuid,'fileTypeUuid' => $fileTypeUuid );
 
                 if (strlen($type) > 0)

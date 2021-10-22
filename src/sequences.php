@@ -38,11 +38,11 @@
             if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
             {
 				// Create sequence
-				$qString = "INSERT INTO " . $tablePrefix . "sequences (name,shortName,projectId,uuid) 
+				$qString = "INSERT INTO {$tablePrefix}sequences (name,shortName,projectId,uuid) 
 				VALUES (
 					:name,
 					:shortName , 
-					(SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE uuid = :projectUuid ),";
+					(SELECT {$tablePrefix}projects.id FROM {$tablePrefix}projects WHERE uuid = :projectUuid ),";
 
 				$values = array('name' => $name,'shortName' => $shortName, 'projectUuid' => $projectUuid);
 				
@@ -124,7 +124,7 @@
 			//only if admin
 			if (isProjectAdmin())
 			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "sequences SET removed = 1 WHERE uuid= :uuid ;");
+				$rep = $db->prepare("UPDATE {$tablePrefix}sequences SET removed = 1 WHERE uuid= :uuid ;");
 				$rep->execute(array('uuid' => $uuid));
 				$rep->closeCursor();
 

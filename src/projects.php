@@ -45,9 +45,9 @@
 				{$assetgroupsTable}.`uuid` as multiplyGroupUuid,
 				{$stepsTable}.`order`
 			FROM {$stepsTable}
-			LEFT JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$stepsTable}.`estimationMultiplyGroupId`
+			JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$stepsTable}.`estimationMultiplyGroupId`
 			WHERE {$stepsTable}.`projectId`= {$pid} AND {$stepsTable}.`removed` = 0 
-			ORDER BY `order`, `shortName`, `name`;";
+			ORDER BY {$stepsTable}.`order`, {$stepsTable}.`shortName`, {$stepsTable}.`name`;";
 
 		$repSteps = $db->query( $qString );
 		while ($s = $repSteps->fetch())
@@ -101,7 +101,9 @@
 		FROM {$projectuserTable}
 		JOIN {$usersTable}
 		ON {$projectuserTable}.`userId` = {$usersTable}.`id`
-		WHERE {$projectuserTable}.`projectId`= {$projectId} AND {$usersTable}.`removed` = 0 
+		WHERE {$projectuserTable}.`projectId`= {$projectId}
+			AND {$usersTable}.`removed` = 0
+			AND {$projectuserTable}.`removed` = 0
 		ORDER BY {$usersTable}.`name`, {$usersTable}.`shortName`;";
 
 		$repUsers = $db->query( $qString );
@@ -212,13 +214,13 @@
 		$assetGroups = array();
 
 		$qString = "SELECT 
-				" . $tablePrefix . "assetgroups.`uuid`,
-				" . $tablePrefix . "assetgroups.`shortName`,
-				" . $tablePrefix . "assetgroups.`comment`,
-				" . $tablePrefix . "assetgroups.`name`
-			FROM " . $tablePrefix . "assetgroups
+				{$tablePrefix}assetgroups.`uuid`,
+				{$tablePrefix}assetgroups.`shortName`,
+				{$tablePrefix}assetgroups.`comment`,
+				{$tablePrefix}assetgroups.`name`
+			FROM {$tablePrefix}assetgroups
 			WHERE projectId=" . $pid . " AND removed = 0 
-			ORDER BY " . $tablePrefix . "assetgroups.`shortName`, " . $tablePrefix . "assetgroups.`name`;";
+			ORDER BY {$tablePrefix}assetgroups.`shortName`, {$tablePrefix}assetgroups.`name`;";
 		$repAssetGroups = $db->query( $qString );
 		while($ag = $repAssetGroups->fetch())
 		{
@@ -252,7 +254,7 @@
 			FROM {$assetsTable}
 			LEFT JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$assetsTable}.`assetGroupId`
 			WHERE {$assetgroupsTable}.`projectId` = ". $projectId  ." AND {$assetsTable}.`removed` = 0
-			ORDER BY `shortName`, `name`;";
+			ORDER BY {$assetsTable}.`shortName`, {$assetsTable}.`name`;";
 		$repAssets = $db->query( $qString );
 		while ($a = $repAssets->fetch())
 		{
@@ -375,7 +377,7 @@
 			FROM {$shotsTable}
 			LEFT JOIN {$sequencesTable} ON {$sequencesTable}.`id` = {$shotsTable}.`sequenceId`
 			WHERE {$sequencesTable}.`projectId` = ". $projectId  ." AND {$shotsTable}.`removed` = 0
-			ORDER BY `order`, `shortName`, `name`;";
+			ORDER BY {$shotsTable}.`order`, {$shotsTable}.`shortName`, {$shotsTable}.`name`;";
 
 		$repShots = $db->query( $qString );
 
@@ -556,49 +558,21 @@
 	}
 
 	// ========= CREATE PROJECT ==========
-	if (hasArg("createProject"))
+	if ( acceptReply("createProject", 'admin') )
 	{
-		$reply["accepted"] = true;
-        $reply["query"] = "createProject";
-
-		$name = "";
-		$shortName = "";
-		$uuid = "";
-
 		$name = getArg("name");
-        $shortName = getArg("shortName");
-        $uuid = getArg("uuid");
+		$shortName = getArg("shortName");
+		$uuid = getArg("uuid", uuid());
 
-		if (strlen($shortName) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ) )
-            {
-				if (strlen($uuid) > 0)
-				{
-					$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE name = VALUES(name) , shortName = VALUES(shortName);";
-					$values = array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid);
-				}
-				else
-				{
-					$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , uuid() );";
-					$values = array('name' => $name, 'shortName' => $shortName);
-				}
+		$q = new DBQuery();
+		$q->insert( "projects", array( 'name', 'shortName', 'uuid' ));
 
-				$rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "uuid", $uuid, true );
 
-				$reply["message"] = "Project " . $shortName . " created.";
-				$reply["success"] = true;
-
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Project '{$shortName}' added.");
+		$q->close();
 	}
 
 	// ========= GET PROJECTS ==========
@@ -662,11 +636,8 @@
 	}
 
 	// ========= UPDATE PROJECT ==========
-	else if (hasArg("updateProject"))
+	else if (acceptReply("updateProject", 'admin'))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateProject";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
@@ -678,203 +649,128 @@
 		$comment = getArg( "comment" );
 		$deadline = getArg( "deadline" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ))
-            {
-				$qString = "UPDATE {$projectsTable}
-					SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
+		$q = new DBQuery();
+		$q->update(
+			"projects",
+			array(
+				'name',
+				'shortName',
+				'folderPath',
+				'framerate',
+				'width',
+				'height',
+				'aspectRatio',
+				'comment',
+				'deadline'
+			),
+			$uuid
+		);
 
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment );
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
+		$q->bindStr( "folderPath", $folderPath );
+		$q->bindStr( "framerate", $framerate );
+		$q->bindInt( "width", $width );
+		$q->bindInt( "height", $height );
+		$q->bindStr( "aspectRatio", $aspectRatio );
+		$q->bindStr( "deadline", $deadline );
 
-				if (strlen($folderPath) > 0)
-                {
-                    $qString = $qString . ", `folderPath`= :folderPath";
-                    $values["folderPath"] = $folderPath;
-                }
-
-				if (strlen($framerate) > 0)
-                {
-                    $qString = $qString . ", `framerate`= :framerate";
-                    $values["framerate"] = $framerate;
-                }
-
-				if (strlen($width) > 0)
-                {
-                    $qString = $qString . ", `width`= :width";
-                    $values["width"] = $width;
-                }
-
-				if (strlen($height) > 0)
-                {
-                    $qString = $qString . ", `height`= :height";
-                    $values["height"] = $height;
-                }
-
-				if (strlen($aspectRatio) > 0)
-                {
-                    $qString = $qString . ", `aspectRatio`= :aspectRatio";
-                    $values["aspectRatio"] = $aspectRatio;
-                }
-
-				if (strlen($deadline) > 0)
-                {
-                    $qString = $qString . ", `deadline`= :deadline";
-                    $values["deadline"] = $deadline;
-                }
-
-				$qString = $qString . " WHERE uuid= :uuid ;";
-
-                $rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();
-
-				$reply["message"] = "Project \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
+		$q->execute("Project \"{$shortName}\" updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE PROJECT ==========
-	else if (hasArg("removeProject"))
+	else if (acceptReply("removeProject", 'admin'))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeProject";
-
-		$uuid = "";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Project " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove projects.";
-                $reply["success"] = false;
-            }
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q = new DBQuery();
+		$q->remove( "projects", $uuid );
 	}
 
 	// ========= ASSOCIATE STEP WITH PROJECT ==========
-	else if (hasArg("assignStep"))
+	else if ( acceptReply("assignStep", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "assignStep";
-
-		$stepUuid = "";
-		$projectUuid = "";
-
 		$stepUuid = getArg("stepUuid");
 		$projectUuid = getArg("projectUuid");
 
-		if (strlen($stepUuid) > 0 AND strlen($projectUuid) > 0)
-		{
-			if (isAdmin())
-			{
-				$q = "INSERT INTO " . $tablePrefix . "steps (name,shortName,autoCreateAssets,type,projectId) VALUES (
-				( SELECT " . $tablePrefix . "templatesteps.name FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "templatesteps.shortName FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "templatesteps.autoCreateAssets FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "templatesteps.type FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectUuid )
-				) ON DUPLICATE KEY UPDATE " . $tablePrefix . "steps.id = " . $tablePrefix . "steps.id ;";
+		$q = new DBQuery();
+		$stepInfo = $q->get(
+			"templatesteps",
+			array(
+				'name',
+				'shortName',
+				'autoCreateAssets',
+				'type'
+			),
+			$stepUuid
+		);
+		$projectId = $q->id("projects", $projectUuid);
 
-				$rep = $db->prepare($q);
-				$ok = $rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
-				$rep->closeCursor();
+		$q->insert(
+			"steps",
+			array(
+				'name',
+				'shortName',
+				'autoCreateAssets',
+				'type',
+				'projectId'
+			)
+		);
 
-				if ($ok) $reply["message"] = "Step associated with project.";
-				else $reply["message"] = $rep->errorInfo();
+		$q.bindName( $stepInfo['name'] );
+		$q.bindShortName( $stepInfo['shortName'] );
+		$q.bindInt( 'autoCreateAssets', $stepInfo['autoCreateAssets'] );
+		$q.bindStr( 'type', $stepInfo['type'] );
+		$q.bindInt( 'projectId', $projectId );
 
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to assign steps to projects.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute( "Step associated with project." );
+		$q->close();
 	}
 
 	// ========= ASSIGN USER ==========
-	else if (hasArg("assignUser"))
+	else if ( acceptReply( "assignUser", 'admin' ) )
 	{
-		acceptReply( "assignUser" );
-
 		$userUuid = getArg("userUuid");
 		$projectUuid = getArg("projectUuid");
 
-		if ( checkArgs(array($userUuid, $projectUuid)) && isProjectAdmin())
-		{
+		$q = new DBQuery();
+		$userId = $q->id("users", $userUuid);
+		$projectId = $q->id("projects", $projectUuid);
+		
+		$q->insert('projectuser', array('projectId', 'userId'));
+		$q->bindInt( "userId", $userId );
+		$q->bindInt( "projectId", $projectId );
 
-			$qString = "INSERT INTO {$projectuserTable} (`projectId`, `userId`) VALUES (
-				( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
-				( SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
-				) ON DUPLICATE KEY UPDATE {$projectuserTable}.`id` = {$projectuserTable}.`id` ;";
-
-			$rep = $db->prepare($qString);
-			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
-
-			sqlRequest( $rep, "User assigned to project." );
-
-			$rep->closeCursor();
-		}
-
+		$q->execute("User assigned to project.");
+		$q->close();
 	}
 
 	// ========= REMOVE USER ==========
-	else if (hasArg("unassignUser"))
+	else if ( acceptReply( "unassignUser", 'admin' ) )
 	{
-		acceptReply( "unassignUser" );
-
 		$userUuid = getArg("userUuid");
 		$projectUuid = getArg("projectUuid");
 
-		if ( checkArgs(array($userUuid, $projectUuid)) && isProjectAdmin())
-		{
+		$q = new DBQuery();
+		$userId = $q->id("users", $userUuid);
+		$projectId = $q->id("projects", $projectUuid);
 
-			$q = "DELETE {$projectuserTable}  FROM {$projectuserTable} WHERE
-			projectId= ( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid )
-			AND
-			userId= ( SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
-			;";
-			$rep = $db->prepare($q);
-			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
+		$q->prepare( "UPDATE {$tablePrefix}projectuser
+			SET
+				removed = 1,
+				latestUpdate = :udpateTime
+			WHERE
+				userId= :userId
+				AND
+				projectId= :projectId
+			;");
 
-			sqlRequest( $rep, "User unassigned from project." );
+		$q->bindStr( 'udpateTime', dateTimeStr() );
+		$q->bindInt( 'userId', $userId );
+		$q->bindInt( 'projectId', $projectId );
 
-			$rep->closeCursor();
-		}
-
+		$q->execute("User unassigned from project.");
+		$q->close();
 	}
 ?>
