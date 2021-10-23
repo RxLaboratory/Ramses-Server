@@ -53,32 +53,6 @@
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
 
-	//build table names
-	$applicationfiletypeTable = $tablePrefix . "applicationfiletype";
-	$applicationsTable = $tablePrefix . "applications";
-	$assetgroupsTable = $tablePrefix . "assetgroups";
-	$assetsTable = $tablePrefix . "assets";
-	$colorspacesTable = $tablePrefix . "colorspaces";
-	$filetypesTable = $tablePrefix . "filetypes";
-	$pipesTable = $tablePrefix . "pipes";
-	$projectassetgroupTable = $tablePrefix . "projectassetgroup";
-	$projectsTable = $tablePrefix . "projects";
-	$sequencesTable = $tablePrefix . "sequences";
-	$shotsTable = $tablePrefix . "shots";
-	$statesTable = $tablePrefix . "states";
-	$statusTable = $tablePrefix . "status";
-	$stepapplicationTable = $tablePrefix . "stepapplication";
-	$stepsTable = $tablePrefix . "steps";
-	$projectuserTable = $tablePrefix . "projectuser";
-	$templateassetgroupsTable = $tablePrefix . "templateassetgroups";
-	$templatestepsTable = $tablePrefix . "templatesteps";
-	$usersTable = $tablePrefix . "users";
-	$pipefileTable = $tablePrefix . "pipefile";
-	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
-	$shotassetTable = $tablePrefix . "shotasset";
-	$scheduleTable = $tablePrefix . "schedule";
-	$serverMetadataTable = $tablePrefix . "servermetadata";
-
 	// Parse body content to make it quickly available later
 	// Check the content type, accept either application/json or application/x-www-form-urlencoded
 	$allHeaders = getallheaders();

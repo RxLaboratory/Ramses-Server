@@ -23,21 +23,21 @@
 
         echo ( " ▸ Updating Database structure.<br />" );
         
-        $rep = $db->query( "LOCK TABLES {$usersTable} WRITE, {$pipesTable} WRITE, {$pipefileTable} WRITE;
+        $rep = $db->query( "LOCK TABLES {$tablePrefix}users WRITE, {$tablePrefix}pipes WRITE, {$tablePrefix}pipefile WRITE;
 
-            ALTER TABLE {$usersTable}
+            ALTER TABLE {$tablePrefix}users
             ADD COLUMN `email` VARCHAR(255) NULL AFTER `password`,
             ADD COLUMN `color` VARCHAR(15) NOT NULL DEFAULT '#e3e3e3' AFTER `role`,
             CHANGE COLUMN `role` `role` VARCHAR(255) NOT NULL DEFAULT 'standard',
             CHANGE COLUMN `shortName` `shortName` VARCHAR(255) NOT NULL ;
 
-            ALTER TABLE {$pipesTable} DROP FOREIGN KEY fk_pipes_input;
-            ALTER TABLE {$pipesTable} DROP FOREIGN KEY fk_pipes_output;
-            ALTER TABLE {$pipesTable} DROP INDEX `step_UNIQUE`;
-            ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
-            ALTER TABLE {$pipesTable} ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+            ALTER TABLE {$tablePrefix}pipes DROP FOREIGN KEY fk_pipes_input;
+            ALTER TABLE {$tablePrefix}pipes DROP FOREIGN KEY fk_pipes_output;
+            ALTER TABLE {$tablePrefix}pipes DROP INDEX `step_UNIQUE`;
+            ALTER TABLE {$tablePrefix}pipes ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+            ALTER TABLE {$tablePrefix}pipes ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
 
-            ALTER TABLE {$pipefileTable} ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
+            ALTER TABLE {$tablePrefix}pipefile ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
 
             UNLOCK TABLES;");
         
@@ -63,7 +63,7 @@
         flush();
 
         // get users
-        $rep = $db->query( "SELECT `id`, `role`, `name`, `email` FROM {$usersTable};" );
+        $rep = $db->query( "SELECT `id`, `role`, `name`, `email` FROM {$tablePrefix}users;" );
         
         while ($user = $rep->fetch())
 		{
@@ -88,7 +88,7 @@
             $id = (int)$user['id'];
 
             $roleQuery = $db->prepare("UNLOCK TABLES;
-                UPDATE {$usersTable}
+                UPDATE {$tablePrefix}users
                 SET `role`= :role, `name`= :name, `email`= :email
                 WHERE `id`= :id;" );
 

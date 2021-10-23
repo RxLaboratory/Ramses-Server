@@ -29,7 +29,7 @@
 
     // ==== Server metadata table ====
 
-    $qString = "CREATE TABLE IF NOT EXISTS {$serverMetadataTable} (
+    $qString = "CREATE TABLE IF NOT EXISTS {$tablePrefix}servermetadata (
         `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
         `version` VARCHAR(45) NOT NULL,
         `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -54,7 +54,7 @@
     echo ( " ▸ Checking current version.<br />" );
 
     $rep = $db->query( "SELECT `version`, `date`
-        FROM {$serverMetadataTable}
+        FROM {$tablePrefix}servermetadata
         ORDER BY `date`;" );
 
     $currentVersion = '0.1.3-alpha';
@@ -81,7 +81,7 @@
     echo ( "Finishing update...<br />" );
     echo ( " ▸ Writing new server metadata.<br />" );
 
-    $qString = "INSERT INTO {$serverMetadataTable} (`version`)
+    $qString = "INSERT INTO {$tablePrefix}servermetadata (`version`)
         VALUES ( :version );";
 
     $rep = $db->prepare($qString);
