@@ -23,83 +23,56 @@
 
     function createEntry($uuid, $userUuid, $stepUuid, $date)
     {
-        global $usersTable, $stepsTable, $scheduleTable, $db;
+        $q = new DBQuery();
+        $userId = $q->id('users', $userUuid);
+        $stepId = $q->id('steps', $stepUuid);
 
-        if ( checkArgs( array( $userUuid, $stepUuid, $date ) ) && isLead() )
-        {
-            $qString = "INSERT INTO {$scheduleTable} ( `uuid`, `userId`, `stepId`, `date` )
-            VALUES (
-                :uuid,
-                (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid ),
-                (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid ),
-                :date
-                )
-            ON DUPLICATE KEY UPDATE `date` = VALUES(`date`) ;";
+        $q->insert( "schedule", array( 'uuid', 'userId', 'stepId', 'date' ));
 
-            $rep = $db->prepare($qString);
-            $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-            $rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-            $rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
-            $rep->bindValue(':date', $date, PDO::PARAM_STR);
+        $q->bindStr( "uuid", $uuid, true );
+		$q->bindStr( "date", $date );
+		$q->bindInt( "userId", $userId );
+		$q->bindInt( "stepId", $stepId );
 
-            $ok = sqlRequest( $rep, "Schedule updated.");
-
-            $rep->closeCursor();
-
-            return $ok;
-        }
-        return false;
+        $q->execute("Schedule updated.");
+		$q->close();
     }
 
     function updateEntry($uuid, $userUuid, $stepUuid, $date, $comment)
     {
-        global $usersTable, $stepsTable, $scheduleTable, $db;
+        $q = new DBQuery();
+        $userId = $q->id('users', $userUuid);
+        $stepId = $q->id('steps', $stepUuid);
 
-        if ( checkArgs( array( $userUuid, $stepUuid, $date ) ) && isLead() )
-        {
-            $qString = "UPDATE {$scheduleTable}
-            SET
-                `userId` = (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid ),
-                `stepId` = (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE {$stepsTable}.`uuid` = :stepUuid ),
-                `date` = :date,
-                `comment` = :comment
-            WHERE `uuid` = :uuid ;";
+		$q->update(
+			"schedule",
+			array(
+				'userId',
+				'stepId',
+				'date',
+                'comment'
+			),
+			$uuid
+		);
 
-            $rep = $db->prepare($qString);
-            $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-            $rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-            $rep->bindValue(':stepUuid', $stepUuid, PDO::PARAM_STR);
-            $rep->bindValue(':date', $date, PDO::PARAM_STR);
-            $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
-            
-            $ok = sqlRequest( $rep, "Schedule updated.");
+		$q->bindStr( "date", $date );
+		$q->bindStr( "comment", $comment );
+		$q->bindInt( "userId", $userId );
+		$q->bindInt( "stepId", $stepId );
 
-			$rep->closeCursor();
-
-            return $ok;
-        }
+        $q->execute("Schedule updated.");
+		$q->close();
     }
 
     function deleteEntry( $uuid )
     {
-        global $scheduleTable, $db;
-
-        if ( checkArgs( array( $uuid ) ) && isLead() )
-        {
-            $qString = "DELETE FROM {$scheduleTable}
-            WHERE `uuid` = :uuid ;";
-
-            $rep = $db->prepare($qString);
-            $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-            
-            $ok = sqlRequest( $rep, "Schedule updated.");
-
-            $rep->closeCursor();
-        }
+        $uuid = getArg("uuid");
+        $q = new DBQuery();
+		$q->remove( "sequences", $uuid, false );
     }
 
     // ========= CREATE ENTRY ==========
-    if (hasArg("createSchedule"))
+    if ( acceptReply( "createSchedule", 'lead' ) )
     {
         acceptReply( "createSchedule" );
 
@@ -112,10 +85,8 @@
     }
 
     // ========= CREATE ENTRIES ==========
-    else if (hasArg("createSchedules"))
+    else if (acceptReply( "createSchedules", 'lead' ))
     {
-        acceptReply( "createSchedules" );
-
         $entries = getArg("entries", array());
 
         if (count($entries) == 0)
@@ -136,10 +107,8 @@
     }
 
     // ========= UPDATE ENTRY ==========
-    else if (hasArg("updateSchedule"))
+    else if (acceptReply( "updateSchedule", 'lead' ))
     {
-        acceptReply( "updateSchedule" );
-
         $uuid = getArg("uuid", uuid());
         $userUuid = getArg("userUuid");
         $stepUuid = getArg("stepUuid");
@@ -150,10 +119,8 @@
     }
 
     // ========= UPDATE ENTRIES ==========
-    else if (hasArg("updateSchedules"))
+    else if (acceptReply( "updateSchedules", 'lead' ))
     {
-        acceptReply( "updateSchedules" );
-
         $entries = getArg("entries", array());
 
         if (count($entries) == 0)
@@ -175,22 +142,16 @@
     }
 
     // ========= DELETE ENTRY ==========
-    else if (hasArg("removeSchedule"))
+    else if (acceptReply( "removeSchedule", 'lead' ))
     {
-        acceptReply( "removeSchedule" );
-
         $uuid = getArg("uuid", uuid());
 
         deleteEntry( $uuid );
     }
 
     // =========== DELETE ENTRIES ======
-    else if (hasArg("removeSchedules"))
+    else if (acceptReply( "removeSchedules", 'lead' ))
     {
-        acceptReply( "removeSchedules" );
-
-        $uuid = getArg("uuid", uuid());
-
         $entries = getArg("entries", array());
 
         if (count($entries) == 0)

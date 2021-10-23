@@ -22,50 +22,21 @@
 	*/
 
 	// ========= CREATE STATE ==========
-	if (hasArg("createState"))
+	if ( acceptReply("createState", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createState";
-
-		$name = "";
-		$shortName = "";
-		$uuid = "";
-
 		$name = getArg("name");
         $shortName = getArg("shortName");
-        $uuid = getArg("uuid");
+        $uuid = getArg("uuid", uuid());
 
-		if (strlen($shortName) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName )  )
-            {
-				//if an id is provided
-				if (strlen($uuid) > 0)
-				{
-					$qString = "INSERT INTO {$tablePrefix}states (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-					$values = array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid);
-				}
-				else
-				{
-					$qString = "INSERT INTO {$tablePrefix}status (name,shortName,uuid) VALUES ( :name , :shortName , uuid() ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-					$values = array('name' => $name, 'shortName' => $shortName);
-				}
+		$q = new DBQuery();
+		$q->insert( "states", array( 'name', 'shortName', 'uuid' ));
 
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "uuid", $uuid, true );
 
-				$rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
-
-				$reply["message"] = "State " . $shortName . " added.";
-				$reply["success"] = true;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("State '{$shortName}' added.");
+		$q->close();
 	}
 
 	// ========= GET STATES ==========
@@ -107,11 +78,8 @@
 	}
 
 	// ========= UPDATE STATE ==========
-	else if (hasArg("updateState"))
+	else if ( acceptReply("updateState", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateState";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$color = getArg( "color" );
@@ -119,79 +87,34 @@
 		$uuid = getArg( "uuid" );
 		$comment = getArg( "comment" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() && validateName( $name ) && validateShortName( $shortName ))
-            {
+		$q = new DBQuery();
+		$q->update(
+			"templatesteps",
+			array(
+				'name',
+				'shortName',
+				'comment',
+				'color',
+				'completionRatio'
+			),
+			$uuid
+		);
 
-				$qString = "UPDATE {$statesTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
+		$q->bindInt( "completionRatio", $completionRatio );
+		$q->bindStr( "color", $color );
 
-				if (strlen($color) > 0)
-				{
-					//add # on color if needed
-					if (strlen($color) == 6) $color = "#" . $color;
-					$qString = $qString . ", color= :color";
-					$values["color"] = $color;
-				}
-
-				if (strlen($completionRatio) > 0)
-				{
-					$qString = $qString . ", completionRatio= :completionRatio";
-					$values["completionRatio"] = (int)$completionRatio;
-				}
-
-				$qString = $qString . " WHERE uuid= :uuid ;";
-
-				$rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
-
-				$reply["message"] = "State \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
+		$q->execute("State '{$shortName}' updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE STATE ==========
-	else if (hasArg("removeState"))
+	else if ( acceptReply("removeState", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeState";
-
-		$uuid = "";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isAdmin())
-			{
-				$rep = $db->prepare("UPDATE {$tablePrefix}states SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "State " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove states.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q = new DBQuery();
+		$q->remove( "states", $uuid );
 	}
 ?>

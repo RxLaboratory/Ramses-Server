@@ -22,218 +22,107 @@
 	*/
 
     // ========= CREATE ==========
-	if (hasArg("createPipe"))
+	if ( acceptReply( "createPipe", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createPipe";
-
 		$inputUuid = getArg ( "inputUuid" );
 		$outputUuid = getArg ( "outputUuid" );
 		$uuid = getArg ( "uuid" );
 
-		if ( $outputUuid != "" && $outputUuid != $inputUuid)
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				// Create pipe
-				$qString = "INSERT INTO {$pipesTable} ( inputStepId, outputStepId, uuid ) 
-				VALUES (
-					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :inputUuid ),
-					(SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :outputUuid ),";
+		$q = new DBQuery();
+		$inputStepId = $q->id('steps', $inputUuid);
+		$outputStepId = $q->id('steps', $outputUuid);
 
-				$values = array('inputUuid' => $inputUuid,'outputUuid' => $outputUuid);
-				
-				if ( $uuid != "" )
-				{
-					$qString = $qString . ":uuid ";
-					$values['uuid'] = $uuid;
-				}
-				else
-				{
-					$qString = $qString . "uuid() ";
-				}
+		$q->insert( "pipes", array( 'inputStepId', 'outputStepId', 'uuid' ));
 
-				$qString = $qString . ") ON DUPLICATE KEY UPDATE removed = 0;";
+		$q->bindStr( "uuid", $uuid, true );
+		$q->bindInt( "inputStepId", $inputStepId );
+		$q->bindInt( "outputStepId", $outputStepId );
 
-				$rep = $db->prepare($qString);
-				$ok = $rep->execute($values);
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Pipe created.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create pipes.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Pipe created.");
+		$q->close();
 	}
 
     // ========= UPDATE ==========
-	else if (hasArg("updatePipe"))
+	else if ( acceptReply( "updatePipe", 'projectAdmin' ) )
 	{
-		acceptReply( "updatePipe" );
-
 		$inputUuid = getArg ( "inputUuid" );
 		$outputUuid = getArg ( "outputUuid" );
 		$uuid = getArg ( "uuid" );
 		$comment = getArg ( "comment" );
 
-		// Only if admin
-		if ( checkArgs( array( $uuid ) ) && isProjectAdmin() )
-		{	
-			$qString = "UPDATE {$pipesTable} SET `comment` = :comment";
-			if ($inputUuid != "") $qString = $qString . ", `inputStepId` = (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :inputUuid )";
-			if ($outputUuid != "") $qString = $qString . ", `outputStepId` = (SELECT {$stepsTable}.`id` FROM {$stepsTable} WHERE `uuid` = :outputUuid )";
-			$qString = $qString . " WHERE `uuid` = :uuid;";
+		$q = new DBQuery();
+		$inputStepId = $q->id('steps', $inputUuid);
+		$outputStepId = $q->id('steps', $outputUuid);
 
-			$q = $db->prepare( $qString );
-			
-			$q->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-			$q->bindValue(':comment', $comment, PDO::PARAM_STR);
-			if ($inputUuid != "") $q->bindValue(':inputUuid', $inputUuid, PDO::PARAM_STR);
-			if ($outputUuid != "") $q->bindValue(':outputUuid', $outputUuid, PDO::PARAM_STR);
+		$q->update(
+			"pipes",
+			array(
+				'comment',
+				'inputStepId',
+				'outputStepId'
+			),
+			$uuid
+		);
 
-			sqlRequest( $q, "Pipe updated." );
-			$q->closeCursor();
-		}
+		$q->bindStr( "comment", $comment );
+		$q->bindInt( "inputStepId", $inputStepId );
+		$q->bindInt( "outputStepId", $outputStepId );
 
+		$q->execute("Pipe updated.");
+		$q->close();
 	}
 
     // ========= REMOVE ==========
-	else if (hasArg("removePipe"))
+	else if ( acceptReply( "removePipe", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removePipe";
-
 		$uuid = getArg ( "uuid" );
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isProjectAdmin())
-			{
-				$rep = $db->prepare("UPDATE {$pipesTable} SET removed = 1 WHERE `uuid`= :uuid ;");
-				
-                $ok = $rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Pipe removed.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove pipes.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q = new DBQuery();
+		$q->remove( "pipes", $uuid );
 	}
 
 	// ========= ASSIGN ==========
-	else if (hasArg("assignPipeFile"))
+	else if ( acceptReply( "assignPipeFile", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "assignPipeFile";
-
 		$pipeFileUuid = getArg( "pipeFileUuid" );
 		$pipeUuid = getArg( "pipeUuid" );
 
-		if ($pipeFileUuid != '' && $pipeUuid != '')
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$queryStr = "INSERT INTO {$pipefilepipeTable} (`pipeId`, `pipeFileId`)
-					VALUES (
-					( SELECT {$pipesTable}.`id` FROM {$pipesTable} WHERE {$pipesTable}.`uuid` = :pipeUuid ),
-					( SELECT {$pipefileTable}.`id` FROM {$pipefileTable} WHERE {$pipefileTable}.`uuid` = :pipeFileUuid )
-					) ; ";
+		$q = new DBQuery();
+		$pipeId = $q->id("pipes", $pipeUuid);
+		$pipeFileId = $q->id("pipefile", $pipeFileUuid);
 
-				$values = array(
-					'pipeFileUuid' => $pipeFileUuid,
-					'pipeUuid' => $pipeUuid
-				);
+		$q->insert('pipefilepipe', array('pipeId', 'pipeFileId'));
+		$q->bindInt( "pipeId", $pipeId );
+		$q->bindInt( "pipeFileId", $pipeFileId );
 
-				$queryStr = $queryStr . ") ON DUPLICATE KEY UPDATE {$pipefilepipeTable}.`removed` = 0 ;";
-				$rep = $db->prepare($queryStr);
-				$ok = $rep->execute( $values );
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "New File assigned to pipe.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("New File assigned to pipe.");
+		$q->close();
 	}
 
 	// ========= UNASSIGN ==========
-	else if (hasArg("unassignPipeFile"))
+	else if ( acceptReply( "unassignPipeFile", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "unassignPipeFile";
-
 		$pipeFileUuid = getArg( "pipeFileUuid" );
 		$pipeUuid = getArg( "pipeUuid" );
 
-		if ($pipeFileUuid != '' && $pipeUuid != '')
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$queryStr = "DELETE {$pipefilepipeTable} FROM {$pipefilepipeTable}
-					WHERE {$pipefilepipeTable}.`pipeFileId` = 
-							( SELECT {$pipefileTable}.`id` FROM {$pipefileTable} WHERE {$pipefileTable}.`uuid` = :pipeFileUuid )
-						AND {$pipefilepipeTable}.`pipeId` = 
-							( SELECT {$pipesTable}.`id` FROM {$pipesTable} WHERE {$pipesTable}.`uuid` = :pipeUuid ) ;";
-				$rep = $db->prepare($queryStr);
-				$ok = $rep->execute( array(
-					'pipeFileUuid' => $pipeFileUuid,
-					'pipeUuid' => $pipeUuid
-				));
-				$rep->closeCursor();
+		$q = new DBQuery();
+		$pipeId = $q->id("pipes", $pipeUuid);
+		$pipeFileId = $q->id("pipefile", $pipeFileUuid);
 
-				if ($ok) $reply["message"] = "File removed from pipe.";
-				else $reply["message"] = $rep->errorInfo();
+		$q->prepare( "UPDATE {$tablePrefix}pipefilepipe
+			SET
+				removed = 1,
+				latestUpdate = :udpateTime
+			WHERE
+				pipeId= :pipeId
+				AND
+				pipeFileId= :pipeFileId
+			;");
 
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->bindInt( "pipeId", $pipeId );
+		$q->bindInt( "pipeFileId", $pipeFileId );
+		$q->bindStr( 'udpateTime', dateTimeStr() );
+
+		$q->execute("File removed from pipe.");
+		$q->close();
 	}
 ?>

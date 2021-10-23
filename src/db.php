@@ -37,6 +37,7 @@
 	{
 		private $query;
 		private $ok = false;
+		private $closed = true;
 
 		// Insert/Replace a new row in a table
 		public function insert( $table, $keys )
@@ -87,23 +88,26 @@
 		}
 
 		// Removes a row from a table
-		public function remove( $table, $uuid )
+		public function remove( $table, $uuid, $deleteNEW = true )
 		{
 			global $tablePrefix;
 
-			// Check if it's NEW
-			$q = "SELECT `shortName` FROM {$tablePrefix}{$table} WHERE `uuid`= :uuid ;";
-
-			$this->prepare($q);
-			$this->bindStr( "uuid", $uuid, true);
-			$this->execute();
-
-			$item = $this->fetch();
 			$sName = '';
-			if ($item) $sName = $item['shortName'];
 
-			$this->close();
+			if ($deleteNEW)
+			{
+				$q = "SELECT `shortName` FROM {$tablePrefix}{$table} WHERE `uuid`= :uuid ;";
 
+				$this->prepare($q);
+				$this->bindStr( "uuid", $uuid, true);
+				$this->execute();
+
+				$item = $this->fetch();
+				if ($item) $sName = $item['shortName'];
+
+				$this->close();
+			}
+			
 			// DELETE
 			if ($sName == "NEW")
 			{
@@ -220,38 +224,51 @@
 		}
 
 		// Bind an int
-		public function bindInt( $key, $int )
+		public function bindInt( $key, $int, $mandatory = false )
 		{
 			global $reply;
 
 			if ( !$this->ok ) return;
 
-			if ($int == "")
+			if ($int == "" && $mandatory)
 			{
 				$reply["message"] = "Invalid request, missing value (int): '{$key}'";
             	$reply["success"] = false;
 				$this->ok = false;
 				return;
 			}
-
-			$this->query->bindValue( ":{$key}", $int, PDO::PARAM_INT );
+			else if ($int == "")
+			{
+				$this->query->bindValue( ":{$key}", 'NULL', PDO::PARAM_STR );
+			}
+			else 
+			{
+				$this->query->bindValue( ":{$key}", $int, PDO::PARAM_INT );
+			}
 		}
 
 		// Request
 		public function execute( $successMessage = "", $debug = false )
 		{
+			if (!$this->closed) $this->close();
+
 			if ( !$this->ok ) return;
 			$this->ok = sqlRequest( $this->query, $successMessage, $debug );
+
+			$this->closed = false;
 		}
 
 		// Close cursor
 		public function close()
 		{
 			if (isset( $this->query )) $this->query->closeCursor();
+			$this->closed = true;
 		}
 
 		public function fetch()
 		{
+			$this->closed = false;
+
 			if ( !$this->ok ) return false;
 			return $this->query->fetch();
 		}

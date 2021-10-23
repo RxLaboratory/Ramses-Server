@@ -22,69 +22,57 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	if (hasArg("login"))
+	if ( acceptReply( "login" ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "login";
-
 		$username = getArg( "username" );
 		$password = getArg( "password" );
 
-		if (strlen($username) > 0 AND strlen($password) > 0)
+		$q = new DBQuery();
+		$q->prepare( "SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM {$tablePrefix}users WHERE `shortName` = :shortName AND removed = 0;" );
+		$q->bindShortName( $username );
+		$q->execute();
+
+		$testPass = $q->fetch();
+		$q->close();
+
+		if ( $testPass )
 		{
-			//query the database
-			$rep = $db->prepare("SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM {$tablePrefix}users WHERE `shortName` = :username AND removed = 0;");
-			$rep->execute(array('username' => $username));
+			$found = true;
+			$uuid = $testPass["uuid"];
 
-			$testPass = $rep->fetch();
-
-			if ( $testPass )
+			//check password
+			if ( checkPassword($password, $uuid, $testPass["password"]) )
 			{
-				$found = true;
-				$uuid = $testPass["uuid"];
-
-				//check password
-				if ( checkPassword($password, $uuid, $testPass["password"]) )
-				{
-					//login
-					$role = $testPass["role"];
-					// Role is hashed, find it
-					$role = checkRole($role);
-					$token = login($uuid, $role);
-					//reply content
-					$content = array();
-					$content["name"] = decrypt( $testPass["name"] );
-					$content["shortName"] = $username;
-					$content["uuid"] = $uuid;
-					$content["folderPath"] = $testPass["folderPath"];
-					$content["role"] = $role;
-					$content["token"] = $token;
-					$content["email"] = decrypt( $testPass["email"] );
-					$reply["content"] = $content;
-					$reply["message"] = "Successful login. Welcome " . $content["name"] . "!";
-					$reply["success"] = true;
-				}
-				else
-				{
-					$reply["message"] = "Invalid password";
-					$reply["success"] = false;
-					logout();
-				}
+				//login
+				$role = $testPass["role"];
+				// Role is hashed, find it
+				$role = checkRole($role);
+				$token = login($uuid, $role);
+				//reply content
+				$content = array();
+				$content["name"] = decrypt( $testPass["name"] );
+				$content["shortName"] = $username;
+				$content["uuid"] = $uuid;
+				$content["folderPath"] = $testPass["folderPath"];
+				$content["role"] = $role;
+				$content["token"] = $token;
+				$content["email"] = decrypt( $testPass["email"] );
+				$reply["content"] = $content;
+				$reply["message"] = "Successful login. Welcome " . $content["name"] . "!";
+				$reply["success"] = true;
 			}
 			else
 			{
-				$reply["message"] = "Invalid username";
+				$reply["message"] = "Invalid password";
 				$reply["success"] = false;
 				logout();
 			}
-			$rep->closeCursor();
-			
-		}			
+		}
 		else
 		{
-			$reply["message"] = "Invalid request, missing username or password";
+			$reply["message"] = "Invalid username";
 			$reply["success"] = false;
 			logout();
-		}
+		}		
 	}
 ?>

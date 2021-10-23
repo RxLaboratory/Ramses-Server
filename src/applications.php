@@ -49,125 +49,62 @@
     }
 
     // ========= CREATE ==========
-    if (hasArg("createApplication"))
+    if ( acceptReply("createApplication", 'projectAdmin') )
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "createApplication";
-
         $name = getArg("name");
 		$shortName = getArg("shortName");
         $executableFilePath = getArg("executableFilePath");
 		$uuid = getArg("uuid");
 
-        if (strlen($shortName) > 0)
-        {
-            // Only if admin
-            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
-            {
-                $qString = "INSERT INTO {$tablePrefix}applications (`name`,`shortName`,`executableFilePath`,`uuid`) VALUES ( :name , :shortName , :executableFilePath , ";
-                $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'executableFilePath' => $executableFilePath);
+        $q = new DBQuery();
 
-                if (strlen($uuid) > 0)
-                {
-                    $qString = $qString . ":uuid";
-                    $values['uuid'] = $uuid;
-                }
-                else 
-                {
-                    $qString = $qString . "uuid()";
-                }
+        $q->insert( "applications", array( 'name', 'shortName', 'executableFilePath', 'uuid' ));
 
-                $qString = $qString . " ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), executableFilePath = VALUES(executableFilePath), removed = 0;";
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "uuid", $uuid, true );
+		$q->bindStr( "executableFilePath", $executableFilePath );
 
-                $rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();         
-    
-                $reply["message"] = "Application \"" . $shortName . "\" created.";
-                $reply["success"] = true;
-            }
-        }
-        else
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
+		$q->execute("Application '{$shortName}' added.");
+		$q->close();
     }
 
     // ========= UPDATE ==========
-	else if (hasArg("updateApplication"))
+	else if ( acceptReply("updateApplication", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateApplication";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
         $executableFilePath = getArg( "executableFilePath" );
         $comment = getArg( "comment" );
 		$uuid = getArg( "uuid" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isProjectAdmin() && validateName( $name ) && validateShortName( $shortName ) )
-            {
-				$qString = "UPDATE {$applicationsTable}
-				SET
-					`name`= :name ,
-					`shortName`= :shortName,
-                    `executableFilePath`= :executableFilePath,
-                    `comment` = :comment
-				WHERE
-					uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName,'executableFilePath' => $executableFilePath, 'uuid' => $uuid, 'comment' => $comment);
+        $q = new DBQuery();
+		$q->update(
+			"applications",
+			array(
+				'name',
+				'shortName',
+				'executableFilePath',
+                'comment'
+			),
+			$uuid
+		);
 
-                $rep = $db->prepare($qString);
-				
-                $rep->execute($values);
-                $rep->closeCursor();
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
+		$q->bindStr( "executableFilePath", $executableFilePath );
 
-				$reply["message"] = "Application \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Application '{$shortName}' updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE ==========
-	else if (hasArg("removeApplication"))
+	else if ( acceptReply("removeApplication", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeApplication";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if project admin
-			if (isProjectAdmin())
-			{
-				$rep = $db->prepare("UPDATE {$tablePrefix}applications SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Application " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to remove applications.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $q = new DBQuery();
+		$q->remove( "applications", $uuid );
 	}
 
     // ========= GET ==========
@@ -215,95 +152,54 @@
     }
 
     // ========= ASSIGN FILE TYPE ==========
-	else if (hasArg("assignFileType"))
+	else if ( acceptReply("assignFileType", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "assignFileType";
-
 		$fileTypeUuid = getArg("fileTypeUuid");
 		$applicationUuid = getArg("applicationUuid");
 		$type = getArg("type", "native");
 
-		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$qString = "INSERT INTO {$tablePrefix}applicationfiletype (`applicationId`, `fileTypeId`, `type`) VALUES (
-					( SELECT {$tablePrefix}applications.`id` FROM {$tablePrefix}applications WHERE {$tablePrefix}applications.`uuid` = :applicationUuid ),
-					( SELECT {$tablePrefix}filetypes.`id` FROM {$tablePrefix}filetypes WHERE {$tablePrefix}filetypes.`uuid` = :fileTypeUuid ),
-                    :type
-					) ON DUPLICATE KEY UPDATE {$tablePrefix}applicationfiletype.`removed` = 0 ;";
+        $q = new DBQuery();
+		$fileTypeId = $q->id("filetypes", $fileTypeUuid);
+		$applicationId = $q->id("applications", $applicationUuid);
 
-				$rep = $db->prepare($qString);
+        $q->insert('applicationfiletype', array('fileTypeId', 'applicationId','type'));
+		$q->bindInt( "fileTypeId", $fileTypeId );
+		$q->bindInt( "applicationId", $applicationId );
+		$q->bindStr( "type", $type );
 
-				$ok = $rep->execute( array('fileTypeUuid' => $fileTypeUuid, 'applicationUuid' => $applicationUuid, 'type' => $type ) );
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "File type assigned to application as " . $type . " type.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to assign file types.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("File type assigned to application as {$type} type.");
+		$q->close();
 	}
 
 	// ========= REMOVE FILE TYPE ==========
-	else if (hasArg("unassignFileType"))
+	else if ( acceptReply("assignFileType", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "unassignFileType";
-
 		$fileTypeUuid = getArg("fileTypeUuid");
 		$applicationUuid = getArg("applicationUuid");
         $type = getArg("type");
 
-		if (strlen($fileTypeUuid) > 0 && strlen($applicationUuid) > 0)
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$q = "DELETE {$tablePrefix}applicationfiletype FROM {$tablePrefix}applicationfiletype WHERE
-                        applicationId= ( SELECT {$tablePrefix}applications.id FROM {$tablePrefix}applications WHERE {$tablePrefix}applications.uuid = :applicationUuid )
-                    AND
-                        filetypeId= ( SELECT {$tablePrefix}filetypes.id FROM {$tablePrefix}filetypes WHERE {$tablePrefix}filetypes.uuid = :fileTypeUuid ) ;";
-                $values = array( 'applicationUuid' => $applicationUuid,'fileTypeUuid' => $fileTypeUuid );
+        $q = new DBQuery();
+		$fileTypeId = $q->id("filetypes", $fileTypeUuid);
+		$applicationId = $q->id("applications", $applicationUuid);
 
-                if (strlen($type) > 0)
-                {
-                    $q = $q . "AND `type` = :type";
-                    $values['type'] = $type;
-                }
+        $q->prepare( "UPDATE {$tablePrefix}applicationfiletype
+			SET
+				`removed` = 1,
+				`latestUpdate` = :udpateTime
+			WHERE
+                `fileTypeId`= :fileTypeId
+				AND
+				`applicationId`= :applicationId
+                AND
+                `type`= :type
+			;");
 
-                $q = $q . ";";
-				$rep = $db->prepare( $q );
-				$ok = $rep->execute( $values );
-				$rep->closeCursor();
-	
-				$reply["message"] = "File type unassigned from application.";
-				$reply["success"] = true;	
-			}
-			else
-            {
-                if ($ok) $reply["message"] = "Insufficient rights, you need to be Project Admin to assign file types.";
-				else $reply["message"] = $rep->errorInfo();
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->bindStr( 'udpateTime', dateTimeStr() );
+		$q->bindStr( 'type',$type );
+		$q->bindInt( 'fileTypeId', $fileTypeId );
+		$q->bindInt( 'applicationId', $applicationId );
+
+		$q->execute("File type unassigned from application.");
+		$q->close();
 	}
 ?>
