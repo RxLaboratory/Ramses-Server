@@ -154,7 +154,8 @@ CREATE TABLE `ram_schedule` (
   `stepId` int(11) NOT NULL,
   `date` datetime NOT NULL,
   `comment` text COLLATE utf8_unicode_ci DEFAULT NULL,
-  `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `removed` tinyint(4) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `ram_sequences`;
@@ -182,7 +183,8 @@ CREATE TABLE `ram_shotasset` (
   `id` int(11) NOT NULL,
   `shotId` int(11) NOT NULL,
   `assetId` int(11) NOT NULL,
-  `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `removed` tinyint(4) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `ram_shots`;
@@ -326,8 +328,7 @@ ALTER TABLE `ram_applicationfiletype`
 ALTER TABLE `ram_applications`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD UNIQUE KEY `exec_unique` (`executableFilePath`,`shortName`,`name`);
+  ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`);
 
 ALTER TABLE `ram_assetgroups`
   ADD PRIMARY KEY (`id`),
@@ -343,22 +344,20 @@ ALTER TABLE `ram_assets`
 
 ALTER TABLE `ram_colorspaces`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD UNIQUE KEY `name_UNIQUE` (`name`,`shortName`),
-  ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`);
+  ADD UNIQUE KEY `uuid_unique` (`uuid`);
 
 ALTER TABLE `ram_filetypes`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD UNIQUE KEY `filetypeName` (`name`,`shortName`);
+  ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`);
 
 ALTER TABLE `ram_pipefile`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
   ADD KEY `fk_pipefile_colorspace` (`colorSpaceId`),
-  ADD KEY `fk_ram_pipefile_filetype` (`filetypeId`);
+  ADD KEY `fk_ram_pipefile_filetype` (`filetypeId`),
+  ADD KEY `fk_pipefile_project` (`projectId`);
 
 ALTER TABLE `ram_pipefilepipe`
   ADD PRIMARY KEY (`id`),
@@ -371,6 +370,7 @@ ALTER TABLE `ram_pipes`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `id_UNIQUE` (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
+  ADD UNIQUE KEY `pipes_in_out_unique` (`outputStepId`,`inputStepId`) USING BTREE,
   ADD KEY `fk_pipes_input` (`inputStepId`),
   ADD KEY `fk_pipes_output` (`outputStepId`);
 
@@ -405,6 +405,7 @@ ALTER TABLE `ram_servermetadata`
 
 ALTER TABLE `ram_shotasset`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `shot_asset_unique` (`shotId`,`assetId`) USING BTREE,
   ADD KEY `fk_shotasset_shot` (`shotId`),
   ADD KEY `fk_shotasset_asset` (`assetId`);
 
@@ -444,8 +445,7 @@ ALTER TABLE `ram_steps`
 ALTER TABLE `ram_templateassetgroups`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uuid_UNIQUE` (`uuid`),
-  ADD UNIQUE KEY `id_UNIQUE` (`id`),
-  ADD UNIQUE KEY `shortName_UNIQUE` (`shortName`,`name`);
+  ADD UNIQUE KEY `id_UNIQUE` (`id`);
 
 ALTER TABLE `ram_templatesteps`
   ADD PRIMARY KEY (`id`),
@@ -454,8 +454,8 @@ ALTER TABLE `ram_templatesteps`
 
 ALTER TABLE `ram_users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `userName` (`shortName`),
-  ADD UNIQUE KEY `uuid` (`uuid`);
+  ADD UNIQUE KEY `uuid` (`uuid`),
+  ADD UNIQUE KEY `shortName` (`shortName`);
 
 
 ALTER TABLE `ram_applicationfiletype`
@@ -540,7 +540,8 @@ ALTER TABLE `ram_assets`
 
 ALTER TABLE `ram_pipefile`
   ADD CONSTRAINT `fk_pipefile_colorspace` FOREIGN KEY (`colorSpaceId`) REFERENCES `ram_colorspaces` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
-  ADD CONSTRAINT `fk_pipefile_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_pipefile_filetype` FOREIGN KEY (`filetypeId`) REFERENCES `ram_filetypes` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_pipefile_project` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 ALTER TABLE `ram_pipefilepipe`
   ADD CONSTRAINT `fk_pipefilepipe_pipe` FOREIGN KEY (`pipeId`) REFERENCES `ram_pipes` (`id`),
