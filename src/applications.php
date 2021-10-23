@@ -23,20 +23,23 @@
 
     function getFileTypes( $aid )
     {
-        global $tablePrefix, $db;
+        global $tablePrefix;
 
+        $q = new DBQuery();
+        $q->prepare("SELECT
+                filetypes.`uuid`,
+                applicationfiletype.`type`
+            FROM {$tablePrefix}applicationfiletype as applicationfiletype
+            JOIN {$tablePrefix}filetypes as filetypes
+                ON applicationfiletype.`fileTypeId` = filetypes.`id`
+            WHERE applicationfiletype.`applicationId`= {$aid}
+                AND filetypes.`removed` = 0
+                AND applicationfiletype.`removed` = 0
+            ORDER BY filetypes.`name`, filetypes.`shortName` ;"
+        );
+        $q->execute();
         $fileTypes = array();
-        $qString = "SELECT
-                ". $tablePrefix . "filetypes.`uuid`,
-                ". $tablePrefix . "applicationfiletype.`type`
-            FROM {$tablePrefix}applicationfiletype
-            JOIN {$tablePrefix}filetypes
-            ON {$tablePrefix}applicationfiletype.`fileTypeId` = {$tablePrefix}filetypes.`id`
-            WHERE applicationId= " . $aid . " AND {$tablePrefix}filetypes.`removed` = 0
-            ORDER BY {$tablePrefix}filetypes.`name`, {$tablePrefix}filetypes.`shortName` ;";
-
-        $repFileTypes = $db->query( $qString );
-        while ($ft = $repFileTypes->fetch())
+        while ($ft = $q->fetch())
         {
             $fileType = array();
             $fileType['uuid'] = $ft['uuid'];
@@ -44,6 +47,7 @@
 
             $fileTypes[] = $fileType;
         }
+        $q->close();
 
         return $fileTypes;
     }
@@ -108,47 +112,41 @@
 	}
 
     // ========= GET ==========
-    else if (hasArg("getApplications") || hasArg("init"))
+    else if (acceptReply("getApplications") || hasArg("init"))
     {
-        if (hasArg("getApplications")) {
-            $reply["accepted"] = true;
-            $reply["query"] = "getApplications";
-        }
-        
-        
-        $rep = $db->prepare("SELECT
-                `name`,`shortName`,`executableFilePath`,`id`,`uuid`,`comment`
-            FROM {$tablePrefix}applications
-            WHERE removed = 0
-            ORDER BY `name`, `shortName`
-            ;");
-        $rep->execute();
+        $q = new DBQuery();
+		$applications = $q->getAll("applications",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'executableFilePath',
+				'id',
+				'comment'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
 
-        $applications = Array();
+		// Adjust values
+		for ($a = 0; $a < count($applications); $a++)
+		{
+            $applications[$a]['fileTypes'] = getFileTypes($applications[$a]['id']);
+		}
 
-        while ($a = $rep->fetch())
+
+		if (hasArg("init") )
         {
-            $application = Array();
-			$application['name'] = $a['name'];
-			$application['shortName'] = $a['shortName'];
-			$application['comment'] = $a['comment'];
-			$application['uuid'] = $a['uuid'];
-			$application['executableFilePath'] = $a['executableFilePath'];
-            $application['fileTypes'] = getFileTypes($a['id']);
-
-			$applications[] = $application;
-        }
-
-        $rep->closeCursor();
-
-        if (hasArg("getApplications")) {
-            $reply["content"] = $applications;
-            $reply["message"] = "Application list retrieved.";
-            $reply["success"] = true;
-        } else {
             $reply["content"]["applications"] = $applications;
         }
-		
+        else 
+        {
+            $reply["content"] = $applications;
+            $reply["message"] = "Application list retreived";
+            $reply["success"] = true;
+        }		
     }
 
     // ========= ASSIGN FILE TYPE ==========

@@ -41,36 +41,32 @@
 
 
     // ========= GET TEMPLATE ASSET GROUPS ==========
-	else if (hasArg("getTemplateAssetGroups") || hasArg("init"))
+	else if (acceptReply("getTemplateAssetGroups") || hasArg("init"))
 	{
-		if (hasArg("getTemplateAssetGroups"))
-		{
-			$reply["accepted"] = true;
-			$reply["query"] = "getTemplateAssetGroups";
-		}
+		$q = new DBQuery();
+        $assetGroups = $q->getAll("templateassetgroups",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'comment'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid`, `comment` FROM {$tablePrefix}templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
-		$assetGroups = Array();
-		while ($assetGroup = $rep->fetch())
-		{
-			$ag = Array();
-			$ag['name'] = $assetGroup['name'];
-			$ag['shortName'] = $assetGroup['shortName'];
-			$ag['comment'] = $assetGroup['comment'];
-			$ag['uuid'] = $assetGroup['uuid'];
-			$assetGroups[] = $ag;
-		}
-		$rep->closeCursor();
-
-		if (hasArg("getTemplateAssetGroups"))
-		{
-			$reply["content"] = $assetGroups;
-			$reply["message"] = "Asset groups list retreived";
-			$reply["success"] = true;
-		}
-		else {
-			$reply["content"]["templateAssetGroups"] = $assetGroups;
-		}
+		if (hasArg("init") )
+        {
+            $reply["content"]["templateAssetGroups"] = $assetGroups;
+        }
+        else 
+        {
+            $reply["content"] = $assetGroups;
+            $reply["message"] = "Asset group list retreived";
+            $reply["success"] = true;
+        }
 	}
 
 	// ========= UPDATE ASSET GROUP ==========

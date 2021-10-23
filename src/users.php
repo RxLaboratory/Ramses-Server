@@ -128,7 +128,22 @@
     else if (acceptReply("getUsers") || hasArg("init"))
     {
         $q = new DBQuery();
-        $users = $q->getAll("users", array('name','shortName','folderPath','uuid','role','comment','email','color'));
+        $users = $q->getAll("users",
+            array(
+                'name',
+                'shortName',
+                'folderPath',
+                'uuid',
+                'role',
+                'comment',
+                'email',
+                'color'
+            ),
+            array(
+                'shortName',
+                'name'
+            )
+        );
 
         //Decrypt data
         for ($u = 0; $u < count($users); $u++)
@@ -145,7 +160,7 @@
         else 
         {
             $reply["content"] = $users;
-            $reply["message"] = "Users list retrieved.";
+            $reply["message"] = "User list retrieved.";
             $reply["success"] = true;
         }
     }

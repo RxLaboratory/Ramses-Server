@@ -83,7 +83,6 @@
 		$q->remove( "status", $uuid, false );
 	}
 
-
     // ========= SET STATUS USER ==========
 	else if ( acceptReply("setStatusUser") )
 	{

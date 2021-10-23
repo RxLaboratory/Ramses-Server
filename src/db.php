@@ -87,6 +87,32 @@
 			return "";
 		}
 
+		public function uuid( $table, $id, $includeRemoved = false )
+		{
+			global $tablePrefix, $db;
+
+			if ($id == "") return "";
+
+			$q = "SELECT {$tablePrefix}{$table}.`uuid`
+				FROM {$tablePrefix}{$table}
+				WHERE `id` = :id";
+
+			if (!$includeRemoved) $q = $q . " AND `removed`= 0";
+			$q = $q . ";";
+
+			$this->prepare($q);
+
+			$this->bindInt( "id", $id, true);
+			$this->execute();
+			if ($i = $this->fetch())
+			{
+				$this->close();
+				return $i['uuid'];
+			}
+			$this->close();
+			return "";
+		}
+
 		// Removes a row from a table
 		public function remove( $table, $uuid, $deleteNEW = true )
 		{
@@ -180,9 +206,12 @@
 			return $result;
 		}
 
-		public function getAll( $table, $keys, $includeRemoved = false )
+		public function getAll( $table, $keys, $orderkeys = array(), $includeRemoved = false )
 		{
 			global $tablePrefix;
+
+			array_push($keys, 'removed');
+			array_push($keys, 'latestUpdate');
 
 			$qKeys = array();
 			foreach( $keys as $key )
@@ -191,7 +220,18 @@
 			}
 
 			$q = "SELECT " . join(',',$qKeys) . " FROM {$tablePrefix}{$table}";
-			if(!$includeRemoved) $q = $q . " WHERE `removed`= 0;";
+			if(!$includeRemoved) $q = $q . " WHERE `removed`= 0";
+			if (count($orderkeys) > 0)
+			{
+				$q = $q . " ORDER BY ";
+				$qOrderKeys = array();
+				foreach( $orderkeys as $key )
+				{
+					array_push( $qOrderKeys, '`' . $key . '`');
+				}
+				$q = $q . join(",",$qOrderKeys);
+			}
+			$q = $q . ";";
 
 			$this->prepare($q);
 
@@ -202,6 +242,7 @@
 				$i = Array();
 				foreach( $keys as $key )
 				{
+					if ($key == 'removed') $i[$key] = (int)$r[$key];
 					$i[$key] = $r[$key];
 				}
 				$result[] = $i;

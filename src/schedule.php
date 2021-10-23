@@ -66,9 +66,8 @@
 
     function deleteEntry( $uuid )
     {
-        $uuid = getArg("uuid");
         $q = new DBQuery();
-		$q->remove( "sequences", $uuid, false );
+		$q->remove( "schedule", $uuid, false );
     }
 
     // ========= CREATE ENTRY ==========
@@ -162,7 +161,7 @@
 
         foreach($entries as $entry)
         {
-            $uuid = getAttr("uuid", $entry, uuid());
+            $uuid = getAttr("uuid", $entry );
 
             deleteEntry( $uuid );
         }

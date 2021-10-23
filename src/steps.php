@@ -34,8 +34,8 @@
 
 		$q->insert('steps', array('name','shortName','projectId','uuid'));
 
-		$q->bindName( 'name', $name );
-		$q->bindShortName( 'shortName', $shortName );
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
 		$q->bindInt( "projectId", $projectId, true );
 		$q->bindStr( "uuid", $uuid, true );
 
@@ -66,7 +66,7 @@
 			$uuid
 		);
 
-		$q->bindName( "name", $name );
+		$q->bindName( $name );
 		$q->bindShortName( $shortName );
 		$q->bindStr( "comment", $comment );
 		$q->bindStr( "type", $type );

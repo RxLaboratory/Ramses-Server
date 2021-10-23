@@ -89,45 +89,39 @@
 	}
 
     // ========= GET ==========
-    else if (hasArg("getFileTypes") || hasArg("init"))
+    else if (acceptReply("getFileTypes") || hasArg("init"))
     {
-        if (hasArg("getFileTypes")) {
-            $reply["accepted"] = true;
-            $reply["query"] = "getFileTypes";
-        }
-        
-        
-        $rep = $db->prepare("SELECT
-                `name`,`shortName`,`extensions`,`previewable`,`uuid`, `comment`
-            FROM {$tablePrefix}filetypes
-            WHERE removed = 0
-            ORDER BY `shortName`, `name`
-            ;");
-        $rep->execute();
+        $q = new DBQuery();
+		$filetypes = $q->getAll("filetypes",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'extensions',
+				'previewable',
+				'comment'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
 
-        $filetypes = Array();
+		// Adjust values
+		for ($f = 0; $f < count($filetypes); $f++)
+		{
+			$filetypes[$f]['previewable'] = (int)$filetypes[$f]['previewable'];
+		}
 
-        while ($f = $rep->fetch())
+		if (hasArg("init") )
         {
-            $filetype = Array();
-			$filetype['name'] = $f['name'];
-			$filetype['shortName'] = $f['shortName'];
-			$filetype['comment'] = $f['comment'];
-			$filetype['uuid'] = $f['uuid'];
-			$filetype['extensions'] = $f['extensions'];
-			$filetype['previewable'] = (int) $f['previewable'];
-
-			$filetypes[] = $filetype;
-        }
-
-        $rep->closeCursor();
-
-        if (hasArg("getFileTypes")) {
-            $reply["content"] = $filetypes;
-            $reply["message"] = "File types list retrieved.";
-            $reply["success"] = true;
-        } else {
             $reply["content"]["fileTypes"] = $filetypes;
+        }
+        else 
+        {
+            $reply["content"] = $filetypes;
+            $reply["message"] = "File Type list retreived";
+            $reply["success"] = true;
         }
     }
 ?>

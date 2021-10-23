@@ -40,41 +40,42 @@
 	}
 
 	// ========= GET STATES ==========
-	else if (hasArg("getStates") || hasArg("init"))
+	else if (acceptReply("getStates") || hasArg("init"))
 	{
-		if (hasArg("getStates")) {
-			$reply["accepted"] = true;
-			$reply["query"] = "getStates";
-		}
-		
+		$q = new DBQuery();
+		$states = $q->getAll("states",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'color',
+				'completionRatio',
+				'comment'
+			),
+			array(
+				'completionRatio',
+				'shortName',
+				'name'
+			)
+		);
 
-		$rep = $db->query( "SELECT
-			`name`, `shortName`, `color`, `completionRatio`, `uuid`, `comment`
-			FROM {$statesTable}
-			WHERE `removed` = 0
-			ORDER BY `completionRatio`, `shortName`, `name` ;"
-			);
-		$states = Array();
-		while ($state = $rep->fetch())
+		// Adjust values
+		for ($s = 0; $s < count($states); $s++)
 		{
-			$stat = Array();
-			$stat['name'] = $state['name'];
-			$stat['shortName'] = $state['shortName'];
-			$stat['comment'] = $state['comment'];
-			$stat['color'] = $state['color'];
-			$stat['completionRatio'] = (int) $state['completionRatio'];
-			$stat['uuid'] = $state['uuid'];
-			$states[] = $stat;
+			$states[$s]['completionRatio'] = (int)$states[$s]['completionRatio'];
 		}
-		$rep->closeCursor();
 
-		if (hasArg("getStates")) {
-			$reply["content"] = $states;
-			$reply["message"] = "States list retreived";
-			$reply["success"] = true;
-		} else {
-			$reply["content"]["states"] = $states;
-		}
+
+		if (hasArg("init") )
+        {
+            $reply["content"]["states"] = $states;
+        }
+        else 
+        {
+            $reply["content"] = $states;
+            $reply["message"] = "State list retreived";
+            $reply["success"] = true;
+        }
 	}
 
 	// ========= UPDATE STATE ==========

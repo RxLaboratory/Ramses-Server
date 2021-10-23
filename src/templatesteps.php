@@ -40,62 +40,50 @@
 	}
 
 	// ========= GET STEPS ==========
-	else if (hasArg("getTemplateSteps") || hasArg("init"))
+	else if (acceptReply("getTemplateSteps") || hasArg("init"))
 	{
-		if (hasArg("getTemplateSteps"))
-		{
-			$reply["accepted"] = true;
-			$reply["query"] = "getTemplateSteps";
-		}
-		
+		$q = new DBQuery();
+        $steps = $q->getAll("templatesteps",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'type',
+				'comment',
+				'color',
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
 
-		$rep = $db->query("SELECT
-				`name`,
-				`shortName`,
-				`uuid`,
-				`type`,
-				`comment`,
-				`color`,
-				`estimationMethod`,
-				`estimationVeryEasy`,
-				`estimationEasy`,
-				`estimationMedium`,
-				`estimationHard`,
-				`estimationVeryHard`
-			FROM {$templatestepsTable}
-			WHERE `removed` = 0
-			ORDER BY `shortName`,`name`;");
+		// Adjust values
+		for ($s = 0; $s < count($steps); $s++)
+		{
+			$steps[$s]['estimationVeryEasy'] = (float)$steps[$s]['estimationVeryEasy'];
+			$steps[$s]['estimationEasy'] = (float)$steps[$s]['estimationEasy'];
+			$steps[$s]['estimationMedium'] = (float)$steps[$s]['estimationMedium'];
+			$steps[$s]['estimationHard'] = (float)$steps[$s]['estimationHard'];
+			$steps[$s]['estimationVeryHard'] = (float)$steps[$s]['estimationVeryHard'];
+		}
 
-		$steps = Array();
-		while ($step = $rep->fetch())
-		{
-			$s = Array();
-			$s['name'] = $step['name'];
-			$s['shortName'] = $step['shortName'];
-			$s['comment'] = $step['comment'];
-			$s['type'] = $step['type'];
-			$s['color'] = $step['color'];
-			$s['estimationMethod'] = $step['estimationMethod'];
-			$s['estimationVeryEasy'] = (float)$step['estimationVeryEasy'];
-			$s['estimationEasy'] = (float)$step['estimationEasy'];
-			$s['estimationMedium'] = (float)$step['estimationMedium'];
-			$s['estimationHard'] = (float)$step['estimationHard'];
-			$s['estimationVeryHard'] = (float)$step['estimationVeryHard'];
-			$s['uuid'] = $step['uuid'];
-			$steps[] = $s;
-		}
-		$rep->closeCursor();
-
-		if (hasArg("getTemplateSteps"))
-		{
-			$reply["content"] = $steps;
-			$reply["message"] = "Steps list retreived";
-			$reply["success"] = true;
-		}
-		else 
-		{
-			$reply["content"]["templateSteps"] = $steps;
-		}
+		if (hasArg("init") )
+        {
+            $reply["content"]["templateSteps"] = $steps;
+        }
+        else 
+        {
+            $reply["content"] = $steps;
+            $reply["message"] = "Template Step list retreived";
+            $reply["success"] = true;
+        }
 	}
 
 	// ========= UPDATE STEP ==========

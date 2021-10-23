@@ -33,7 +33,7 @@
 		$projectUuid = getArg( "projectUuid" );
 
 		$q = new DBQuery();
-		$fileTypeId = $q->id('filetypes', $fileTypeUuid);
+		$filetypeId = $q->id('filetypes', $fileTypeUuid);
 		$colorSpaceId = $q->id('colorspaces', $colorSpaceUuid);
 		$projectId = $q->id('projects', $projectUuid);
 
@@ -68,7 +68,7 @@
 		$customSettings = getArg( "customSettings" );
 
 		$q = new DBQuery();
-		$fileTypeId = $q->id('filetypes', $fileTypeUuid);
+		$filetypeId = $q->id('filetypes', $fileTypeUuid);
 		$colorSpaceId = $q->id('colorspaces', $colorSpaceUuid);
 		$q->update(
 			"pipefile",
