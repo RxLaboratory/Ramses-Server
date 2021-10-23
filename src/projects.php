@@ -768,8 +768,16 @@
 			array(
 				'name',
 				'shortName',
-				'autoCreateAssets',
-				'type'
+				'type',
+				'comment',
+				'color',
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard',
+				'autoCreateAssets'
 			),
 			$stepUuid
 		);
@@ -780,8 +788,16 @@
 			array(
 				'name',
 				'shortName',
-				'autoCreateAssets',
 				'type',
+				'comment',
+				'color',
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard',
+				'autoCreateAssets',
 				'projectId'
 			)
 		);
@@ -790,6 +806,14 @@
 		$q.bindShortName( $stepInfo['shortName'] );
 		$q.bindInt( 'autoCreateAssets', $stepInfo['autoCreateAssets'] );
 		$q.bindStr( 'type', $stepInfo['type'] );
+		$q.bindStr( 'comment', $stepInfo['comment'] );
+		$q.bindStr( 'color', $stepInfo['color'] );
+		$q.bindStr( 'estimationMethod', $stepInfo['estimationMethod'] );
+		$q.bindStr( 'estimationVeryEasy', $stepInfo['estimationVeryEasy'] );
+		$q.bindStr( 'estimationEasy', $stepInfo['estimationEasy'] );
+		$q.bindStr( 'estimationMedium', $stepInfo['estimationMedium'] );
+		$q.bindStr( 'estimationHard', $stepInfo['estimationHard'] );
+		$q.bindStr( 'estimationVeryHard', $stepInfo['estimationVeryHard'] );
 		$q.bindInt( 'projectId', $projectId );
 
 		$q->execute( "Step associated with project." );
