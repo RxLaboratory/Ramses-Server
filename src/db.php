@@ -167,7 +167,7 @@
 			$this->prepare($q);
 			$this->bindStr('uuid',  $uuid );
 
-			$result = array();
+			$result = Array();
 			$this->execute();
 			if ($r = $this->fetch())
 			{
@@ -175,6 +175,36 @@
 				{
 					$result[$key] = $r[$key];
 				}
+			}
+			$this->close();
+			return $result;
+		}
+
+		public function getAll( $table, $keys, $includeRemoved = false )
+		{
+			global $tablePrefix;
+
+			$qKeys = array();
+			foreach( $keys as $key )
+			{
+				array_push( $qKeys, '`' . $key . '`');
+			}
+
+			$q = "SELECT " . join(',',$qKeys) . " FROM {$tablePrefix}{$table}";
+			if(!$includeRemoved) $q = $q . " WHERE `removed`= 0;";
+
+			$this->prepare($q);
+
+			$result = Array();
+			$this->execute();
+			while($r = $this->fetch())
+			{
+				$i = Array();
+				foreach( $keys as $key )
+				{
+					$i[$key] = $r[$key];
+				}
+				$result[] = $i;
 			}
 			$this->close();
 			return $result;

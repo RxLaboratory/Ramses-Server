@@ -125,45 +125,28 @@
         }
 
     }
-    else if (hasArg("getUsers") || hasArg("init"))
+    else if (acceptReply("getUsers") || hasArg("init"))
     {
-        if (hasArg("getUsers") )
+        $q = new DBQuery();
+        $users = $q->getAll("users", array('name','shortName','folderPath','uuid','role','comment','email','color'));
+
+        //Decrypt data
+        for ($u = 0; $u < count($users); $u++)
         {
-            $reply["accepted"] = true;
-            $reply["query"] = "getUsers";    
-        }
-        
-        $rep = $db->prepare("SELECT `name`,`shortName`,`folderPath`,`uuid`,`role`,`comment`,`email`,`color` FROM {$tablePrefix}users WHERE removed = 0;");
-        $rep->execute();
+            $users[$u]['name'] = decrypt( $users[$u]['name'] );
+            $users[$u]['email'] = decrypt( $users[$u]['email'] );
+            $users[$u]['role'] = checkRole( $users[$u]['role'] );
+        } 
 
-        $users = Array();
-
-        while ($user = $rep->fetch())
+        if (hasArg("init") )
         {
-            $u = Array();
-			$u['name'] = decrypt( $user['name'] );
-			$u['shortName'] = $user['shortName'];
-			$u['comment'] = $user['comment'];
-			$u['uuid'] = $user['uuid'];
-			$u['folderPath'] = $user['folderPath'];
-			$u['email'] = decrypt( $user['email'] );
-			$u['role'] = checkRole( $user['role'] );
-			$u['color'] = $user['color'];
-
-			$users[] = $u;
+            $reply["content"]["users"] = $users;
         }
-
-        $rep->closeCursor();
-
-        if (hasArg("getUsers") )
+        else 
         {
             $reply["content"] = $users;
             $reply["message"] = "Users list retrieved.";
             $reply["success"] = true;
-        }
-        else 
-        {
-            $reply["content"]["users"] = $users;
         }
     }
     else if ( acceptReply("createUser", 'admin') )
