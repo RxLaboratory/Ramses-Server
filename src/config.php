@@ -31,7 +31,7 @@
 	// ==== SQL SETTINGS ====
 
 	// either 'mysql' or 'sqlite'
-	$sqlMode = 'sqlite';
+	$sqlMode = 'mysql';
 
 	// Host URL
 	$sqlHost = "localhost";
