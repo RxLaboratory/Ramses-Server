@@ -340,50 +340,6 @@
         );
     }
 
-    function checkArgs( $arglist )
-    {
-        global $reply;
-
-        $ok = true;
-        foreach( $arglist as $arg )
-        {
-            if ($arg == "")
-            {
-                $ok = false;
-                break;
-            }
-        }
-        if (!$ok)
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    function sqlRequest( $request, $message, $debug = false )
-    {
-        global $reply;
-
-        if ($debug) $request->debugDumpParams();
-
-        $ok = $request->execute();
-
-        if (!$ok)
-        {
-            if ($devMode) $reply["message"] = "SQL Request:\n" . $request->debugDumpParams() . "\n\n" . $rep->errorInfo()[2];
-            else $reply["message"] = "Database query failed. Activate Dev Mode on the server for more information.";
-            $reply["success"] = false;
-        }
-        else if ($message != "")
-        {
-            $reply["message"] = $message;
-            $reply["success"] = true;
-        }
-        
-        return $ok;
-    }
-
     function acceptReply($queryName, $role = "")
     {
         global $reply;
@@ -403,43 +359,6 @@
         if ($role == 'lead') if (!isLead()) return false;
 
         return true;
-    }
-
-    function validateName( $name )
-    {
-        global $reply;
-
-        if (preg_match( "/^[ a-zA-Z0-9+-]{1,256}$/i", $name ))
-            return true;
-
-        $reply["message"] = "Wrong name, sorry: names must have less than 256 characters and contain only one of these characters: [ A-Z, 0-9, +, - ] (and spaces).
-            The name was: \"{$name}\"";
-        $reply["success"] = false;
-    }
-
-    function validateEmail( $email )
-    {
-        global $reply;
-
-        // accept empty emails
-        if ( $email == '' ) return true;
-
-        if ( preg_match( "/^[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i", $email ) )
-            return true;
-
-        $reply["message"] = "Wrong email, sorry.";
-        $reply["success"] = false;
-    }
-
-    function validateShortName( $shortName )
-    {
-        global $reply;
-        
-        if ( preg_match( "/^[a-zA-Z0-9+-]{1,10}$/i", $shortName ) )
-            return true;
-
-        $reply["message"] = "Wrong ID, sorry: IDs must have less than 10 characters and contain only one of these characters: [ A-Z, 0-9, +, - ].";
-        $reply["success"] = false;
     }
     
     function dateTimeStr()

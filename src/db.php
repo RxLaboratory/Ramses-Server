@@ -254,14 +254,14 @@
 		// Bind a Ramses name
 		public function bindName( $name )
 		{
-			if ( validateName( $name ) && $this->ok ) $this->query->bindValue(':name', $name, PDO::PARAM_STR );
+			if ( $this->validateName( $name ) && $this->ok ) $this->query->bindValue(':name', $name, PDO::PARAM_STR );
 			else $this->ok = false;
 		}
 
 		// Bind a Ramses short name (ID)
 		public function bindShortName( $shortName )
 		{
-			if ( validateShortName( $shortName ) && $this->ok ) $this->query->bindValue(':shortName', $shortName, PDO::PARAM_STR );
+			if ( $this->validateShortName( $shortName ) && $this->ok ) $this->query->bindValue(':shortName', $shortName, PDO::PARAM_STR );
 			else $this->ok = false;
 		}
 
@@ -272,7 +272,7 @@
 			$this->query->bindValue(':email', $email, PDO::PARAM_STR );
 			return;
 
-			if ( validateEmail( $email ) && $this->ok ) $this->query->bindValue(':email', $email, PDO::PARAM_STR );
+			if ( $this->validateEmail( $email ) && $this->ok ) $this->query->bindValue(':email', $email, PDO::PARAM_STR );
 			else $this->ok = false;
 		}
 
@@ -321,12 +321,28 @@
 		// Request
 		public function execute( $successMessage = "", $debug = false )
 		{
+			global $reply;
+
 			if (!$this->closed) $this->close();
-
 			if ( !$this->ok ) return;
-			$this->ok = sqlRequest( $this->query, $successMessage, $debug );
 
+			// dump params if debug
+			if ($debug) $this->query->debugDumpParams();
+			// execute
+			$this->ok = $this->query->execute();
 			$this->closed = false;
+
+			// update reply
+			if (!$this->ok)
+			{
+				$reply["message"] = "Database query failed. Here's the error\n\n" . $rep->errorInfo()[2];
+				$reply["success"] = false;
+			}
+			else if ($successMessage != "")
+			{
+				$reply["message"] = $successMessage;
+				$reply["success"] = true;
+			}
 		}
 
 		// Close cursor
@@ -357,6 +373,43 @@
         		$reply["success"] = false;
 				$this->ok = false;
 			}
+		}
+
+		private function validateName( $name )
+		{
+			global $reply;
+	
+			if (preg_match( "/^[ a-zA-Z0-9+-]{1,256}$/i", $name ))
+				return true;
+	
+			$reply["message"] = "Wrong name, sorry: names must have less than 256 characters and contain only one of these characters: [ A-Z, 0-9, +, - ] (and spaces).
+				The name was: \"{$name}\"";
+			$reply["success"] = false;
+		}
+	
+		private function validateEmail( $email )
+		{
+			global $reply;
+	
+			// accept empty emails
+			if ( $email == '' ) return true;
+	
+			if ( preg_match( "/^[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i", $email ) )
+				return true;
+	
+			$reply["message"] = "Wrong email, sorry.";
+			$reply["success"] = false;
+		}
+	
+		private function validateShortName( $shortName )
+		{
+			global $reply;
+			
+			if ( preg_match( "/^[a-zA-Z0-9+-]{1,10}$/i", $shortName ) )
+				return true;
+	
+			$reply["message"] = "Wrong ID, sorry: IDs must have less than 10 characters and contain only one of these characters: [ A-Z, 0-9, +, - ].";
+			$reply["success"] = false;
 		}
 	}
 ?>
