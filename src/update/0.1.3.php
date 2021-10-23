@@ -23,21 +23,46 @@
 
         echo ( " ▸ Updating Database structure.<br />" );
         
-        $rep = $db->query( "LOCK TABLES {$tablePrefix}users WRITE, {$tablePrefix}pipes WRITE, {$tablePrefix}pipefile WRITE;
+        $rep = $db->query( "LOCK TABLES
+                {$tablePrefix}users WRITE,
+                {$tablePrefix}pipes WRITE,
+                {$tablePrefix}pipefile WRITE,
+                {$tablePrefix}applications WRITE,
+                {$tablePrefix}colorspaces WRITE,
+                {$tablePrefix}filetypes WRITE,
+                {$tablePrefix}shotasset WRITE,
+                {$tablePrefix}templateassetgroups WRITE,
+                {$tablePrefix}schedule WRITE;
 
             ALTER TABLE {$tablePrefix}users
-            ADD COLUMN `email` VARCHAR(255) NULL AFTER `password`,
-            ADD COLUMN `color` VARCHAR(15) NOT NULL DEFAULT '#e3e3e3' AFTER `role`,
-            CHANGE COLUMN `role` `role` VARCHAR(255) NOT NULL DEFAULT 'standard',
-            CHANGE COLUMN `shortName` `shortName` VARCHAR(255) NOT NULL ;
+                ADD COLUMN `email` VARCHAR(255) NULL AFTER `password`,
+                ADD COLUMN `color` VARCHAR(15) NOT NULL DEFAULT '#e3e3e3' AFTER `role`,
+                CHANGE COLUMN `role` `role` VARCHAR(255) NOT NULL DEFAULT 'standard',
+                CHANGE COLUMN `shortName` `shortName` VARCHAR(255) NOT NULL ;
 
-            ALTER TABLE {$tablePrefix}pipes DROP FOREIGN KEY fk_pipes_input;
-            ALTER TABLE {$tablePrefix}pipes DROP FOREIGN KEY fk_pipes_output;
-            ALTER TABLE {$tablePrefix}pipes DROP INDEX `step_UNIQUE`;
-            ALTER TABLE {$tablePrefix}pipes ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
-            ALTER TABLE {$tablePrefix}pipes ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE; 
+            ALTER TABLE {$tablePrefix}pipes
+                DROP FOREIGN KEY fk_pipes_input,
+                DROP FOREIGN KEY fk_pipes_output,
+                DROP INDEX `step_UNIQUE`,
+                ADD CONSTRAINT `fk_pipes_input` FOREIGN KEY (`inputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+                ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+                ADD UNIQUE `pipes_in_out_unique` (`outputStepId`, `inputStepId`) USING BTREE; 
 
             ALTER TABLE {$tablePrefix}pipefile ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
+
+            ALTER TABLE {$tablePrefix}applications DROP INDEX `exec_unique`;
+
+            ALTER TABLE {$tablePrefix}colorspaces DROP INDEX `name_UNIQUE`;
+
+            ALTER TABLE {$tablePrefix}filetypes DROP INDEX `filetypeName`;
+
+            ALTER TABLE {$tablePrefix}shotasset
+                ADD UNIQUE `shot_asset_unique` (`shotId`, `assetId`) USING BTREE,
+                ADD `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
+
+            ALTER TABLE {$tablePrefix}templateassetgroups DROP INDEX `shortName_UNIQUE`;
+
+            ALTER TABLE {$tablePrefix}schedule ADD `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
 
             UNLOCK TABLES;");
         
