@@ -27,9 +27,9 @@
     $email = encrypt("");
     $pswd = hashPassword("0b17bfa7938d75031d1754ab56c27062d967e92ca04f2ba5b4ebf920528936b95f9a9fc96a2ef8fb921463cd97aa94026079891f6f4c6e273ce5956c9da72c92", $uuid);   
     $comment = "The default Administrator user. Don't forget to rename it and change its password!";
-    $role = hashRole( 'admin' );
+    $role = hashRole('admin');
    
-    $qString = "INSERT INTO
+    $qString = "REPLACE INTO
         {$tablePrefix}users (
             `name`,
             `shortName`,
