@@ -22,70 +22,30 @@
 	*/
 
 	// ========= CREATE STEP ==========
-	if (hasArg("createStep"))
+	if ( acceptReply("createStep", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createStep";
-
 		$name = getArg("name");
-        $shortName = getArg("shortName");
-        $projectUuid = getArg("projectUuid");
-        $uuid = getArg("uuid");
+		$shortName = getArg("shortName");
+		$projectUuid = getArg("projectUuid");
+		$uuid = getArg("uuid", uuid());
 
-		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				// Create step
-				$qString = "INSERT INTO " . $tablePrefix . "steps (name,shortName,projectId,uuid) 
-				VALUES (
-					:name,
-					:shortName , 
-					(SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE uuid = :projectUuid ),";
+		$q = new DBQuery();
+		$projectId = $q->id("projects", $projectUuid);
 
-				$values = array('name' => $name,'shortName' => $shortName, 'projectUuid' => $projectUuid);
-				
-				if (strlen($uuid) > 0)
-				{
-					$qString = $qString . ":uuid ";
-					$values['uuid'] = $uuid;
-				}
-				else
-				{
-					$qString = $qString . "uuid() ";
-				}
+		$q->insert('steps', array('name','shortName','projectId','uuid'));
 
-				$qString = $qString . ") ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindInt( "projectId", $projectId, true );
+		$q->bindStr( "uuid", $uuid, true );
 
-				$rep = $db->prepare($qString);
-				$ok = $rep->execute($values);
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Step \"" . $shortName . "\" added.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create steps.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Step '{$shortName}' added.");
+		$q->close();
 	}
 
 	// ========= UPDATE STEP ==========
-	else if (hasArg("updateStep"))
+	else if ( acceptReply("updateStep", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateStep";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
@@ -93,55 +53,32 @@
 		$comment = getArg( "comment" );
 		$color = getArg( "color" );
 
-		if ($shortName != "" && $uuid != "")
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				$qString = "UPDATE {$stepsTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
+		$q = new DBQuery();
+		$q->update(
+			"steps",
+			array(
+				'name',
+				'shortName',
+				'comment',
+				'type',
+				'color'
+			),
+			$uuid
+		);
 
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
-				
-				if ($type != "")
-				{
-					$qString = $qString . ", `type`= :type";
-                    $values["type"] = $type;
-				}
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
+		$q->bindStr( "type", $type );
+		$q->bindStr( "color", $color );
 
-				if ($color != "")
-				{
-					$qString = $qString . ", `color`= :color";
-                    $values["color"] = $color;
-				}
-
-				$qString = $qString . " WHERE uuid= :uuid ;";
-			
-				$rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();
-
-				$reply["message"] = "Step \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update step information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Step \"{$shortName}\" updated.");
+		$q->close();	
 	}
 
 	// =========== STEP ESTIMATIONS ==========
-	else if (hasArg( "setStepEstimations" ))
+	else if ( acceptReply("setStepEstimations", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "setStepEstimations";
-
 		$uuid = getArg( "uuid" );
 		$method = getArg( "method", "shot" );
 		$veryEasy = getArg( "veryEasy", "0.2" );
@@ -151,308 +88,187 @@
 		$veryHard = getArg( "veryHard", "3" );
 		$multiplyGroupUuid = getArg( "multiplyGroupUuid" );
 
-		if ( $uuid != "")
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				$qString = "UPDATE {$stepsTable}
-					SET
-						`estimationMethod`= :method ,
-						`estimationVeryEasy`= :veryEasy,
-						`estimationEasy`= :easy,
-						`estimationMedium`= :medium,
-						`estimationHard`= :hard,
-						`estimationVeryHard`= :veryHard,
-						`estimationMultiplyGroupId`= (SELECT {$assetgroupsTable}.`id` FROM {$assetgroupsTable} WHERE {$assetgroupsTable}.`uuid` = :multiplyGroupUuid )
-					WHERE `uuid`= :uuid;";
+		$q = new DBQuery();
+		$multiplyGroupId = $q->id("assetgroups", $multiplyGroupUuid);
 
-				$rep = $db->prepare($qString);
-				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-				$rep->bindValue(':method', $method, PDO::PARAM_STR);
-				$rep->bindValue(':veryEasy', $veryEasy, PDO::PARAM_STR);
-				$rep->bindValue(':easy', $easy, PDO::PARAM_STR);
-				$rep->bindValue(':medium', $medium, PDO::PARAM_STR);
-				$rep->bindValue(':hard', $hard, PDO::PARAM_STR);
-				$rep->bindValue(':veryHard', $veryHard, PDO::PARAM_STR);
-				$rep->bindValue(':multiplyGroupUuid', $multiplyGroupUuid, PDO::PARAM_STR);
-				//$rep->debugDumpParams();
-				$ok = $rep->execute();
-				$rep->closeCursor();
+		$q = new DBQuery();
+		$q->update(
+			"steps",
+			array(
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard',
+				'estimationMultiplyGroupId'
+			),
+			$uuid
+		);
 
-				if ($ok)
-				{
-					$reply["message"] = "Step updated.";
-					$reply["success"] = true;
-				}
-				else 
-				{
-					$reply["message"] = $rep.errorInfo()[2];
-					$reply["success"] = false;
-				}
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update step information.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->bindStr( "estimationMethod", $method );
+		$q->bindStr( "estimationVeryEasy", $veryEasy );
+		$q->bindStr( "estimationEasy", $easy );
+		$q->bindStr( "estimationMedium", $medium );
+		$q->bindStr( "estimationHard", $hard );
+		$q->bindStr( "estimationVeryHard", $veryHard );
+		$q->bindStr( "estimationMultiplyGroupId", $multiplyGroupId );
+
+		$q->execute("Step estimations updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE STEP ==========
-	else if (hasArg("removeStep"))
+	else if ( acceptReply("removeStep", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeStep";
-
-		$uuid = "";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isProjectAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "steps SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Step " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove steps.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $q = new DBQuery();
+		$q->remove( "steps", $uuid );
 	}
 
 	// ========= SET ORDER ==========
-	else if (hasArg("setStepOrder"))
+	else if ( acceptReply("setStepOrder", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "setStepOrder";
-
 		$order = getArg("order");
 		$uuid = getArg("uuid");
 
-		if (strlen($uuid) > 0 && strlen($order) > 0)
-		{
-			// Only if lead
-			if ( isProjectAdmin() )
-			{
-			//Move given step
-			$qString = "UPDATE {$stepsTable}
-			SET `order` = :order
-			WHERE `uuid` = :uuid;";
-			$values = array('order'  => $order,'uuid'  => $uuid);
+		$q = new DBQuery();
+		$q->update(
+			"steps",
+			array(
+				'order'
+			),
+			$uuid
+		);
 
-			$rep = $db->prepare($qString);
-			$rep->execute($values);
-			$rep->closeCursor();
+		$q->bindInt( "order", $order );
 
-			$reply["message"] = "Step moved.";
-			$reply["success"] = true;
-			}
-			else
-			{
-				$reply["message"] = "Insufficient rights, you need to be Project Admin to update step order.";
-				$reply["success"] = false;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Step moved.");
+		$q->close();
 	}
 
 	// ========= MOVE ==========
-	else if (hasArg("moveStep"))
+	else if ( acceptReply("moveStep", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "moveStep";
-
 		$order = getArg("order");
 		$uuid = getArg("uuid");
 
-		if (strlen($uuid) > 0 && strlen($order) > 0)
+		$q = new DBQuery();
+		$r = $q.get( "steps", array('order', 'projectId'), $uuid);
+
+		$previous = -1;
+		$projectId = -1;
+
+		if ($r)
 		{
-			// Only if lead
-			if ( isProjectAdmin() )
-			{
-				// Get previous order and project
-				$qString = "SELECT {$stepsTable}.`order`, {$stepsTable}.`projectId`
-					FROM {$stepsTable}
-					WHERE {$stepsTable}.`uuid` = :uuid;";
-				$rep = $db->prepare($qString);
-				$rep->execute(array('uuid' => $uuid));
-				$previous = -1;
-				$projectId = -1;
-				if ($r = $rep->fetch())
-				{
-					$previous = (int)$r['order'];
-					$projectId = (int)$r['projectId'];
-				}
-				$rep->closeCursor();
-
-				// Update
-				$order = (int)$order;
-
-				if ($previous > $order)
-				{
-					//Move all other steps
-					$qString = "UPDATE {$stepsTable}
-						SET
-							{$stepsTable}.`order` = {$stepsTable}.`order` + 1
-						WHERE
-							{$stepsTable}.`order` >= :order
-							AND
-							{$stepsTable}.`order` < :previous
-							AND
-							{$stepsTable}.`projectId` = :projectId;";
-					$values = array('order' => $order, 'previous' => $previous, 'projectId' => $projectId);
-
-					$rep = $db->prepare($qString);
-					$rep->execute($values);
-					$rep->closeCursor();
-				}
-				else if ($previous >= 0)
-				{
-					//Move all other steps
-					$qString = "UPDATE {$stepsTable}
-						SET
-							{$stepsTable}.`order` = {$stepsTable}.`order` - 1
-						WHERE
-							{$stepsTable}.`order` <= :order
-							AND
-							{$stepsTable}.`order` > :previous
-							AND
-							{$stepsTable}.`projectId` = :projectId;";
-					$values = array('order' => $order, 'previous' => $previous, 'projectId' => $projectId);
-
-					$rep = $db->prepare($qString);
-					$rep->execute($values);
-					$rep->closeCursor();
-				}
-
-				//Move given step
-				$qString = "UPDATE {$stepsTable}
-					SET `order` = :order
-					WHERE `uuid` = :uuid;";
-				$values = array('order'  => $order,'uuid'  => $uuid);
-
-				$rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
-
-				$reply["message"] = "Step moved.";
-				$reply["success"] = true;
-			}
-			else
-			{
-				$reply["message"] = "Insufficient rights, you need to be Project Admin to update step order.";
-				$reply["success"] = false;
-			}
+			$previous = (int)$r['order'];
+			$projectId = (int)$r['projectId'];
 		}
-		else
+
+		$order = (int)$order;
+
+		if ($previous > $order)
 		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
+			//Move all other steps
+			$qString = "UPDATE {$tablePrefix}steps
+				SET
+					{$tablePrefix}steps.`order` = {$tablePrefix}steps.`order` + 1,
+					latestUpdate = :udpateTime
+				WHERE
+					{$tablePrefix}steps.`order` >= :order
+					AND
+					{$tablePrefix}steps.`order` < :previous
+					AND
+					{$tablePrefix}steps.`projectId` = :projectId;";
+			
+			$q->prepare($qString);
+			$q->bindInt('order', $order);
+			$q->bindInt('previous', $previous);
+			$q->bindInt('projectId', $projectId);
+			$q->bindStr('udpateTime', dateTimeStr() );
+
+			$q->execute();
+			$rep->close();
 		}
+		else if ($previous >= 0)
+		{
+			//Move all other steps
+			$qString = "UPDATE {$tablePrefix}steps
+				SET
+					{$tablePrefix}steps.`order` = {$tablePrefix}steps.`order` - 1,
+					latestUpdate = :udpateTime
+				WHERE
+					{$tablePrefix}steps.`order` <= :order
+					AND
+					{$tablePrefix}steps.`order` > :previous
+					AND
+					{$tablePrefix}steps.`projectId` = :projectId;";
+
+			$q->prepare($qString);
+			$q->bindInt('order', $order);
+			$q->bindInt('previous', $previous);
+			$q->bindInt('projectId', $projectId);
+			$q->bindStr('udpateTime', dateTimeStr() );
+			
+			$q->execute();
+			$rep->close();
+		}
+
+		$q->update(
+			"steps",
+			array(
+				'order'
+			),
+			$uuid
+		);
+
+		$q->bindInt( "order", $order );
+
+		$q->execute("Step moved.");
+		$q->close();
 	}
 
 	// ========= ASSIGN APPLICATION ==========
-	else if (hasArg("assignApplication"))
+	else if ( acceptReply("assignApplication", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "assignApplication";
-
 		$stepUuid = getArg("stepUuid");
 		$applicationUuid = getArg("applicationUuid");
 
-		if (strlen($stepUuid) > 0 && strlen($applicationUuid) > 0)
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$qString = "INSERT INTO " . $tablePrefix . "stepapplication (`stepId`, `applicationId`) VALUES (
-					( SELECT " . $tablePrefix . "steps.`id` FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.`uuid` = :stepUuid ),
-					( SELECT " . $tablePrefix . "applications.`id` FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.`uuid` = :applicationUuid )
-					) ON DUPLICATE KEY UPDATE removed = 0 ;";
+		$q = new DBQuery();
+		$stepId = $q->id("steps", $stepUuid);
+		$applicationId = $q->id("applications", $applicationUuid);
 
-				$rep = $db->prepare($qString);
+		$q->insert( "stepapplication", array('stepId', 'applicationId'));
+		$q->bindInt( "stepId", $stepId );
+		$q->bindInt( "applicationId", $applicationId );
 
-				$ok = $rep->execute( array('stepUuid' => $stepUuid, 'applicationUuid' => $applicationUuid) );
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Application assigned to step.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Lead to assign applications.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Application assigned to step.");
+		$q->close();
 	}
 
 	// ========= REMOVE APPLICATION ==========
-	else if (hasArg("unassignApplication"))
+	else if ( acceptReply( "unassignApplication", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "unassignApplication";
-
 		$stepUuid = getArg("stepUuid");
 		$applicationUuid = getArg("applicationUuid");
 
-		if (strlen($stepUuid) > 0 && strlen($applicationUuid) > 0)
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$q = "DELETE " . $tablePrefix . "stepapplication FROM " . $tablePrefix . "stepapplication WHERE
-					stepId= ( SELECT " . $tablePrefix . "steps.id FROM " . $tablePrefix . "steps WHERE " . $tablePrefix . "steps.uuid = :stepUuid )
+		$q = new DBQuery();
+		$stepId = $q->id("steps", $stepUuid);
+		$applicationId = $q->id("applications", $applicationUuid);
+		$q->prepare( "UPDATE {$tablePrefix}stepapplication
+			SET
+				removed = 1,
+				latestUpdate = :udpateTime
+			WHERE
+				stepId= :stepId
 				AND
-					applicationId= ( SELECT " . $tablePrefix . "applications.id FROM " . $tablePrefix . "applications WHERE " . $tablePrefix . "applications.uuid = :applicationUuid )
-				;";
-				$rep = $db->prepare($q);
-				$ok = $rep->execute(array('stepUuid' => $stepUuid,'applicationUuid' => $applicationUuid));
-				$rep->closeCursor();
-	
-				$reply["message"] = "Application unassigned from step.";
-				$reply["success"] = true;	
-			}
-			else
-            {
-                if ($ok) $reply["message"] = "Insufficient rights, you need to be Lead to assign applications.";
-				else $reply["message"] = $rep->errorInfo();
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+				applicationId= :applicationId
+			;");
+		$q->bindStr( 'udpateTime', dateTimeStr() );
+		$q->bindInt( 'stepId', $stepId );
+		$q->bindInt( 'applicationId', $applicationId );
+
+		$q->execute("Application unassigned from step.");
+		$q->close();
 	}
 ?>

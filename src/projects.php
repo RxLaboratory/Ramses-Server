@@ -24,88 +24,87 @@
 	// ========= Functions ===============
 	function getSteps( $pid, $puuid )
 	{
-		global $stepsTable, $assetgroupsTable, $db, $usersTable, $stepuserTable, $applicationsTable, $stepapplicationTable;
+		global $tablePrefix;
 
-		$steps = array();
-		//get steps
-		$qString = "SELECT 
-				{$stepsTable}.`uuid`,
-				{$stepsTable}.`shortName`,
-				{$stepsTable}.`comment`,
-				{$stepsTable}.`name`,
-				{$stepsTable}.`type`,
-				{$stepsTable}.`id`,
-				{$stepsTable}.`color`,
-				{$stepsTable}.`estimationMethod`,
-				{$stepsTable}.`estimationVeryEasy`,
-				{$stepsTable}.`estimationEasy`,
-				{$stepsTable}.`estimationMedium`,
-				{$stepsTable}.`estimationHard`,
-				{$stepsTable}.`estimationVeryHard`,
-				{$assetgroupsTable}.`uuid` as multiplyGroupUuid,
-				{$stepsTable}.`order`
-			FROM {$stepsTable}
-			LEFT JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$stepsTable}.`estimationMultiplyGroupId`
-			WHERE {$stepsTable}.`projectId`= {$pid} AND {$stepsTable}.`removed` = 0 
-			ORDER BY `order`, `shortName`, `name`;";
-
-		$repSteps = $db->query( $qString );
-		while ($s = $repSteps->fetch())
+		$q = new DBQuery();
+		$steps = $q->getAll(
+			"steps",
+			array(
+				'uuid',
+				'shortName',
+				'comment',
+				'name',
+				'type',
+				'id',
+				'color',
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard',
+				'estimationMultiplyGroupId',
+				'order'
+			),
+			array(
+				'order',
+				'shortName',
+				'name'
+			)
+		);
+		
+		for ($s = 0; $s < count($steps); $s++)
 		{
-			$step = array();
-			$step['uuid'] = $s['uuid'];
-			$step['shortName'] = $s['shortName'];
-			$step['comment'] = $s['comment'];
-			$step['name'] = $s['name'];
-			$step['type'] = $s['type'];
-			$step['order'] = (int)$s['order'];
-			$step['color'] = $s['color'];
-			$step['estimationMethod'] = $s['estimationMethod'];
-			$step['estimationVeryEasy'] = (float)$s['estimationVeryEasy'];
-			$step['estimationEasy'] = (float)$s['estimationEasy'];
-			$step['estimationMedium'] = (float)$s['estimationMedium'];
-			$step['estimationHard'] = (float)$s['estimationHard'];
-			$step['estimationVeryHard'] = (float)$s['estimationVeryHard'];
-			$step['multiplyGroupUuid'] = $s['multiplyGroupUuid'];
-			$step['projectUuid'] = $puuid;
+			$steps[$s]['estimationVeryEasy'] = (float)$steps[$s]['estimationVeryEasy'];
+			$steps[$s]['estimationEasy'] = (float)$steps[$s]['estimationEasy'];
+			$steps[$s]['estimationMedium'] = (float)$steps[$s]['estimationMedium'];
+			$steps[$s]['estimationHard'] = (float)$steps[$s]['estimationHard'];
+			$steps[$s]['estimationVeryHard'] = (float)$steps[$s]['estimationVeryHard'];
+			$steps[$s]['multiplyGroupUuid'] = $q->uuid( "assetgroups", $steps[$s]['estimationMultiplyGroupId'] );
+			$steps[$s]['projectUuid'] = $puuid;
 
 			//get applications
-			$qString = "SELECT 
-				{$applicationsTable}.`uuid`
-			FROM {$stepapplicationTable}
-			JOIN {$applicationsTable}
-			ON {$stepapplicationTable}.`applicationId` = {$applicationsTable}.`id`
-			WHERE {$stepapplicationTable}.`stepId` = " . $s['id'] . " AND {$applicationsTable}.`removed` = 0 
-			ORDER BY {$applicationsTable}.`name`, {$applicationsTable}.`shortName`;";
+			$q->prepare( "SELECT {$tablePrefix}applications.`uuid`
+				FROM {$tablePrefix}stepapplication
+				JOIN {$tablePrefix}applications
+					ON {$tablePrefix}stepapplication.`applicationId` = {$tablePrefix}applications.`id`
+				WHERE {$tablePrefix}stepapplication.`stepId` = " . $steps[$s]['id'] .
+					" AND {$tablePrefix}applications.`removed` = 0
+					AND {$tablePrefix}stepapplication.`removed` = 0
+				ORDER BY {$tablePrefix}applications.`name`, {$tablePrefix}applications.`shortName`;"
+			);
+			$q->execute();
 
-			$repApplications = $db->query( $qString );
-			while ($a = $repApplications->fetch())
+			while ($a = $q->fetch())
 			{
-				$step['applications'][] = $a['uuid'];
+				$steps[$s]['applications'][] = $a['uuid'];
 			}
 
-			$steps[] = $step;
+			$q->close();
 		}
+
 		return $steps;
 	}
 
 	function getProjectUsers( $projectId )
 	{
-		global $db, $usersTable, $projectuserTable;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT {$tablePrefix}users.`uuid`
+			FROM {$tablePrefix}projectuser
+			JOIN {$tablePrefix}users
+				ON {$tablePrefix}projectuser.`userId` = {$tablePrefix}users.`id`
+			WHERE {$tablePrefix}projectuser.`projectId`= {$projectId}
+				AND {$tablePrefix}users.`removed` = 0
+				AND {$tablePrefix}projectuser.`removed` = 0
+			ORDER BY {$tablePrefix}users.`name`, {$tablePrefix}users.`shortName`;"
+		);
+		$q->execute();
 
 		$users = array();
 
-		//get users
-		$qString = "SELECT 
-			{$usersTable}.`uuid`
-		FROM {$projectuserTable}
-		JOIN {$usersTable}
-		ON {$projectuserTable}.`userId` = {$usersTable}.`id`
-		WHERE {$projectuserTable}.`projectId`= {$projectId} AND {$usersTable}.`removed` = 0 
-		ORDER BY {$usersTable}.`name`, {$usersTable}.`shortName`;";
-
-		$repUsers = $db->query( $qString );
-		while ($u = $repUsers->fetch())
+		while ($u = $q->fetch())
 		{
 			$users[] = $u['uuid'];
 		}
@@ -115,81 +114,95 @@
 
 	function getPipes( $pid, $puuid )
 	{
-		global $pipesTable, $stepsTable, $db;
+		global $tablePrefix;
 
-		$pipes = array();
-		//get pipes
-		$qString = "SELECT 
+		$q = new DBQuery();
+		$q->prepare( "SELECT 
 				pipes.`id`,
 				pipes.`uuid`,
 				inputSteps.`uuid` as inputStepUuid,
-				outputSteps.`uuid` as outputStepUuid
-			FROM {$pipesTable} AS pipes
-			LEFT JOIN {$stepsTable} AS inputSteps
+				outputSteps.`uuid` as outputStepUuid,
+				pipes.`removed`,
+				pipes.`latestUpdate`
+			FROM {$tablePrefix}pipes AS pipes
+			JOIN {$tablePrefix}steps AS inputSteps
 				ON pipes.inputStepId = inputSteps.id
-			LEFT JOIN {$stepsTable} AS outputSteps
+			JOIN {$tablePrefix}steps AS outputSteps
 				ON pipes.outputStepId = outputSteps.id
-			WHERE inputSteps.projectId=" . $pid . " AND pipes.removed = 0 ;";
-		$repPipes = $db->query( $qString );
+			WHERE inputSteps.projectId= {$pid} AND pipes.removed = 0 ;"
+		);
+		$q->execute();
 
-		while ($p = $repPipes->fetch())
+		$pipes = array();
+		while ($p = $q->fetch())
 		{
 			$pipe = array();
 			$pipe['uuid'] = $p['uuid'];
 			$pipe['inputStepUuid'] = $p['inputStepUuid'];
 			$pipe['outputStepUuid'] = $p['outputStepUuid'];
+			$pipe['removed'] = (int)$p['removed'];
+			$pipe['latestUpdate'] = $p['latestUpdate'];
 			$pipe['pipeFiles'] = getPipeFilesUuids( $p['id'] );
 			$pipe['projectUuid'] = $puuid;
 
 			$pipes[] = $pipe;
 		}
+		$q->close();
 
 		return $pipes;
 	}
 
 	function getPipeFilesUuids( $pipeId )
 	{
-		global $pipefilepipeTable, $pipefileTable, $db;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT pipeFiles.`uuid`
+			FROM {$tablePrefix}pipefilepipe AS pfp
+			LEFT JOIN {$tablePrefix}pipefile AS pipeFiles
+				ON pipeFiles.`id` = pfp.`pipeFileId`
+			WHERE pfp.`pipeId` = {$pipeId}
+				AND pipeFiles.`removed` = 0
+				AND pfp.`removed` = 0 ;"
+		);
+		$q->execute();
 
 		$pipeFiles = array();
-		// get
-		$queryStr = "SELECT
-			pipeFiles.`uuid`
-		FROM {$pipefilepipeTable} AS pfp
-			LEFT JOIN {$pipefileTable} AS pipeFiles
-				ON pipeFiles.`id` = pfp.`pipeFileId`
-			WHERE pfp.`pipeId` = {$pipeId} AND pipeFiles.`removed` = 0 ;" ;
-		
-		$repPipeFiles = $db->query( $queryStr );
-		while ($p = $repPipeFiles->fetch())
+		while ($p = $q->fetch())
 		{
 			$pipeFileUuid = $p['uuid'];
 			$pipeFiles[] = $pipeFileUuid;
 		}
+		$q->close();
+
 		return $pipeFiles;
 	}
 
 	function getPipeFiles( $projectId, $projectUuid )
 	{
-		global $pipefilepipeTable, $pipefileTable, $colorspacesTable, $filetypesTable, $db;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+				pipeFiles.`uuid`,
+				pipeFiles.`shortName`,
+				pipeFiles.`comment`,
+				fileTypes.`uuid` as fileTypeUuid,
+				colorSpaces.`uuid` as colorSpaceUuid,
+				pipeFiles.`customSettings`,
+				pipeFiles.`removed`,
+				pipeFiles.`latestUpdate`
+			FROM {$tablePrefix}pipefile AS pipeFiles
+				LEFT JOIN {$tablePrefix}colorspaces AS colorSpaces
+					ON pipeFiles.`colorSpaceId` = colorSpaces.`id`
+				LEFT JOIN {$tablePrefix}filetypes AS fileTypes
+					ON pipeFiles.`filetypeId` = fileTypes.`id`
+				WHERE pipeFiles.`projectId` = {$projectId} AND pipeFiles.`removed` = 0 ;"
+		);
+		$q->execute();
 
 		$pipeFiles = array();
-		// get
-		$queryStr = "SELECT
-			pipeFiles.`uuid`,
-			pipeFiles.`shortName`,
-			pipeFiles.`comment`,
-			fileTypes.`uuid` as fileTypeUuid,
-			colorSpaces.`uuid` as colorSpaceUuid
-		FROM {$pipefileTable} AS pipeFiles
-			LEFT JOIN {$colorspacesTable} AS colorSpaces
-				ON pipeFiles.`colorSpaceId` = colorSpaces.`id`
-			LEFT JOIN {$filetypesTable} AS fileTypes
-				ON pipeFiles.`filetypeId` = fileTypes.`id`
-			WHERE pipeFiles.`projectId` = {$projectId} AND pipeFiles.`removed` = 0 ;" ;
-		
-		$repPipeFiles = $db->query( $queryStr );
-		while ($p = $repPipeFiles->fetch())
+		while ($p = $q->fetch())
 		{
 			$pipeFile = array();
 			$pipeFile['uuid'] = $p['uuid'];
@@ -197,6 +210,9 @@
 			$pipeFile['comment'] = $p['comment'];
 			$pipeFile['fileTypeUuid'] = $p['fileTypeUuid'];
 			$pipeFile['colorSpaceUuid'] = $p['colorSpaceUuid'];
+			$pipeFile['customSettings'] = $p['customSettings'];
+			$pipeFile['removed'] = (int)$p['removed'];
+			$pipeFile['latestUpdate'] = $p['latestUpdate'];
 			$pipeFile['projectUuid'] = $projectUuid;
 			$pipeFiles[] = $pipeFile;
 		}
@@ -205,54 +221,67 @@
 
 	function getAssetGroups( $pid, $puuid )
 	{
-		global $tablePrefix, $db;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare("SELECT 
+				`uuid`,
+				`shortName`,
+				`comment`,
+				`name`,
+				`removed`,
+				`latestUpdate`
+			FROM {$tablePrefix}assetgroups
+			WHERE `projectId`= {$pid} AND `removed` = 0 
+			ORDER BY `shortName`, `name`;"
+		);
+		$q->execute();
 
 		$assetGroups = array();
-
-		$qString = "SELECT 
-				" . $tablePrefix . "assetgroups.`uuid`,
-				" . $tablePrefix . "assetgroups.`shortName`,
-				" . $tablePrefix . "assetgroups.`comment`,
-				" . $tablePrefix . "assetgroups.`name`
-			FROM " . $tablePrefix . "assetgroups
-			WHERE projectId=" . $pid . " AND removed = 0 
-			ORDER BY " . $tablePrefix . "assetgroups.`shortName`, " . $tablePrefix . "assetgroups.`name`;";
-		$repAssetGroups = $db->query( $qString );
-		while($ag = $repAssetGroups->fetch())
+		while($ag = $q->fetch())
 		{
 			$assetGroup = array();
 			$assetGroup['uuid'] = $ag['uuid'];
 			$assetGroup['shortName'] = $ag['shortName'];
 			$assetGroup['comment'] = $ag['comment'];
 			$assetGroup['name'] = $ag['name'];
+			$assetGroup['removed'] = (int)$ag['removed'];
+			$assetGroup['latestUpdate'] = $ag['latestUpdate'];
 			$assetGroup['projectUuid'] = $puuid;
 
 			$assetGroups[] = $assetGroup;
 		}
+		$q->close();
 
 		return $assetGroups;
 	}
 
 	function getAssets( $projectId )
 	{
-		global $assetsTable, $assetgroupsTable, $db;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+				assets.`id`,
+				assets.`uuid`,
+				assets.`name`,
+				assets.`shortName`,
+				assets.`comment`,
+				assets.`tags`,
+				assets.`id`,
+				assets.`removed`,
+				assets.`latestUpdate`,
+				assetgroups.`uuid` AS assetGroupUuid
+			FROM {$tablePrefix}assets AS assets
+			JOIN {$tablePrefix}assetgroups AS assetgroups
+				ON assetgroups.`id` = assets.`assetGroupId`
+			WHERE assetgroups.`projectId` = {$projectId} AND assets.`removed` = 0
+			ORDER BY assets.`shortName`, assets.`name`;"
+		);
+		$q->execute();
 
 		$assets = array();
-		$qString = "SELECT
-				{$assetsTable}.`id`,
-				{$assetsTable}.`uuid`,
-				{$assetsTable}.`name`,
-				{$assetsTable}.`shortName`,
-				{$assetsTable}.`comment`,
-				{$assetsTable}.`tags`,
-				{$assetsTable}.`id`,
-				{$assetgroupsTable}.`uuid` AS assetGroupUuid
-			FROM {$assetsTable}
-			LEFT JOIN {$assetgroupsTable} ON {$assetgroupsTable}.`id` = {$assetsTable}.`assetGroupId`
-			WHERE {$assetgroupsTable}.`projectId` = ". $projectId  ." AND {$assetsTable}.`removed` = 0
-			ORDER BY `shortName`, `name`;";
-		$repAssets = $db->query( $qString );
-		while ($a = $repAssets->fetch())
+		while ($a = $q->fetch())
 		{
 			$asset = array();
 			$asset['uuid'] = $a['uuid'];
@@ -261,44 +290,55 @@
 			$asset['name'] = $a['name'];
 			$asset['tags'] = $a['tags'];
 			$asset['assetGroupUuid'] = $a['assetGroupUuid'];
+			$asset['removed'] = (int)$a['removed'];
+			$asset['latestUpdate'] = $a['latestUpdate'];
 			$asset['statusHistory'] = getAssetStatusHistory( $a['id'], $asset['uuid'] );
 			
 			$assets[] = $asset;
 		}
+
+		$q->close();
 
 		return $assets;
 	}
 
 	function getAssetStatusHistory( $aid, $auuid )
 	{
-		global $db, $statusTable, $usersTable, $statesTable, $stepsTable;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+				stats.`uuid`,
+				stats.`completionRatio`,
+				stats.`comment`,
+				stats.`version`,
+				stats.`date`,
+				stats.`published`,
+				stats.`timeSpent`,
+				stats.`difficulty`,
+				stats.`estimation`,
+				stats.`removed`,
+				stats.`latestUpdate`,
+				`users`.`uuid` as `userUuid`,
+				stats.`assignedUserId`,
+				states.`uuid` as `stateUuid`,
+				steps.`uuid` as `stepUuid`
+			FROM {$tablePrefix}status as stats
+			JOIN {$tablePrefix}users as `users`
+				ON `users`.`id` = stats.`userId`
+			JOIN {$tablePrefix}states as states
+				ON states.`id` = stats.`stateId`
+			JOIN {$tablePrefix}steps as steps
+				ON steps.`id` = stats.`stepId`
+			WHERE stats.`assetId` = {$aid}
+				AND stats.`removed` = 0
+				AND steps.`removed` = 0
+			ORDER BY `date`;"
+		);
+		$q->execute();
 
 		$statusHistory = array();
-		$qString = "SELECT
-				{$statusTable}.`uuid`,
-				{$statusTable}.`completionRatio`,
-				{$statusTable}.`comment`,
-				{$statusTable}.`version`,
-				{$statusTable}.`date`,
-				{$statusTable}.`published`,
-				{$statusTable}.`timeSpent`,
-				{$statusTable}.`difficulty`,
-				{$statusTable}.`estimation`,
-				`users`.`uuid` as `userUuid`,
-				`assignedUsers`.`uuid` as `assignedUserUuid`,
-				{$statesTable}.`uuid` as `stateUuid`,
-				{$stepsTable}.`uuid` as `stepUuid`
-			FROM {$statusTable}
-			LEFT JOIN {$usersTable} as `users` ON `users`.`id` = {$statusTable}.`userId`
-			LEFT JOIN {$usersTable} as `assignedUsers` ON `assignedUsers`.`id` = {$statusTable}.`assignedUserId`
-			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
-			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
-			WHERE {$statusTable}.`assetId` = '" . $aid . "' AND {$statusTable}.`removed` = 0
-			ORDER BY `date`;";
-
-		$repStatusHistory = $db->query( $qString );
-
-		while ($s = $repStatusHistory->fetch())
+		while ($s = $q->fetch())
 		{
 			$status = array();
 			$status['uuid'] = $s['uuid'];
@@ -309,36 +349,45 @@
 			$status['userUuid'] = $s['userUuid'];
 			$status['stateUuid'] = $s['stateUuid'];
 			$status['stepUuid'] = $s['stepUuid'];
-			$status['assignedUserUuid'] = $s['assignedUserUuid'];
+			$qa = new DBQuery();
+			$status['assignedUserUuid'] = $qa->uuid("users", $s['assignedUserId']);
 			$status['published'] = (int)$s['published'];
 			$status['timeSpent'] = (int)$s['timeSpent'];
 			$status['difficulty'] = $s['difficulty'];
 			$status['estimation'] = (float)$s['estimation'];
+			$status['removed'] = (int)$s['removed'];
+			$status['latestUpdate'] = $s['latestUpdate'];
 			$status['assetUuid'] = $auuid;
 
 			$statusHistory[] = $status;
 		}
+
+		$q->close();
 
 		return $statusHistory;
 	}
 
 	function getSequences($pid, $puuid)
 	{
-		global $sequencesTable, $db;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare("SELECT 
+				`uuid`,
+				`shortName`,
+				`comment`,
+				`name`,
+				`order`,
+				`removed`,
+				`latestUpdate`
+			FROM {$tablePrefix}sequences
+			WHERE `projectId`= {$pid} AND `removed` = 0 
+			ORDER BY `shortName`, `name`;"
+		);
+		$q->execute();
 
 		$sequences = array();
-		$qString = "SELECT 
-					{$sequencesTable}.`uuid`,
-					{$sequencesTable}.`shortName`,
-					{$sequencesTable}.`comment`,
-					{$sequencesTable}.`name`,
-					{$sequencesTable}.`order`
-				FROM {$sequencesTable}
-				WHERE `projectId` = {$pid} AND `removed` = 0 
-				ORDER BY {$sequencesTable}.`shortName`, {$sequencesTable}.`name`;";
-
-		$repSequences = $db->query( $qString );
-		while($s = $repSequences->fetch())
+		while($s = $q->fetch())
 		{
 			$sequence = array();
 
@@ -347,6 +396,8 @@
 			$sequence['comment'] = $s['comment'];
 			$sequence['name'] = $s['name'];
 			$sequence['order'] = (int)$s['order'];
+			$sequence['removed'] = (int)$s['removed'];
+			$sequence['latestUpdate'] = $s['latestUpdate'];
 			$sequence['projectUuid'] = $puuid;
 
 			$sequences[] = $sequence;
@@ -357,27 +408,30 @@
 
 	function getShots( $projectId )
 	{
-		global $shotsTable, $sequencesTable, $db;
+		global $tablePrefix;
 
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+				shots.`id`,
+				shots.`uuid`,
+				shots.`name`,
+				shots.`shortName`,
+				shots.`comment`,
+				shots.`duration`,
+				shots.`order`,
+				shots.`removed`,
+				shots.`latestUpdate`,
+				sequences.`uuid` AS sequenceUuid
+			FROM {$tablePrefix}shots as shots
+			JOIN {$tablePrefix}sequences as sequences
+				ON sequences.`id` = shots.`sequenceId`
+			WHERE sequences.`projectId` = {$projectId} AND shots.`removed` = 0
+			ORDER BY shots.`order`, shots.`shortName`, shots.`name`;"
+		);
+
+		$q->execute();
 		$shots = array();
-
-		$qString = "SELECT
-				{$shotsTable}.`id`,
-				{$shotsTable}.`uuid`,
-				{$shotsTable}.`name`,
-				{$shotsTable}.`shortName`,
-				{$shotsTable}.`comment`,
-				{$shotsTable}.`duration`,
-				{$shotsTable}.`order`,
-				{$sequencesTable}.`uuid` AS sequenceUuid
-			FROM {$shotsTable}
-			LEFT JOIN {$sequencesTable} ON {$sequencesTable}.`id` = {$shotsTable}.`sequenceId`
-			WHERE {$sequencesTable}.`projectId` = ". $projectId  ." AND {$shotsTable}.`removed` = 0
-			ORDER BY `order`, `shortName`, `name`;";
-
-		$repShots = $db->query( $qString );
-
-		while ($s = $repShots->fetch())
+		while ($s = $q->fetch())
 		{
 			$shot = array();
 			$shot['uuid'] = $s['uuid'];
@@ -387,72 +441,80 @@
 			$shot['duration'] = (float)$s['duration'];
 			$shot['order'] = (int)$s['order'];
 			$shot['sequenceUuid'] = $s['sequenceUuid'];
+			$shot['removed'] = (int)$s['removed'];
+			$shot['latestUpdate'] = $s['latestUpdate'];
 			$shot['statusHistory'] = getShotStatusHistory( $s['id'], $shot['uuid'] );
 			$shot['assetUuids'] = getShotAssets( $s['id'] );
 			
 			$shots[] = $shot;
 		}
 
-		$repShots->closeCursor();
+		$q->close();
 
 		return $shots;
 	}
 
 	function getShotAssets( $shotId )
 	{
-		global $db, $shotassetTable, $assetsTable;
+		global $tablePrefix;
+		$q = new DBQuery();
+		$q->prepare("SELECT assets.`uuid`
+			FROM {$tablePrefix}shotasset as shotasset
+			JOIN {$tablePrefix}assets as assets
+				ON assets.`id` = shotasset.`assetId`
+			WHERE shotasset.`shotId` = {$shotId} AND shotasset.`removed` = 0;"
+		);
+		$q->execute();
 
 		$assets = array();
-		$qString = "SELECT {$assetsTable}.`uuid`
-			FROM {$shotassetTable}
-			LEFT JOIN {$assetsTable} ON {$assetsTable}.`id` = {$shotassetTable}.`assetId`
-			WHERE {$shotassetTable}.`shotId` = {$shotId} ;";
-
-		$repAssets = $db->prepare( $qString );
-		//$repAssets->debugDumpParams();
-		$repAssets->execute();
-
-		while ($a = $repAssets->fetch())
+		while ($a = $q->fetch())
 		{
 			$assetUuid = $a['uuid'];
 			$assets[] = $assetUuid;
 		}
 
-		$repAssets->closeCursor();
+		$q->close();
 
 		return $assets;
 	}
 
 	function getShotStatusHistory( $sid, $suuid )
 	{
-		global $db, $statusTable, $usersTable, $statesTable, $stepsTable;
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+				stats.`uuid`,
+				stats.`completionRatio`,
+				stats.`comment`,
+				stats.`version`,
+				stats.`date`,
+				stats.`published`,
+				stats.`timeSpent`,
+				stats.`difficulty`,
+				stats.`estimation`,
+				stats.`removed`,
+				stats.`latestUpdate`,
+				`users`.`uuid` as `userUuid`,
+				stats.assignedUserId,
+				states.`uuid` as `stateUuid`,
+				steps.`uuid` as `stepUuid`
+			FROM {$tablePrefix}status as stats
+			JOIN {$tablePrefix}users as `users`
+				ON `users`.`id` = stats.`userId`
+			JOIN {$tablePrefix}states as states
+				ON states.`id` = stats.`stateId`
+			JOIN {$tablePrefix}steps as steps
+				ON steps.`id` = stats.`stepId`
+			WHERE stats.`shotId` = {$sid}
+				AND stats.`removed` = 0
+				AND steps.`removed` = 0
+			ORDER BY `date`;"
+		);
+		$q->execute();
 
 		$statusHistory = array();
-		$qString = "SELECT
-				{$statusTable}.`uuid`,
-				{$statusTable}.`completionRatio`,
-				{$statusTable}.`comment`,
-				{$statusTable}.`version`,
-				{$statusTable}.`date`,
-				{$statusTable}.`published`,
-				{$statusTable}.`timeSpent`,
-				{$statusTable}.`difficulty`,
-				{$statusTable}.`estimation`,
-				users.`uuid` as `userUuid`,
-				assignedUsers.`uuid` as `assignedUserUuid`,
-				{$statesTable}.`uuid` as `stateUuid`,
-				{$stepsTable}.`uuid` as `stepUuid`
-			FROM {$statusTable}
-			LEFT JOIN {$usersTable} as `users` ON `users`.`id` = {$statusTable}.`userId`
-			LEFT JOIN {$usersTable} as `assignedUsers` ON `assignedUsers`.`id` = {$statusTable}.`assignedUserId`
-			JOIN {$statesTable} ON {$statesTable}.`id` = {$statusTable}.`stateId`
-			JOIN {$stepsTable} ON {$stepsTable}.`id` = {$statusTable}.`stepId`
-			WHERE {$statusTable}.`shotId` = '" . $sid . "' AND {$statusTable}.`removed` = 0
-			ORDER BY `date`;";
-
-		$repStatusHistory = $db->query( $qString );
-
-		while ($s = $repStatusHistory->fetch())
+		while ($s = $q->fetch())
 		{
 			$status = array();
 			$status['uuid'] = $s['uuid'];
@@ -463,82 +525,88 @@
 			$status['userUuid'] = $s['userUuid'];
 			$status['stateUuid'] = $s['stateUuid'];
 			$status['stepUuid'] = $s['stepUuid'];
-			$status['assignedUserUuid'] = $s['assignedUserUuid'];
+			$qa = new DBQuery();
+			$status['assignedUserUuid'] = $qa->uuid("users", $s['assignedUserId']);
 			$status['published'] = (int)$s['published'];
 			$status['timeSpent'] = (int)$s['timeSpent'];
 			$status['difficulty'] = $s['difficulty'];
 			$status['estimation'] = (float)$s['estimation'];
+			$status['removed'] = (int)$s['removed'];
+			$status['latestUpdate'] = $s['latestUpdate'];
 			$status['shotUuid'] = $suuid;
 
 			$statusHistory[] = $status;
 		}
+
+		$q->close();
 
 		return $statusHistory;
 	}
 
 	function getSchedule( $projectId )
 	{
-		global $scheduleTable, $usersTable, $stepsTable, $db;
+		global $tablePrefix;
 
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+				schedule.`uuid`,
+				schedule.`date`,
+				schedule.`comment`,
+				schedule.`removed`,
+				schedule.`latestUpdate`,
+				users.`uuid` AS userUuid,
+				steps.`uuid` AS stepUuid
+			FROM {$tablePrefix}schedule as schedule
+			JOIN {$tablePrefix}steps as steps
+				ON steps.`id` = schedule.`stepId`
+			JOIN {$tablePrefix}users as users
+				ON users.`id` = schedule.`userId`
+			WHERE steps.`projectId` = {$projectId}
+				AND schedule.`removed` = 0
+				AND steps.`removed` = 0
+				AND users.`removed` = 0
+			ORDER BY `date`, `stepUuid`, `userUuid`;"
+		);
+		$q->execute();
 		$schedule = array();
-
-		$qString = "SELECT
-				{$scheduleTable}.`uuid`,
-				{$scheduleTable}.`date`,
-				{$scheduleTable}.`comment`,
-				{$usersTable}.`uuid` AS userUuid,
-				{$stepsTable}.`uuid` AS stepUuid
-			FROM {$scheduleTable}
-			LEFT JOIN {$stepsTable} ON {$stepsTable}.`id` = {$scheduleTable}.`stepId`
-			LEFT JOIN {$usersTable} ON {$usersTable}.`id` = {$scheduleTable}.`userId`
-			WHERE {$stepsTable}.`projectId` = {$projectId}
-			ORDER BY `date`, `stepUuid`, `userUuid`;";
 		
-		$rep = $db->query($qString);
-		//$rep->debugDumpParams();
-
-		while ($s = $rep->fetch())
+		while ($s = $q->fetch())
 		{
 			$entry['uuid'] = $s['uuid'];
 			$entry['date'] = $s['date'];
 			$entry['comment'] = $s['comment'];
 			$entry['userUuid'] = $s['userUuid'];
 			$entry['stepUuid'] = $s['stepUuid'];
+			$entry['removed'] = (int)$s['removed'];
+			$entry['latestUpdate'] = $s['latestUpdate'];
 
 			$schedule[] = $entry;
 		}
 
-		$rep->closeCursor();
+		$q->close();
 
 		return $schedule;
 	}
 
-	function getProject( $sqlRep, $details=true )
+	function getProject( $project, $details=true )
 	{
-		global $tablePrefix, $db;
+		// Adjust project values
+		$project['framerate'] = (float)$project['framerate'];
+		$project['aspectRatio'] = (float)$project['aspectRatio'];
+		$project['width'] = (float)$project['width'];
+		$project['height'] = (float)$project['height'];
 
-		$project = Array();
-		$project['name'] = $sqlRep['name'];
-		$project['shortName'] = $sqlRep['shortName'];
-		$project['comment'] = $sqlRep['comment'];
-		$project['folderPath'] = $sqlRep['folderPath'];
-		$project['uuid'] = $sqlRep['uuid'];
-		$project['framerate'] = (float)$sqlRep['framerate'];
-		$project['width'] = (int)$sqlRep['width'];
-		$project['height'] = (int)$sqlRep['height'];
-		$project['aspectRatio'] = (float)$sqlRep['aspectRatio'];
-		$project['deadline'] = $sqlRep['deadline'];
-		$project['users'] = getProjectUsers( $sqlRep['id'] );
+		$project['users'] = getProjectUsers( $project['id'] );
 
 		if ($details) {
-			$project['pipeFiles'] = getPipeFiles($sqlRep['id'], $sqlRep['uuid']);
-			$project['steps'] = getSteps($sqlRep['id'], $sqlRep['uuid']);
-			$project['pipes'] = getPipes($sqlRep['id'], $sqlRep['uuid']);
-			$project['assetGroups'] = getAssetGroups($sqlRep['id'], $sqlRep['uuid']);
-			$project['assets'] = getAssets($sqlRep['id']);
-			$project['sequences'] = getSequences($sqlRep['id'], $sqlRep['uuid']);
-			$project['shots'] = getShots($sqlRep['id']);
-			$project['schedule'] = getSchedule($sqlRep['id']);
+			$project['pipeFiles'] = getPipeFiles($project['id'], $project['uuid']);
+			$project['steps'] = getSteps($project['id'], $project['uuid']);
+			$project['pipes'] = getPipes($project['id'], $project['uuid']);
+			$project['assetGroups'] = getAssetGroups($project['id'], $project['uuid']);
+			$project['assets'] = getAssets($project['id']);
+			$project['sequences'] = getSequences($project['id'], $project['uuid']);
+			$project['shots'] = getShots($project['id']);
+			$project['schedule'] = getSchedule($project['id']);
 		} else {
 			$project['pipeFiles'] = Array();
 			$project['steps'] = Array();
@@ -554,122 +622,96 @@
 	}
 
 	// ========= CREATE PROJECT ==========
-	if (hasArg("createProject"))
+	if ( acceptReply("createProject", 'admin') )
 	{
-		$reply["accepted"] = true;
-        $reply["query"] = "createProject";
-
-		$name = "";
-		$shortName = "";
-		$uuid = "";
-
 		$name = getArg("name");
-        $shortName = getArg("shortName");
-        $uuid = getArg("uuid");
+		$shortName = getArg("shortName");
+		$uuid = getArg("uuid", uuid());
 
-		if (strlen($shortName) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() )
-            {
-				if (strlen($uuid) > 0)
-				{
-					$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE name = VALUES(name) , shortName = VALUES(shortName);";
-					$values = array('name' => $name, 'shortName' => $shortName, 'uuid' => $uuid);
-				}
-				else
-				{
-					$qString = "INSERT INTO " . $tablePrefix . "projects (name,shortName,uuid) VALUES ( :name , :shortName , uuid() );";
-					$values = array('name' => $name, 'shortName' => $shortName);
-				}
+		$q = new DBQuery();
+		$q->insert( "projects", array( 'name', 'shortName', 'uuid' ));
 
-				$rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "uuid", $uuid, true );
 
-				$reply["message"] = "Project " . $shortName . " created.";
-				$reply["success"] = true;
-
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create projects.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Project '{$shortName}' added.");
+		$q->close();
 	}
 
 	// ========= GET PROJECTS ==========
-	else if ( hasArg("getProjects") || hasArg("init") )
+	else if ( acceptReply("getProjects") || hasArg("init") )
 	{
-		if (hasArg("getProjects")) {
-			$reply["accepted"] = true;
-			$reply["query"] = "getProjects";
+		$q = new DBQuery();
+        $projects = $q->getAll("projects",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'folderPath',
+				'id',
+				'framerate',
+				'width',
+				'height',
+				'aspectRatio',
+				'comment',
+				'deadline'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
+
+		for ($p = 0; $p < count($projects); $p++)
+		{
+			$projects[$p] = getProject( $projects[$p], false );
 		}
 		
-
-		$rep = $db->query("SELECT
-				`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`, `deadline`
-			FROM {$projectsTable}
-			WHERE `removed` = 0
-			ORDER BY `shortName`,`name`;");
-
-		//$rep->debugDumpParams();
-
-		$projects = array();
-
-		while ($p = $rep->fetch()) $projects[] = getProject( $p, false );
-
-		$rep->closeCursor();
-
-		if ( hasArg("getProjects") ) {
-			$reply["content"] = $projects;
-			$reply["message"] = "Projects list retrieved";
-			$reply["success"] = true;
-		} else {
-			$reply["content"]["projects"] = $projects;
-		}
+		if (hasArg("init") )
+        {
+            $reply["content"]["projects"] = $projects;
+        }
+        else 
+        {
+            $reply["content"] = $projects;
+            $reply["message"] = "Project list retreived";
+            $reply["success"] = true;
+        }
 	}
 
 	// ========= GET SINGLE PROJECT ========
-	else if (hasArg("getProject"))
+	else if ( acceptReply("getProject") )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "getProject";
-
 		$uuid = getArg("uuid");
 
-		if (checkArgs(array($uuid)))
-		{
-			$rep = $db->prepare("SELECT
-					`name`,`shortName`,`uuid`,`folderPath`,`id`, `framerate`, `width`, `height`, `aspectRatio`, `comment`, `deadline`
-				FROM {$projectsTable}
-				WHERE `uuid` = :uuid ;");
+		$q = new DBQuery();
+        $project = $q->get(
+			"projects",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'folderPath',
+				'id',
+				'framerate',
+				'width',
+				'height',
+				'aspectRatio',
+				'comment',
+				'deadline'
+			),
+			$uuid
+		);
 
-			$rep->execute( array('uuid' => $uuid) );
-			//$rep->debugDumpParams();
-
-			$p = $rep->fetch();
-
-			$reply["content"] = getProject( $p );
-			$reply["message"] = "Project retrieved";
-			$reply["success"] = true;
-
-			$rep->closeCursor();
-		}
+		$reply["content"] = getProject( $project );
+		$reply["message"] = "Project retrieved";
+		$reply["success"] = true;
 	}
 
 	// ========= UPDATE PROJECT ==========
-	else if (hasArg("updateProject"))
+	else if (acceptReply("updateProject", 'admin'))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateProject";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
@@ -677,212 +719,156 @@
 		$framerate = getArg( "framerate" );
 		$width = getArg( "width" );
 		$height = getArg( "height" );
-		$aspectRatio = getArg( "aspectRatio" );
+		$aspectRatio = getArg( "aspectRatio", (int)$width / (int)$height );
 		$comment = getArg( "comment" );
 		$deadline = getArg( "deadline" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() )
-            {
-				$qString = "UPDATE {$projectsTable}
-					SET `name`= :name ,`shortName`= :shortName, `comment`= :comment";
+		$q = new DBQuery();
+		$q->update(
+			"projects",
+			array(
+				'name',
+				'shortName',
+				'folderPath',
+				'framerate',
+				'width',
+				'height',
+				'aspectRatio',
+				'comment',
+				'deadline'
+			),
+			$uuid
+		);
 
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment );
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
+		$q->bindStr( "folderPath", $folderPath );
+		$q->bindFloat( "framerate", $framerate, 4 );
+		$q->bindInt( "width", $width );
+		$q->bindInt( "height", $height );
+		$q->bindFloat( "aspectRatio", $aspectRatio );
+		$q->bindStr( "deadline", $deadline );
 
-				if (strlen($folderPath) > 0)
-                {
-                    $qString = $qString . ", `folderPath`= :folderPath";
-                    $values["folderPath"] = $folderPath;
-                }
-
-				if (strlen($framerate) > 0)
-                {
-                    $qString = $qString . ", `framerate`= :framerate";
-                    $values["framerate"] = $framerate;
-                }
-
-				if (strlen($width) > 0)
-                {
-                    $qString = $qString . ", `width`= :width";
-                    $values["width"] = $width;
-                }
-
-				if (strlen($height) > 0)
-                {
-                    $qString = $qString . ", `height`= :height";
-                    $values["height"] = $height;
-                }
-
-				if (strlen($aspectRatio) > 0)
-                {
-                    $qString = $qString . ", `aspectRatio`= :aspectRatio";
-                    $values["aspectRatio"] = $aspectRatio;
-                }
-
-				if (strlen($deadline) > 0)
-                {
-                    $qString = $qString . ", `deadline`= :deadline";
-                    $values["deadline"] = $deadline;
-                }
-
-				$qString = $qString . " WHERE uuid= :uuid ;";
-
-                $rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();
-
-				$reply["message"] = "Project \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update project information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
+		$q->execute("Project \"{$shortName}\" updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE PROJECT ==========
-	else if (hasArg("removeProject"))
+	else if (acceptReply("removeProject", 'admin'))
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeProject";
-
-		$uuid = "";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "projects SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Project " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove projects.";
-                $reply["success"] = false;
-            }
-
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q = new DBQuery();
+		$q->remove( "projects", $uuid );
 	}
 
 	// ========= ASSOCIATE STEP WITH PROJECT ==========
-	else if (hasArg("assignStep"))
+	else if ( acceptReply("assignStep", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "assignStep";
-
-		$stepUuid = "";
-		$projectUuid = "";
-
 		$stepUuid = getArg("stepUuid");
 		$projectUuid = getArg("projectUuid");
 
-		if (strlen($stepUuid) > 0 AND strlen($projectUuid) > 0)
-		{
-			if (isAdmin())
-			{
-				$q = "INSERT INTO " . $tablePrefix . "steps (name,shortName,autoCreateAssets,type,projectId) VALUES (
-				( SELECT " . $tablePrefix . "templatesteps.name FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "templatesteps.shortName FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "templatesteps.autoCreateAssets FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "templatesteps.type FROM " . $tablePrefix . "templatesteps WHERE " . $tablePrefix . "templatesteps.uuid = :stepUuid ),
-				( SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE " . $tablePrefix . "projects.uuid = :projectUuid )
-				) ON DUPLICATE KEY UPDATE " . $tablePrefix . "steps.id = " . $tablePrefix . "steps.id ;";
+		$q = new DBQuery();
+		$stepInfo = $q->get(
+			"templatesteps",
+			array(
+				'name',
+				'shortName',
+				'type',
+				'comment',
+				'color',
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard',
+				'autoCreateAssets'
+			),
+			$stepUuid
+		);
+		$projectId = $q->id("projects", $projectUuid);
 
-				$rep = $db->prepare($q);
-				$ok = $rep->execute(array('stepUuid' => $stepUuid,'projectUuid' => $projectUuid));
-				$rep->closeCursor();
+		$q->insert(
+			"steps",
+			array(
+				'name',
+				'shortName',
+				'type',
+				'comment',
+				'color',
+				'estimationMethod',
+				'estimationVeryEasy',
+				'estimationEasy',
+				'estimationMedium',
+				'estimationHard',
+				'estimationVeryHard',
+				'autoCreateAssets',
+				'projectId'
+			)
+		);
 
-				if ($ok) $reply["message"] = "Step associated with project.";
-				else $reply["message"] = $rep->errorInfo();
+		$q.bindName( $stepInfo['name'] );
+		$q.bindShortName( $stepInfo['shortName'] );
+		$q.bindInt( 'autoCreateAssets', $stepInfo['autoCreateAssets'] );
+		$q.bindStr( 'type', $stepInfo['type'] );
+		$q.bindStr( 'comment', $stepInfo['comment'] );
+		$q.bindStr( 'color', $stepInfo['color'] );
+		$q.bindStr( 'estimationMethod', $stepInfo['estimationMethod'] );
+		$q.bindStr( 'estimationVeryEasy', $stepInfo['estimationVeryEasy'] );
+		$q.bindStr( 'estimationEasy', $stepInfo['estimationEasy'] );
+		$q.bindStr( 'estimationMedium', $stepInfo['estimationMedium'] );
+		$q.bindStr( 'estimationHard', $stepInfo['estimationHard'] );
+		$q.bindStr( 'estimationVeryHard', $stepInfo['estimationVeryHard'] );
+		$q.bindInt( 'projectId', $projectId );
 
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to assign steps to projects.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute( "Step associated with project." );
+		$q->close();
 	}
 
 	// ========= ASSIGN USER ==========
-	else if (hasArg("assignUser"))
+	else if ( acceptReply( "assignUser", 'admin' ) )
 	{
-		acceptReply( "assignUser" );
-
 		$userUuid = getArg("userUuid");
 		$projectUuid = getArg("projectUuid");
 
-		if ( checkArgs(array($userUuid, $projectUuid)) && isProjectAdmin())
-		{
+		$q = new DBQuery();
+		$userId = $q->id("users", $userUuid);
+		$projectId = $q->id("projects", $projectUuid);
+		
+		$q->insert('projectuser', array('projectId', 'userId'));
+		$q->bindInt( "userId", $userId );
+		$q->bindInt( "projectId", $projectId );
 
-			$qString = "INSERT INTO {$projectuserTable} (`projectId`, `userId`) VALUES (
-				( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
-				( SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
-				) ON DUPLICATE KEY UPDATE {$projectuserTable}.`id` = {$projectuserTable}.`id` ;";
-
-			$rep = $db->prepare($qString);
-			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
-
-			sqlRequest( $rep, "User assigned to project." );
-
-			$rep->closeCursor();
-		}
-
+		$q->execute("User assigned to project.");
+		$q->close();
 	}
 
 	// ========= REMOVE USER ==========
-	else if (hasArg("unassignUser"))
+	else if ( acceptReply( "unassignUser", 'admin' ) )
 	{
-		acceptReply( "unassignUser" );
-
 		$userUuid = getArg("userUuid");
 		$projectUuid = getArg("projectUuid");
 
-		if ( checkArgs(array($userUuid, $projectUuid)) && isProjectAdmin())
-		{
+		$q = new DBQuery();
+		$userId = $q->id("users", $userUuid);
+		$projectId = $q->id("projects", $projectUuid);
 
-			$q = "DELETE {$projectuserTable}  FROM {$projectuserTable} WHERE
-			projectId= ( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid )
-			AND
-			userId= ( SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
-			;";
-			$rep = $db->prepare($q);
-			$rep->bindValue(':userUuid', $userUuid, PDO::PARAM_STR);
-			$rep->bindValue(':projectUuid', $projectUuid, PDO::PARAM_STR);
+		$q->prepare( "UPDATE {$tablePrefix}projectuser
+			SET
+				removed = 1,
+				latestUpdate = :udpateTime
+			WHERE
+				userId= :userId
+				AND
+				projectId= :projectId
+			;");
 
-			sqlRequest( $rep, "User unassigned from project." );
+		$q->bindStr( 'udpateTime', dateTimeStr() );
+		$q->bindInt( 'userId', $userId );
+		$q->bindInt( 'projectId', $projectId );
 
-			$rep->closeCursor();
-		}
-
+		$q->execute("User unassigned from project.");
+		$q->close();
 	}
 ?>

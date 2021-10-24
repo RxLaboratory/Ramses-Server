@@ -22,164 +22,73 @@
 	*/
 
         // ========= CREATE ==========
-	if (hasArg("createPipeFile"))
+	if ( acceptReply( "createPipeFile", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createPipeFile";
+		acceptReply( "createPipeFile" );
 
-        $uuid = getArg( "uuid" );
+        $uuid = getArg( "uuid", uuid() );
 		$shortName = getArg( "shortName" );
 		$fileTypeUuid = getArg ( "fileTypeUuid" );
 		$colorSpaceUuid = getArg ( "colorSpaceUuid" );
 		$projectUuid = getArg( "projectUuid" );
 
-        if ($shortName != '' && $projectUuid != '')
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$queryStr = "INSERT INTO {$pipefileTable} (`shortName`, `projectId`, filetypeId, `colorSpaceId`, `uuid`)
-					VALUES (
-					:shortName,
-					( SELECT {$projectsTable}.`id` FROM {$projectsTable} WHERE {$projectsTable}.`uuid` = :projectUuid ),
-					( SELECT {$filetypesTable}.`id` FROM {$filetypesTable} WHERE {$filetypesTable}.`uuid` = :fileTypeUuid ),
-					( SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE {$colorspacesTable}.`uuid` = :colorSpaceUuid ),";
+		$q = new DBQuery();
+		$filetypeId = $q->id('filetypes', $fileTypeUuid);
+		$colorSpaceId = $q->id('colorspaces', $colorSpaceUuid);
+		$projectId = $q->id('projects', $projectUuid);
 
-				$values = array(
-					'shortName' => $shortName,
-					'projectUuid' => $projectUuid,
-					'fileTypeUuid' => $fileTypeUuid,
-					'colorSpaceUuid' => $colorSpaceUuid
-				);
+		$q->insert( "pipefile", array( 'shortName', 'projectId', 'filetypeId', 'colorSpaceId', 'uuid' ));
 
-				if ( $uuid != "" )
-				{
-					$queryStr = $queryStr . ":uuid ";
-					$values['uuid'] = $uuid;
-				}
-				else
-				{
-					$qStqueryStrring = $queryStr . "uuid() ";
-				}
+		$q->bindStr( "uuid", $uuid, true );
+		$q->bindShortName( $shortName );
+		$q->bindInt( "projectId", $projectId );
+		$q->bindInt( "filetypeId", $filetypeId );
+		$q->bindInt( "colorSpaceId", $colorSpaceId );
 
-				$queryStr = $queryStr . ") ON DUPLICATE KEY UPDATE {$pipefileTable}.`removed` = 0 ;";
-				$rep = $db->prepare($queryStr);
-				$ok = $rep->execute( $values );
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Pipe file created.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Pipe file updated.");
+		$q->close();
 	}
 
     // ========= REMOVE ==========
-	else if (hasArg("removePipeFile"))
+	else if ( acceptReply( "removePipeFile", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removePipeFile";
-
 		$uuid = getArg ( "uuid" );
-
-        if ($uuid != '')
-		{
-			//only if lead
-			if (isProjectAdmin())
-			{
-				$queryStr = "UPDATE {$pipefileTable} SET `removed` = 1 
-					WHERE `uuid` = :uuid ;";
-				$rep = $db->prepare($queryStr);
-				$ok = $rep->execute( array(
-					'uuid' => $uuid
-				));
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Pipe file removed.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to modify the pipeline.";
-                $reply["success"] = false;
-            }
-		}
-		else 
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q = new DBQuery();
+		$q->remove( "pipefile", $uuid );
     }
 
     // ========= UPDATE ==========
-	else if (hasArg("updatePipeFile"))
+	else if ( acceptReply( "updatePipeFile", 'projectAdmin' ) )
 	{
         $uuid = getArg( "uuid" );
 		$shortName = getArg( "shortName" );
 		$fileTypeUuid = getArg ( "fileTypeUuid" );
 		$colorSpaceUuid = getArg ( "colorSpaceUuid" );
 		$comment = getArg ( "comment" );
+		$customSettings = getArg( "customSettings" );
 
-        if ( $uuid != "" && ($shortName != "" or $fileTypeUuid != "" or $colorSpaceUuid != ""))
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				$qString = "UPDATE {$pipefileTable} SET `comment` = :comment, ";
-                $setArray = array();
-				$values = array('uuid' => $uuid, 'comment' => $comment);
-				
-				if ($shortName != "")
-				{
-					$setArray[] = " `shortName`= :shortName ";
-                    $values["shortName"] = $shortName;
-				}
-                if ($fileTypeUuid != "")
-				{
-					$setArray[] = "`filetypeId`= (SELECT {$filetypesTable}.`id` FROM {$filetypesTable} WHERE `uuid` = :fileTypeUuid )";
-                    $values["fileTypeUuid"] = $fileTypeUuid;
-				}
-                if ($colorSpaceUuid != "")
-				{
-					$setArray[] = "`colorSpaceId`= (SELECT {$colorspacesTable}.`id` FROM {$colorspacesTable} WHERE `uuid` = :colorSpaceUuid )";
-                    $values["colorSpaceUuid"] = $colorSpaceUuid;
-				}
- 
-				$qString = $qString . join(",", $setArray) . " WHERE `uuid`= :uuid ;";
-			
-				$rep = $db->prepare($qString);
-				
-                $ok = $rep->execute($values);
-				$rep->closeCursor();
+		$q = new DBQuery();
+		$filetypeId = $q->id('filetypes', $fileTypeUuid);
+		$colorSpaceId = $q->id('colorspaces', $colorSpaceUuid);
+		$q->update(
+			"pipefile",
+			array(
+				'comment',
+				'shortName',
+				'filetypeId',
+				'colorSpaceId',
+				'customSettings'
+			),
+			$uuid
+		);
 
-				if ($ok) $reply["message"] = "Pipe file updated.";
-				else $reply["message"] = $rep->errorInfo();
+		$q->bindStr( "comment", $comment );
+		$q->bindShortName( $shortName );
+		$q->bindInt( "filetypeId", $filetypeId );
+		$q->bindInt( "colorSpaceId", $colorSpaceId );
+		$q->bindStr( "customSettings", $customSettings );
 
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update pipe information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Pipe file updated.");
+		$q->close();
     }
 ?>

@@ -1,8 +1,7 @@
+SET FOREIGN_KEY_CHECKS=0;
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
-SET foreign_key_checks = 0;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -417,7 +416,10 @@ INSERT INTO `ram_applicationfiletype` (`id`, `applicationId`, `filetypeId`, `typ
 (447, 9, 55, 'import', '2021-07-03 12:32:28', 0),
 (448, 8, 55, 'import', '2021-07-03 12:32:31', 0),
 (449, 7, 55, 'import', '2021-07-03 12:32:37', 0),
-(450, 6, 55, 'import', '2021-07-03 12:32:40', 0);
+(450, 6, 55, 'import', '2021-07-03 12:32:40', 0),
+(451, 9, 38, 'native', '2021-10-20 13:54:18', 0),
+(452, 9, 39, 'native', '2021-10-20 13:54:22', 0),
+(453, 1, 3, 'native', '2021-10-20 13:54:31', 0);
 
 INSERT INTO `ram_applications` (`id`, `uuid`, `name`, `shortName`, `executableFilePath`, `latestUpdate`, `removed`, `order`, `comment`) VALUES
 (1, 'a5ef7a35-3901-55bf-83a3-dab447d2514d', 'Krita', 'KRITA', '', '2021-07-03 11:45:39', 0, 0, ''),
@@ -429,13 +431,14 @@ INSERT INTO `ram_applications` (`id`, `uuid`, `name`, `shortName`, `executableFi
 (7, '52d00135-8c10-5325-94ce-516bf86d87ad', 'Adobe Premiere Pro', 'PR', '', '2021-07-03 12:32:36', 0, 0, ''),
 (8, 'ee382eac-8220-5ce2-aff9-76a99fc8bba0', 'Blender', 'BLEND', '', '2021-07-03 12:06:01', 0, 0, ''),
 (9, '0e5d6aee-fae9-5c85-8c5c-d7546aec611f', 'Autodesk Maya', 'MAYA', '', '2021-07-03 12:08:34', 0, 0, ''),
-(10, '8d0dd63a-c9ee-56f4-a8a7-2eba19d0e660', 'Autodesk 3DS Max', 'NEW', '', '2021-07-03 12:10:49', 0, 0, ''),
+(10, '8d0dd63a-c9ee-56f4-a8a7-2eba19d0e660', 'Autodesk 3DS Max', '3DS', '', '2021-10-20 13:55:09', 0, 0, ''),
 (11, '2ce359cc-666c-5d49-8074-203884f80b2b', 'Maxon Cinema4D', 'C4D', '', '2021-07-03 12:12:33', 0, 0, ''),
 (12, 'e89d029e-4831-512a-874f-449f22b3b47d', 'The Foundry Mari', 'MARI', '', '2021-07-03 12:14:11', 0, 0, ''),
 (13, '48c5e50c-6f0a-5403-9844-7883f499fcdc', 'Adobe Substance Designer', 'SBSTDSGN', '', '2021-07-03 12:22:21', 0, 0, ''),
-(14, '2dd8a108-fc08-5d24-9de4-4b95ce228809', 'Adober Substance Painter', 'SBSTPNTR', '', '2021-07-03 12:23:57', 0, 0, ''),
+(14, '2dd8a108-fc08-5d24-9de4-4b95ce228809', 'Adobe Substance Painter', 'SBSTPNTR', '', '2021-07-03 12:23:57', 0, 0, ''),
 (15, '140f6f9c-1f2c-5989-a2b4-867bd4460123', 'The Foundry Nule', 'NUKE', '', '2021-07-03 12:24:26', 0, 0, ''),
-(16, '8e3f3080-5b37-57c1-8090-60688611fbe2', 'Lightworks', 'LWKS', '', '2021-07-03 12:26:22', 0, 0, '');
+(16, '8e3f3080-5b37-57c1-8090-60688611fbe2', 'Lightworks', 'LWKS', '', '2021-07-03 12:26:22', 0, 0, ''),
+(17, '234246cb-a8c0-525e-a9a8-e8ba7399a606', 'SideFX Houdini', 'HOUDINI', '', '2021-10-20 13:55:05', 0, 0, '');
 
 INSERT INTO `ram_filetypes` (`id`, `uuid`, `name`, `shortName`, `extensions`, `previewable`, `latestUpdate`, `removed`, `order`, `comment`) VALUES
 (1, '3a03d734-50f5-51c9-93a4-d9e8470fc24b', 'OpenEXR Image Data', 'exr', 'exr', 0, '2021-07-03 11:20:09', 0, 0, ''),
@@ -494,6 +497,9 @@ INSERT INTO `ram_filetypes` (`id`, `uuid`, `name`, `shortName`, `extensions`, `p
 (54, '3b7be413-5940-55f2-9ff5-597418225d44', 'Open Media Framework', 'omf', 'omf', 0, '2021-07-03 12:28:48', 0, 0, ''),
 (55, '6a6e19e0-f6ac-5227-b42f-f12f3aec470f', 'Waveform', 'wav', 'wav', 1, '2021-07-03 12:32:03', 0, 0, '');
 
+INSERT INTO `ram_servermetadata` (`id`, `version`, `date`) VALUES
+(1, '0.2.0-alpha', '2021-10-20 15:44:59');
+
 INSERT INTO `ram_states` (`id`, `uuid`, `name`, `shortName`, `color`, `latestUpdate`, `completionRatio`, `removed`, `comment`) VALUES
 (1, 'f1b78562-0964-5e04-adcc-5f9f7b61d155', 'Nothing to do', 'NO', '#484848', '2021-07-03 11:22:55', 0, 0, 'There\'s nothing to do at this step.'),
 (2, '2fa28213-b2ce-5227-92ea-604ea4a72e7b', 'Ready to do', 'TODO', '#00aaff', '2021-07-03 11:22:59', 0, 0, 'This step is ready, one can work on this.'),
@@ -518,34 +524,33 @@ INSERT INTO `ram_templateassetgroups` (`id`, `uuid`, `name`, `shortName`, `lates
 INSERT INTO `ram_templatesteps` (`id`, `uuid`, `name`, `shortName`, `autoCreateAssets`, `latestUpdate`, `type`, `color`, `estimationMethod`, `estimationVeryEasy`, `estimationEasy`, `estimationMedium`, `estimationHard`, `estimationVeryHard`, `removed`, `order`, `comment`) VALUES
 (1, 'f96be95e-3ed9-5394-a372-ba79a07b978f', 'Storyboard', 'STRBRD', 0, '2021-07-03 10:50:21', 'pre', '#50b8c8', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (2, '897bc267-151b-5c10-9a52-46933e2dd0b8', 'Character Design', 'CD', 0, '2021-07-03 10:51:00', 'asset', '#73e7ab', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
-(3, '913195ca-eeb3-5402-aa7a-e73dd1546c28', 'Set Design', 'SET', 0, '2021-07-03 10:51:26', 'asset', '#98df85', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
+(3, '913195ca-eeb3-5402-aa7a-e73dd1546c28', 'Set Dressing', 'SET', 0, '2021-10-20 13:53:22', 'asset', '#98df85', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (4, '95ac01d8-191c-5de5-9fa5-6e1210a59fe7', 'Props Design', 'PROPS', 0, '2021-07-03 10:51:53', 'asset', '#cfff90', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (5, 'a46785cb-f410-5c3e-b0ca-9d436f83408e', 'Background Design', 'BG', 0, '2021-07-03 10:52:25', 'asset', '#f8ffb4', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (6, '12132cf0-645a-5001-8bdc-94bd16563e0b', 'Script', 'SCRIPT', 0, '2021-07-03 10:52:51', 'pre', '#b0c2ff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (7, '8e07369c-ab9c-5f03-a80b-cf628ef893d6', 'Textures', 'TEX', 0, '2021-07-03 10:53:38', 'asset', '#dfa775', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (8, 'e5d97647-ceee-5f8f-8e5d-d22be37360db', 'Shading', 'SHADE', 0, '2021-07-03 10:54:04', 'asset', '#ff7c50', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
-(9, '48fee363-6ac7-5ca2-940b-2c1a14ec722a', 'Modeling', 'MOD', 0, '2021-07-03 10:54:30', 'asset', '#ff4039', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
-(10, '7fc06313-e956-5a9a-a1e7-e1d6f3e9e532', 'Sculpting', 'SCULPT', 0, '2021-07-03 10:55:02', 'asset', '#ff4c73', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
-(11, 'c6c16856-1585-5c97-a2be-debe287ac23f', 'Rigging', 'RIG', 0, '2021-07-03 10:55:27', 'asset', '#ef75ff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
+(9, '48fee363-6ac7-5ca2-940b-2c1a14ec722a', 'Modeling', 'MOD', 0, '2021-10-20 13:52:25', 'asset', '#ff4039', 'shot', '0.50', '1.00', '2.00', '5.00', '10.00', 0, 0, ''),
+(10, '7fc06313-e956-5a9a-a1e7-e1d6f3e9e532', 'Sculpting', 'SCULPT', 0, '2021-10-20 13:53:12', 'asset', '#ff4c73', 'shot', '0.20', '0.50', '2.00', '5.00', '8.00', 0, 0, ''),
+(11, 'c6c16856-1585-5c97-a2be-debe287ac23f', 'Rigging', 'RIG', 0, '2021-10-20 13:52:59', 'asset', '#ef75ff', 'shot', '1.00', '5.00', '10.00', '20.00', '30.00', 0, 0, ''),
 (12, 'b19f26c4-cac8-5345-a931-c02aab6a90c9', 'Animation', 'ANIM', 0, '2021-07-03 10:56:01', 'shot', '#c992ff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (13, '2c7a7eb9-4df2-54f4-8c26-b74384ece50e', 'Animatic', 'ANMTC', 0, '2021-07-03 10:56:52', 'pre', '#55f7ff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
-(14, 'e94720f5-6deb-5106-970e-c503ed1c4730', 'Layout', 'LAY', 0, '2021-07-03 10:57:08', 'asset', '#8aa3ff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
+(14, 'e94720f5-6deb-5106-970e-c503ed1c4730', 'Layout', 'LAY', 0, '2021-10-20 13:51:17', 'asset', '#8aa3ff', 'shot', '0.10', '0.20', '0.30', '0.50', '1.00', 0, 0, ''),
 (15, 'fd114d3f-e234-523b-ac52-b45c93f0e58c', 'Visual Effects', 'VFX', 0, '2021-07-03 10:57:56', 'shot', '#27ffa5', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (16, '867b5178-7d36-5250-b626-3bcbe8e795cc', 'Cloth', 'CLOTH', 0, '2021-07-03 10:58:09', 'shot', '#ceffa5', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
-(17, 'a89ef7b1-2c4d-5d2a-94ec-0540b58a2b76', 'Lighting', 'LIGHT', 0, '2021-07-03 10:58:47', 'shot', '#ff9d25', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
+(17, 'a89ef7b1-2c4d-5d2a-94ec-0540b58a2b76', 'Lighting', 'LIGHT', 0, '2021-10-20 13:51:58', 'shot', '#ff9d25', 'shot', '0.10', '0.50', '0.80', '2.00', '4.00', 0, 0, ''),
 (18, '6e5431be-c11c-5248-b4d9-bd69fbb91b7c', 'Compositing', 'COMP', 0, '2021-07-03 10:59:12', 'shot', '#d5ff02', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (19, '0983d009-eb6d-5749-8a51-e607edd4d3c2', 'Editing', 'EDIT', 0, '2021-07-03 10:59:38', 'post', '#ff62fc', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (20, '8fe9c014-ca09-5f72-b96d-7d1b70b1ed22', 'Sound Design', 'SFX', 0, '2021-07-03 11:00:07', 'post', '#ff5aaa', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (21, 'ee48e49b-ef49-558d-8bc0-f451a5be6f10', 'Music', 'MUSIC', 0, '2021-07-03 11:00:33', 'post', '#ff8692', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, ''),
 (22, '516050fa-26cc-58c7-84c8-d9c79aad8e77', 'Color Correction', 'CC', 0, '2021-07-03 11:00:58', 'post', '#a14fff', 'shot', '0.20', '0.50', '1.00', '2.00', '3.00', 0, 0, '');
 
-INSERT INTO `ram_users` (`id`, `uuid`, `name`, `shortName`, `password`, `latestUpdate`, `folderPath`, `role`, `removed`, `order`, `comment`) VALUES
-(2, '9804963f-5a6f-5987-8adc-3a70ac6a1a68', 'Ramses Daemon', 'Ramses', '$2y$13$Woc8BBF.13i1dsKuNjX.y.SN4afvi/hUpaevDViqt7.WO.HZSR/3G', '2021-07-03 13:16:59', 'auto', 'admin', 0, 0, 'This is the little daemon which works discretely for you in the backyard of the Rx Asset Management System.'),
-(3, 'e49e0411-19c8-5c85-8b33-d57ca9d72086', 'Nicolas Duduf', 'Duduf', '$2y$13$jPdpAs8S54iy0SCk9zl07OZVn/P/JDoaykdfSLgw7EOolzWu.9pEe', '2021-07-03 13:16:42', 'auto', 'standard', 0, 0, 'Duduf is the developer of Ramses! As Ramses is free, he really needs your support, please have a look at https://patreon.com/duduf or make a donation to RxLab on https://rainboxlab.org\nThanks!');
+INSERT INTO `ram_users` (`id`, `uuid`, `name`, `shortName`, `password`, `email`, `latestUpdate`, `folderPath`, `role`, `color`, `removed`, `order`, `comment`) VALUES
+(2, '9804963f-5a6f-5987-8adc-3a70ac6a1a68', 'Ramses Daemon', 'Ramses', '$2y$13$Woc8BBF.13i1dsKuNjX.y.SN4afvi/hUpaevDViqt7.WO.HZSR/3G', 'TDJQVWJITzczekFpVUxnWjFsRFJrUT09OjpYRTFJRTFLdFR3SXJOeG9kendFRkp3PT0=', '2021-10-20 13:44:59', 'auto', '$2y$04$K3QIYoKF8WAFkXDXatWqRea8Is9Cx8iQo3fhGcBez/qvKFIg/z0qq', '#e3e3e3', 0, 0, 'This is the little daemon which works discretely for you in the backyard of the Rx Asset Management System.'),
+(3, 'e49e0411-19c8-5c85-8b33-d57ca9d72086', 'Nicolas Duduf Dufresne', 'Duduf', '$2y$13$jPdpAs8S54iy0SCk9zl07OZVn/P/JDoaykdfSLgw7EOolzWu.9pEe', 'ZjJTc1VXKy9EUXlxMzJGc29wSXgxdz09OjpWUTF3RVF2YjZYWFpzZmxYNUIwbmtRPT0=', '2021-10-20 13:44:59', 'auto', '$2y$04$E1cY68.5ZeIJ9jxpA4VD9OJyAUyElcwvCrOgmwWSDKWsLr1ZBviNC', '#e3e3e3', 0, 0, 'Duduf is the developer of Ramses! As Ramses is free, he really needs your support, please have a look at https://patreon.com/duduf or make a donation to RxLab on https://rainboxlab.org\nThanks!');
+SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-
-SET foreign_key_checks = 1;

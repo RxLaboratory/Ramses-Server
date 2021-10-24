@@ -22,62 +22,31 @@
 	*/
 
     // ========= CREATE ==========
-    if (hasArg("createFileType"))
+    if ( acceptReply( "createFileType", 'projectAdmin' ) )
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "createFileType";
-
         $name = getArg("name");
 		$shortName = getArg("shortName");
         $extensions = getArg("extensions");
-		$uuid = getArg("uuid");
+		$uuid = getArg("uuid", uuid());
 
-        if (strlen($shortName) > 0)
-        {
-            // Only if admin
-            if ( isProjectAdmin() )
-            {
-                $qString = "INSERT INTO " . $tablePrefix . "filetypes (`name`,`shortName`,`extensions`,`uuid`) VALUES ( :name , :shortName , :extensions , ";
-                $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'extensions' => $extensions);
+        // remove leading "."
+        if ( strpos( $shortName, '.' ) == 0 ) $shortName = substr( $shortName, 1);
 
-                if (strlen($uuid) > 0)
-                {
-                    $qString = $qString . ":uuid";
-                    $values['uuid'] = $uuid;
-                }
-                else 
-                {
-                    $qString = $qString . "uuid()";
-                }
+        $q = new DBQuery();
 
-                $qString = $qString . " ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name), extensions = VALUES(extensions), removed = 0;";
+        $q->insert( "filetypes", array( 'name', 'shortName', 'extensions', 'uuid' ));
+        $q->bindName( $name );
+        $q->bindShortName( $shortName );
+		$q->bindStr( "extensions", $extensions );
+		$q->bindStr( "uuid", $uuid, true );
 
-                $rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();         
-    
-                $reply["message"] = "File type \"" . $shortName . "\" created.";
-                $reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to create file types.";
-                $reply["success"] = false;
-            }
-        }
-        else
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
+        $q->execute("File type '{$shortName}' created.");
+		$q->close();
     }
 
     // ========= UPDATE ==========
-	else if (hasArg("updateFileType"))
+	else if ( acceptReply( "updateFileType", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateFileType";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
         $extensions = getArg( "extensions" );
@@ -85,116 +54,74 @@
 		$uuid = getArg( "uuid" );
 		$comment = getArg( "comment" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				$qString = "UPDATE {$filetypesTable}
-				SET
-					`name`= :name ,
-					`shortName`= :shortName,
-                    `extensions`= :extensions,
-                    `previewable` = :previewable,
-                    `comment` = :comment
-				WHERE
-					uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName,'extensions' => $extensions, 'previewable' => $previewable, 'uuid' => $uuid, 'comment' => $comment);
+        // remove leading "."
+        if ( strpos( $shortName, '.' ) == 0 ) $shortName = substr( $shortName, 1);
 
-                $rep = $db->prepare($qString);
-				
-                $rep->execute($values);
-                $rep->closeCursor();
+        $q = new DBQuery();
+        $q->update(
+			"filetypes",
+			array(
+				'name',
+				'shortName',
+				'extensions',
+                'previewable',
+                'comment'
+			),
+			$uuid
+		);
 
-				$reply["message"] = "File type \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update file type information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $q->bindName( $name );
+        $q->bindShortName( $shortName );
+        $q->bindStr( "comment", $comment );
+        $q->bindStr( "extensions", $extensions );
+		$q->bindInt( "previewable", $previewable );
+
+        $q->execute("File type '{$shortName}' updated.");
+		$q->close();
 	}
 
 	// ========= REMOVE ==========
-	else if (hasArg("removeFileType"))
+	else if ( acceptReply( "removeFileType", 'projectAdmin' ) )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeFileType";
-
-		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if project admin
-			if (isProjectAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "filetypes SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "File type " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to remove file types.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$uuid = getArg ( "uuid" );
+		$q = new DBQuery();
+		$q->remove( "filetypes", $uuid );
 	}
 
     // ========= GET ==========
-    else if (hasArg("getFileTypes") || hasArg("init"))
+    else if (acceptReply("getFileTypes") || hasArg("init"))
     {
-        if (hasArg("getFileTypes")) {
-            $reply["accepted"] = true;
-            $reply["query"] = "getFileTypes";
-        }
-        
-        
-        $rep = $db->prepare("SELECT
-                `name`,`shortName`,`extensions`,`previewable`,`uuid`, `comment`
-            FROM " . $tablePrefix . "filetypes
-            WHERE removed = 0
-            ORDER BY `shortName`, `name`
-            ;");
-        $rep->execute();
+        $q = new DBQuery();
+		$filetypes = $q->getAll("filetypes",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'extensions',
+				'previewable',
+				'comment'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
 
-        $filetypes = Array();
+		// Adjust values
+		for ($f = 0; $f < count($filetypes); $f++)
+		{
+			$filetypes[$f]['previewable'] = (int)$filetypes[$f]['previewable'];
+		}
 
-        while ($f = $rep->fetch())
+		if (hasArg("init") )
         {
-            $filetype = Array();
-			$filetype['name'] = $f['name'];
-			$filetype['shortName'] = $f['shortName'];
-			$filetype['comment'] = $f['comment'];
-			$filetype['uuid'] = $f['uuid'];
-			$filetype['extensions'] = $f['extensions'];
-			$filetype['previewable'] = (int) $f['previewable'];
-
-			$filetypes[] = $filetype;
-        }
-
-        $rep->closeCursor();
-
-        if (hasArg("getFileTypes")) {
-            $reply["content"] = $filetypes;
-            $reply["message"] = "File types list retrieved.";
-            $reply["success"] = true;
-        } else {
             $reply["content"]["fileTypes"] = $filetypes;
+        }
+        else 
+        {
+            $reply["content"] = $filetypes;
+            $reply["message"] = "File Type list retreived";
+            $reply["success"] = true;
         }
     }
 ?>

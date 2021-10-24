@@ -1,4 +1,105 @@
 <?php
+
+    function createEncryptionKey ()
+    {
+        // Compute appropriate cost for passwords
+        $timeTarget = 0.1; // 100 milliseconds 
+        $cost = 7;
+        do {
+            $cost++;
+            $start = microtime(true);
+            password_hash("test", PASSWORD_BCRYPT, ["cost" => $cost]);
+            $end = microtime(true);
+        } while (($end - $start) < $timeTarget);
+
+
+        // Generate unique encryption key
+        $key_size = 32; // 256 bits
+        $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
+
+        $configSecFile = fopen("../config_security.php", "w");
+        $encryption_key_txt = base64_encode($encryption_key);
+        $ok = fwrite($configSecFile, "<?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?>");
+        fclose($configSecFile);
+
+        if (!$ok || !file_exists("../config_security.php"))
+        {
+            echo( "    ▫ Failed. Could not write the key file. We need write permissions in the ramses folder." );
+            echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config_security.php</strong> file,");
+            echo("<br />upload this new file to the server, and refresh this page.</p>");
+            die("<strong><code>&lt;?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?&gt;</strong></code>");
+        }
+
+        chmod( "../config_security.php", 0600 );
+
+        return $encryption_key;
+    }
+
+    /**
+     * Encrypts some text to store in the database
+     */
+    function encrypt( $txt )
+    {
+        global $encrypt_key;
+        if ( $encrypt_key == '' ) return '';
+
+        // Generate an initialization vector
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+
+        $enc_txt = openssl_encrypt(
+            $txt,                 // data
+            'AES-256-CBC',        // cipher and mode
+            $encrypt_key,         // secret key
+            0,                    // options (not used)
+            $iv                   // initialisation vector
+        );
+
+        // The IV may contain the separator ('::'), base64 encoding it fixes the issue
+        $iv = base64_encode( $iv );
+        return base64_encode($enc_txt . '::' . $iv);
+    }
+
+    /**
+     * Decrypts text stored in the database (base64)
+     */
+    function decrypt( $data )
+    {
+        global $encrypt_key;
+        if ( $encrypt_key == '' ) return '';
+        if (!isEncrypted($data)) return $data;
+
+        $dec_txt = "";
+
+        try {
+            list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
+            $iv = base64_decode( $iv );    
+
+            $dec_txt = openssl_decrypt(
+                $encrypted_data,
+                'AES-256-CBC',
+                $encrypt_key,
+                0,
+                $iv
+            );
+        }
+        catch (exception $e) {
+            return "";
+        }
+
+        return $dec_txt;
+    }
+
+    /**
+     * Checks if a data is already encrypted
+     */
+    function isEncrypted( $data )
+    {
+        $test = base64_decode($data, true);
+        if (!$test) return false;
+        if( !strpos($test, '::') ) return false;
+        return true;
+    }
+
     /**
      * Logs in and returns the new session token
      */
@@ -94,13 +195,37 @@
      */
     function hashPassword($pswd, $uuid)
     {
-        return password_hash(  $uuid . $pswd ,  PASSWORD_DEFAULT, ['cost' => 13]);
+        global $pass_cost;
+        return password_hash(  $uuid . $pswd ,  PASSWORD_DEFAULT, ['cost' => $pass_cost]);
     }
 
     function checkPassword( $pswd, $uuid, $testPswd )
     {
         $pswd = $uuid . $pswd;
         return password_verify($pswd, $testPswd);
+    }
+
+    /**
+     * Hashes the role to store it in the database
+     */
+    function hashRole( $r )
+    {
+        return password_hash(  $r ,  PASSWORD_DEFAULT, ['cost' => 4]);
+    }
+
+    /**
+     * Checks the hashed role got from the database and returns the plain text role
+     */
+    function checkRole ( $r )
+    {
+        if ($r == 'admin') return 'admin';
+        if ($r == 'project') return 'project';
+        if ($r == 'lead') return 'lead';
+        if ($r == 'standard') return 'standard';
+        if ( checkPassword( 'admin', '', $r ) ) return 'admin';
+        if ( checkPassword( 'project', '', $r) ) return 'project';
+        if ( checkPassword( 'lead', '', $r) ) return 'lead';
+        return 'standard';
     }
 
     /**
@@ -223,53 +348,30 @@
         );
     }
 
-    function checkArgs( $arglist )
+    function acceptReply($queryName, $role = "")
     {
         global $reply;
 
-        $ok = true;
-        foreach( $arglist as $arg )
-        {
-            if ($arg == "")
-            {
-                $ok = false;
-                break;
-            }
-        }
-        if (!$ok)
-        {
-            $reply["message"] = "Invalid request, missing values";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
+        // Already accepted
+        if ($reply["accepted"]) return false;
+        // Not this query
+        if (!hasArg($queryName)) return false;
 
-    function sqlRequest( $request, $message, $debug = false )
-    {
-        global $reply;
-
-        if ($debug) $request->debugDumpParams();
-
-        $ok = $request->execute();
-
-        if (!$ok)
-        {
-            $reply["message"] = $rep->errorInfo()[2];
-            $reply["success"] = false;
-        }
-        else if ($message != "")
-        {
-            $reply["message"] = $message;
-            $reply["success"] = true;
-        }
-        
-        return $ok;
-    }
-
-    function acceptReply($queryName)
-    {
-        global $reply;
+        // Got the right one!
+        $reply["query"] = $queryName;
         $reply["accepted"] = true;
-		$reply["query"] = $queryName;
+
+        // Check privileges
+        if ($role == 'admin') if (!isAdmin()) return false;
+        if ($role == 'projectAdmin') if (!isProjectAdmin()) return false;
+        if ($role == 'lead') if (!isLead()) return false;
+
+        return true;
+    }
+    
+    function dateTimeStr()
+    {
+        $currentDate = new DateTime();
+        return $currentDate->format('Y-m-d H:i:s');
     }
 ?>

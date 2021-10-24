@@ -22,185 +22,80 @@
 	*/
 
 	// ========= CREATE SEQUENCE ==========
-	if (hasArg("createSequence"))
+	if ( acceptReply("createSequence", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "createSequence";
-
 		$name = getArg("name");
 		$shortName = getArg("shortName");
 		$projectUuid = getArg("projectUuid");
 		$uuid = getArg("uuid");
 
-		if (strlen($shortName) > 0 && strlen($projectUuid) > 0)
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				// Create sequence
-				$qString = "INSERT INTO " . $tablePrefix . "sequences (name,shortName,projectId,uuid) 
-				VALUES (
-					:name,
-					:shortName , 
-					(SELECT " . $tablePrefix . "projects.id FROM " . $tablePrefix . "projects WHERE uuid = :projectUuid ),";
+		$q = new DBQuery();
+		$projectId = $q->id('projects', $projectUuid);
 
-				$values = array('name' => $name,'shortName' => $shortName, 'projectUuid' => $projectUuid);
-				
-				if (strlen($uuid) > 0)
-				{
-					$qString = $qString . ":uuid ";
-					$values['uuid'] = $uuid;
-				}
-				else
-				{
-					$qString = $qString . "uuid() ";
-				}
+		$q->insert( "sequences", array( 'name', 'shortName', 'projectId', 'uuid' ));
 
-				$qString = $qString . ") ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "uuid", $uuid, true );
+		$q->bindInt( "projectId", $projectId );
 
-				$rep = $db->prepare($qString);
-				$ok = $rep->execute($values);
-				$rep->closeCursor();
-
-				if ($ok) $reply["message"] = "Sequence \"" . $shortName . "\" added.";
-				else $reply["message"] = $rep->errorInfo();
-
-				$reply["success"] = $ok;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create sequences.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Sequence '{$shortName}' added.");
+		$q->close();
 	}
 
 	// ========= UPDATE SEQUENCE ==========
-	else if (hasArg("updateSequence"))
+	else if ( acceptReply("updateSequence", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateSequence";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
 		$comment = getArg( "comment" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isProjectAdmin() )
-            {
-				$qString = "UPDATE {$sequencesTable} SET `name`= :name ,`shortName`= :shortName, `comment`= :comment WHERE uuid= :uuid ;";
-				$values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment);
+		$q = new DBQuery();
+		$q->update(
+			"sequences",
+			array(
+				'name',
+				'shortName',
+				'comment'
+			),
+			$uuid
+		);
 
-                $rep = $db->prepare($qString);
-				
-                $rep->execute($values);
-                $rep->closeCursor();
+		$q->bindName( $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
 
-				$reply["message"] = "Sequence \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Project Admin to update sequence information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
+		$q->execute("Sequence '{$shortName}' updated.");
+		$q->close();
 	}
 
-	// ========= REMOVE ASSET GROUP ==========
-	else if (hasArg("removeSequence"))
+	// ========= REMOVE SEQUENCE ==========
+	else if ( acceptReply("removeSequence", 'projectAdmin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeSequence";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isProjectAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "sequences SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Asset Group " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove sequences.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $q = new DBQuery();
+		$q->remove( "sequences", $uuid );
 	}
 
-	else if (hasArg("setSequenceOrder"))
+	else if ( acceptReply("setSequenceOrder", 'lead') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "setShotOrder";
-
 		$order = getArg("order");
 		$uuid = getArg("uuid");
 
-		if ($uuid != "" && $order != "")
-		{
-			// Only if lead
-			if ( isLead() )
-			{
-				//Move given sequence
-				$qString = "UPDATE {$sequencesTable}
-					SET `order` = :order
-					WHERE `uuid` = :uuid ;";
+		$q = new DBQuery();
+		$q->update(
+			"sequences",
+			array(
+				'order'
+			),
+			$uuid
+		);
 
-				$rep = $db->prepare($qString);
-				$rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-				$rep->bindValue(':order', $order, PDO::PARAM_STR);
-				$ok = $rep->execute();
-				$rep->closeCursor();
+		$q->bindInt( "order", $order );
 
-				if($ok)
-				{
-					$reply["message"] = "Sequence moved.";
-					$reply["success"] = true;
-				}
-				else 
-				{
-					$reply["message"] = $rep.errorInfo()[2];
-					$reply["success"] = false;
-				}
-				
-			}
-			else
-			{
-				$reply["message"] = "Insufficient rights, you need to be Lead to update shot order.";
-				$reply["success"] = false;
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Sequence moved.");
+		$q->close();
 	}
 
 ?>

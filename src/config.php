@@ -30,6 +30,11 @@
 
 	// ==== SQL SETTINGS ====
 
+	// either 'mysql' (works for MariaDB too) or 'sqlite'
+	$sqlMode = 'sqlite';
+
+	// ==== MySQL/MariaDB SETTINGS ====
+
 	// Host URL
 	$sqlHost = "localhost";
 	$sqlPort = 3306;

@@ -23,11 +23,8 @@
 
 
 	// ========= UPDATE STATUS ==========
-	if (hasArg("updateStatus"))
+	if ( acceptReply("updateStatus") )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateStatus";
-
 		$comment = getArg ( "comment" );
 		$version = getArg ( "version" );
 		$completionRatio = getArg ("completionRatio" );
@@ -40,138 +37,72 @@
         $estimation = getArg("estimation");
         $difficulty = getArg("difficulty");
 
-		if ( $uuid != "" && $stateUuid != "" )
-		{
-            $qString = "UPDATE {$statusTable}
-                SET `stateId` = (SELECT {$statesTable}.`id` FROM {$statesTable} WHERE {$statesTable}.`uuid` = :stateUuid )";
+        $q = new DBQuery();
 
-            $values = array('stateUuid' => $stateUuid, 'uuid' => $uuid);
+        $stateId = $q->id("states", $stateUuid);
 
-            if ($completionRatio != "")
-            {
-                $qString = $qString . ", completionRatio= :completionRatio";
-                $values["completionRatio"] = (int)$completionRatio;
-            }
+        $assignedUserId = $q->id('users', $assignedUserUuid);
 
-            if ($version != "")
-            {
-                $qString = $qString . ", version= :version";
-                $values["version"] = (int)$version;
-            }
+		$q->update(
+			"status",
+			array(
+				'stateId',
+				'completionRatio',
+				'version',
+				'comment',
+				'published',
+				'assignedUserId',
+				'timeSpent',
+				'date',
+				'difficulty',
+				'estimation'
+			),
+			$uuid
+		);
 
-            if ($comment != "")
-            {
-                $qString = $qString . ", comment= :comment";
-                $values["comment"] = $comment;
-            }
+        $q->bindInt( "stateId", $stateId );
+		$q->bindStr( "completionRatio", $completionRatio );
+		$q->bindInt( "version", $version );
+		$q->bindStr( "comment", $comment );
+		$q->bindInt( "published", $published );
+        $q->bindInt( 'assignedUserId', $assignedUserId );
+		$q->bindInt( "timeSpent", $timeSpent );
+		$q->bindStr( "date", $date );
+		$q->bindStr( "difficulty", $difficulty );
+		$q->bindStr( "estimation", $estimation );
 
-            if ($published != 0)
-            {
-                $qString = $qString . ", published= :published";
-                $values["published"] = $published;
-            }
-
-            if ($assignedUserUuid != "")
-            {
-                if ($assignedUserUuid == "NULL" ) $qString = $qString . ", assignedUserId= NULL";
-                else 
-                {
-                    $qString = $qString . ", assignedUserId= (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :assignedUserUuid )";
-                    $values["assignedUserUuid"] = $assignedUserUuid;
-                }
-            }
-
-            if ($timeSpent >= 0)
-            {
-                $qString = $qString . ", timeSpent= :timeSpent";
-                $values["timeSpent"] = $timeSpent;
-            }
-
-            if ($date != "")
-            {
-                $qString = $qString . ", date= :date";
-                $values["date"] = $date;
-            }
-
-            if ($difficulty != "")
-            {
-                $qString = $qString . ", `difficulty`= :difficulty";
-                $values["difficulty"] = $difficulty;
-            }
-
-            if ($estimation != "")
-            {
-                $qString = $qString . ", `estimation`= :estimation";
-                $values["estimation"] = $estimation;
-            }
-
-            $qString = $qString . " WHERE uuid= :uuid ;";
-
-            $rep = $db->prepare($qString);
-            $rep->execute($values);
-            $rep->closeCursor();
-
-            $reply["message"] = "Status updated.";
-            $reply["success"] = true;
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
-
+        $q->execute("Status updated.");
+		$q->close();	
 	}
 
 	// ========= REMOVE STATUS ==========
-	else if (hasArg("removeStatus"))
+	else if ( acceptReply("removeStatus") )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeStatus";
-
-		$uuid = getArg ("uuid" );
-
-		if (strlen($uuid) > 0)
-		{
-            $rep = $db->prepare("UPDATE {$statusTable} SET removed = 1 WHERE uuid= :uuid ;");
-            $rep->execute(array('uuid' => $uuid));
-            $rep->closeCursor();
-
-            $reply["message"] = "Status removed.";
-            $reply["success"] = true;
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $uuid = getArg("uuid");
+		$q = new DBQuery();
+		$q->remove( "status", $uuid, false );
 	}
 
-
     // ========= SET STATUS USER ==========
-	else if (hasArg("setStatusUser"))
+	else if ( acceptReply("setStatusUser") )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "setStatusUser";
-
 		$uuid = getArg ("uuid" );
 		$userUuid = getArg ("userUuid" );
 
-		if (strlen($uuid) > 0)
-		{
-            $rep = $db->prepare("UPDATE {$statusTable}
-                SET `userId` = (SELECT {$usersTable}.`id` FROM {$usersTable} WHERE {$usersTable}.`uuid` = :userUuid )
-                WHERE uuid= :uuid ;");
-            $rep->execute(array('uuid' => $uuid, 'userUuid' => $userUuid));
-            $rep->closeCursor();
+        $q = new DBQuery();
+        $userId = $q->id("users", $userUuid);
+        $q->update(
+			"status",
+			array(
+				'userId'
+			),
+			$uuid
+		);
+        
+        $q->bindInt( "userId", $userId );
 
-            $reply["message"] = "Status user changed.";
-            $reply["success"] = true;
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $q->execute( "Status user changed." );
+		$q->close();	
 	}
 
 ?>

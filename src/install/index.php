@@ -5,11 +5,26 @@
 		Installs the SQL Database
 	*/
 
+    include('../config.php');
+
     //connect to database
+
+    if ($sqlMode == "sqlite") // Copy the default db first
+    {
+        echo ( "Writing the new database scheme (using SQLite)...<br />" );
+
+        $ok = copy("ramses.sqlite", "../ramses_data");
+
+        if (!$ok)
+        {
+            die( "Sorry, something went wrong while writing the database. Make sure the server has write access to its folder." );
+        }
+
+        echo ( "The new database is ready!<br />" );
+    }
 
     echo ( "Connecting to the database...<br />" );
 
-    include('../config.php');
     include('../functions.php');
     include('../db.php');
 
@@ -17,56 +32,75 @@
 
     setupTablePrefix();
 
-    echo ( "Writing the new database scheme...<br />" );
+    echo ( "Generating encryption keys...<br />" );
 
-    $sql = file_get_contents('ramses_scheme.sql');
-    // Run the installer SQL Script
-    $qr = $db->exec($sql);
-    
-    if ( $qr === false )
+    $encrypt_key = createEncryptionKey();
+    $encrypt_key_txt = base64_encode($encrypt_key);
+    echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
+    echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
+
+    include('../config_security.php');
+
+    // Set the DB if MySQL (if SQLite, the file is already available)
+    if ($sqlMode != "sqlite")
     {
-        echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-        die( print_r($db->errorInfo(), true) );
+        echo ( "Writing the new database scheme (using MySQL)...<br />" );
+
+        $sql = file_get_contents('ramses_scheme.sql');
+        // Run the installer SQL Script
+        $qr = $db->exec($sql);
+        
+        if ( $qr === false )
+        {
+            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
+            die( print_r($db->errorInfo(), true) );
+        }
+
+        echo ( "Database tables are ready!<br />" );
+
+        echo ( "Inserting default data...<br />" );
+
+        $sql = file_get_contents('ramses_data.sql');
+        // Run the data SQL Script
+        $qr = $db->exec($sql);
+        
+        if ( $qr === false )
+        {
+            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
+            die( print_r($db->errorInfo(), true) );
+        }
+
+        echo ( "The new data is ready!<br />" );
     }
 
-    echo ( "Database tables are ready!<br />" );
-
-    echo ( "Inserting default data...<br />" );
-
-    $sql = file_get_contents('ramses_data.sql');
-    // Run the data SQL Script
-    $qr = $db->exec($sql);
-    
-    if ( $qr === false )
-    {
-        echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-        die( print_r($db->errorInfo(), true) );
-    }
-
-    echo ( "The new data is ready!<br />" );
+    echo( "Setuping the administrator user...<br />" );
 
     //Setup admin user
     $uuid = uuid();
     $shortName = "Admin";
-    $name = "Administrator";
+    $name = encrypt("Administrator");
+    $email = encrypt("");
     $pswd = hashPassword("0b17bfa7938d75031d1754ab56c27062d967e92ca04f2ba5b4ebf920528936b95f9a9fc96a2ef8fb921463cd97aa94026079891f6f4c6e273ce5956c9da72c92", $uuid);   
     $comment = "The default Administrator user. Don't forget to rename it and change its password!";
+    $role = hashRole('admin');
    
-    $qString = "INSERT INTO
+    $qString = "REPLACE INTO
         {$tablePrefix}users (
             `name`,
             `shortName`,
             `uuid`,
             `password`,
             `role`,
-            `comment`)
+            `comment`,
+            `email` )
         VALUES (
             :name ,
             :shortName ,
             :uuid,
             :password,
-            'admin',
-            :comment );
+            :role,
+            :comment,
+            :email );
         COMMIT;";
 
     $rep = $db->prepare($qString);
@@ -75,6 +109,8 @@
     $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
     $rep->bindValue(':password', $pswd, PDO::PARAM_STR);
     $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+    $rep->bindValue(':role', $role, PDO::PARAM_STR);
+    $rep->bindValue(':email', $email, PDO::PARAM_STR);
 
     $ok = $rep->execute();
     $rep->closeCursor();

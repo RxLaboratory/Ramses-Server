@@ -1,6 +1,13 @@
 <?php
-    $ramsesVersion = "0.1.3-alpha";
-	$installed = !file_exists("install/index.php");
+    $ramsesVersion = "0.2.0-alpha";
+	$installed = file_exists("config_security.php");
+
+	// Set the timezone to UTC so it matches the SQL db
+	date_default_timezone_set('UTC');
+
+	// The encryption key
+	if( $installed ) include( 'config_security.php' );
+	else $encrypt_key = '';
 
 	if ($devMode)
 	{
@@ -45,31 +52,6 @@
 
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
-
-	//build table names
-	$applicationfiletypeTable = $tablePrefix . "applicationfiletype";
-	$applicationsTable = $tablePrefix . "applications";
-	$assetgroupsTable = $tablePrefix . "assetgroups";
-	$assetsTable = $tablePrefix . "assets";
-	$colorspacesTable = $tablePrefix . "colorspaces";
-	$filetypesTable = $tablePrefix . "filetypes";
-	$pipesTable = $tablePrefix . "pipes";
-	$projectassetgroupTable = $tablePrefix . "projectassetgroup";
-	$projectsTable = $tablePrefix . "projects";
-	$sequencesTable = $tablePrefix . "sequences";
-	$shotsTable = $tablePrefix . "shots";
-	$statesTable = $tablePrefix . "states";
-	$statusTable = $tablePrefix . "status";
-	$stepapplicationTable = $tablePrefix . "stepapplication";
-	$stepsTable = $tablePrefix . "steps";
-	$projectuserTable = $tablePrefix . "projectuser";
-	$templateassetgroupsTable = $tablePrefix . "templateassetgroups";
-	$templatestepsTable = $tablePrefix . "templatesteps";
-	$usersTable = $tablePrefix . "users";
-	$pipefileTable = $tablePrefix . "pipefile";
-	$pipefilepipeTable = $tablePrefix . "pipefilepipe";
-	$shotassetTable = $tablePrefix . "shotasset";
-	$scheduleTable = $tablePrefix . "schedule";
 
 	// Parse body content to make it quickly available later
 	// Check the content type, accept either application/json or application/x-www-form-urlencoded

@@ -22,158 +22,85 @@
 	*/
 
     // ========= CREATE TEMPLATE ASSET GROUP ==========
-	if (hasArg("createTemplateAssetGroup"))
+	if ( acceptReply("createTemplateAssetGroup", 'admin') )
 	{
-        $reply["accepted"] = true;
-		$reply["query"] = "createTemplateAssetGroup";
-
         $name = getArg("name");
 		$shortName = getArg("shortName");
-		$uuid = getArg("uuid");
+		$uuid = getArg("uuid", uuid());
 
-        if (strlen($shortName) > 0)
-		{
-            if (isAdmin())
-            {
-                if (strlen($uuid) > 0)
-				{
-                    $qString = "INSERT INTO " . $tablePrefix . "templateassetgroups (name,shortName,uuid) VALUES ( :name , :shortName , :uuid ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-                    $values = array('name' => $name,'shortName' => $shortName, 'uuid' => $uuid);
-                }
-                else 
-                {
-                    $qString = "INSERT INTO " . $tablePrefix . "templateassetgroups (name,shortName,uuid) VALUES ( :name , :shortName , uuid() ) ON DUPLICATE KEY UPDATE shortName = VALUES(shortName), name = VALUES(name);";
-                    $values = array('name' => $name,'shortName' => $shortName);
-                }
+		$q = new DBQuery();
+		$q->insert('templateassetgroups', array('name','shortName','uuid'));
 
-                $rep = $db->prepare($qString);
-				$rep->execute($values);
-				$rep->closeCursor();
+		$q->bindStr( 'uuid', $uuid );
+		$q->bindName( 'name', $name );
+		$q->bindShortName( 'shortName', $shortName );
 
-                $reply["message"] = "Asset Group " . $shortName . " added.";
-				$reply["success"] = true;
-            }
-            else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to create asset groups.";
-                $reply["success"] = false;
-            }
-        }
-        else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->execute("Template Asset Group '{$shortName}' added.");
+		$q->close();
     }
 
+
     // ========= GET TEMPLATE ASSET GROUPS ==========
-	else if (hasArg("getTemplateAssetGroups") || hasArg("init"))
+	else if (acceptReply("getTemplateAssetGroups") || hasArg("init"))
 	{
-		if (hasArg("getTemplateAssetGroups"))
-		{
-			$reply["accepted"] = true;
-			$reply["query"] = "getTemplateAssetGroups";
-		}
+		$q = new DBQuery();
+        $assetGroups = $q->getAll("templateassetgroups",
+			array(
+				'name',
+				'shortName',
+				'uuid',
+				'comment'
+			),
+			array(
+				'shortName',
+				'name'
+			)
+		);
 
-		$rep = $db->query("SELECT `name`,`shortName`,`uuid`, `comment` FROM " . $tablePrefix . "templateassetgroups WHERE removed = 0 ORDER BY shortName,name;");
-		$assetGroups = Array();
-		while ($assetGroup = $rep->fetch())
-		{
-			$ag = Array();
-			$ag['name'] = $assetGroup['name'];
-			$ag['shortName'] = $assetGroup['shortName'];
-			$ag['comment'] = $assetGroup['comment'];
-			$ag['uuid'] = $assetGroup['uuid'];
-			$assetGroups[] = $ag;
-		}
-		$rep->closeCursor();
-
-		if (hasArg("getTemplateAssetGroups"))
-		{
-			$reply["content"] = $assetGroups;
-			$reply["message"] = "Asset groups list retreived";
-			$reply["success"] = true;
-		}
-		else {
-			$reply["content"]["templateAssetGroups"] = $assetGroups;
-		}
+		if (hasArg("init") )
+        {
+            $reply["content"]["templateAssetGroups"] = $assetGroups;
+        }
+        else 
+        {
+            $reply["content"] = $assetGroups;
+            $reply["message"] = "Asset group list retreived";
+            $reply["success"] = true;
+        }
 	}
 
 	// ========= UPDATE ASSET GROUP ==========
-	else if (hasArg("updateTemplateAssetGroup"))
+	else if ( acceptReply("updateTemplateAssetGroup", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "updateTemplateAssetGroup";
-
 		$name = getArg( "name" );
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
 		$comment = getArg( "comment" );
 
-		if (strlen($shortName) > 0 AND strlen($uuid) > 0)
-		{
-			// Only if admin
-            if ( isAdmin() )
-            {
-				$qString = "UPDATE {$templateassetgroupsTable}
-					SET
-						`name`= :name,
-						`shortName`= :shortName,
-						`comment`= :comment
-					WHERE uuid= :uuid ;";
-				$values = array( 'name' => $name,'shortName' => $shortName, 'uuid' => $uuid, 'comment' => $comment );
-			
-				$rep = $db->prepare($qString);
-                $rep->execute($values);
-                $rep->closeCursor();
+		$q = new DBQuery();
+		$q->update(
+			"templateassetgroups",
+			array(
+				'name',
+				'shortName',
+				'comment'
+			),
+			$uuid
+		);
 
-				$reply["message"] = "Asset Group \"" . $shortName . "\" updated.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to update asset group information.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+		$q->bindName( "name", $name );
+		$q->bindShortName( $shortName );
+		$q->bindStr( "comment", $comment );
 
+		$q->execute("Asset Group  '{$shortName}' updated.");
+		$q->close();	
 	}
 
 	// ========= REMOVE ASSET GROUP ==========
-	else if (hasArg("removeTemplateAssetGroup"))
+	else if ( acceptReply("removeTemplateAssetGroup", 'admin') )
 	{
-		$reply["accepted"] = true;
-		$reply["query"] = "removeTemplateAssetGroup";
-
 		$uuid = getArg("uuid");
-
-		if (strlen($uuid) > 0)
-		{
-			//only if admin
-			if (isAdmin())
-			{
-				$rep = $db->prepare("UPDATE " . $tablePrefix . "templateassetgroups SET removed = 1 WHERE uuid= :uuid ;");
-				$rep->execute(array('uuid' => $uuid));
-				$rep->closeCursor();
-
-				$reply["message"] = "Asset group " . $uuid . " removed.";
-				$reply["success"] = true;
-			}
-			else
-            {
-                $reply["message"] = "Insufficient rights, you need to be Admin to remove asset groups.";
-                $reply["success"] = false;
-            }
-		}
-		else
-		{
-			$reply["message"] = "Invalid request, missing values";
-			$reply["success"] = false;
-		}
+        $q = new DBQuery();
+		$q->remove( "templateassetgroups", $uuid );
 	}
 ?>
