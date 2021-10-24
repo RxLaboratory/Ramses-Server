@@ -103,8 +103,7 @@
 
 		$q = new DBQuery();
 
-		if ($assignedUserUuid == "") $assignedUserId = "NULL";
-		else $assignedUserId = $q->id('users', $assignedUserUuid);
+		$assignedUserId = $q->id('users', $assignedUserUuid);
 
 		$userId = $q->id('users', $userUuid);
 		$stateId = $q->id('states', $stateUuid);
@@ -121,8 +120,7 @@
 		$q->bindInt( 'completionRatio', $completionRatio );
 		$q->bindInt( 'version', $version );
 		$q->bindStr( 'comment', $comment );
-		if ($assignedUserUuid == "") $q->bindStr( 'assignedUserId', $assignedUserId );
-		else $q->bindInt( 'assignedUserId', $assignedUserId );
+		$q->bindInt( 'assignedUserId', $assignedUserId );
 
 		$q->execute("Asset status updated.");
 		$q->close();

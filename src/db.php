@@ -310,7 +310,7 @@
 			}
 			else if ($int == "")
 			{
-				$this->query->bindValue( ":{$key}", 'NULL', PDO::PARAM_STR );
+				$this->query->bindValue( ":{$key}", null, PDO::PARAM_STR );
 			}
 			else 
 			{
