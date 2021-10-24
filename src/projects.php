@@ -713,7 +713,7 @@
 		$framerate = getArg( "framerate" );
 		$width = getArg( "width" );
 		$height = getArg( "height" );
-		$aspectRatio = getArg( "aspectRatio" );
+		$aspectRatio = getArg( "aspectRatio", (int)$width / (int)$height );
 		$comment = getArg( "comment" );
 		$deadline = getArg( "deadline" );
 
@@ -738,10 +738,10 @@
 		$q->bindShortName( $shortName );
 		$q->bindStr( "comment", $comment );
 		$q->bindStr( "folderPath", $folderPath );
-		$q->bindStr( "framerate", $framerate );
+		$q->bindFloat( "framerate", $framerate, 4 );
 		$q->bindInt( "width", $width );
 		$q->bindInt( "height", $height );
-		$q->bindStr( "aspectRatio", $aspectRatio );
+		$q->bindFloat( "aspectRatio", $aspectRatio );
 		$q->bindStr( "deadline", $deadline );
 
 		$q->execute("Project \"{$shortName}\" updated.");

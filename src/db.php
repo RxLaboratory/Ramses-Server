@@ -318,6 +318,33 @@
 			}
 		}
 
+		// Bind a float (rounds it)
+		public function bindFloat( $key, $float, $precision=6, $mandatory = false)
+		{
+			global $reply;
+
+			if ( !$this->ok ) return;
+
+			if ($float == "" && $mandatory)
+			{
+				$reply["message"] = "Invalid request, missing value (float): '{$key}'";
+            	$reply["success"] = false;
+				$this->ok = false;
+				return;
+			}
+			else if ($float == "")
+			{
+				$this->query->bindValue( ":{$key}", null, PDO::PARAM_STR );
+			}
+			else 
+			{
+				$float = (float)$float;
+				$float = round($float, $precision);
+				$this->query->bindValue( ":{$key}", $float, PDO::PARAM_STR );
+			}
+
+		}
+
 		// Request
 		public function execute( $successMessage = "", $debug = false )
 		{
