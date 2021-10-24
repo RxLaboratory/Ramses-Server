@@ -31,7 +31,7 @@
 	// ==== SQL SETTINGS ====
 
 	// either 'mysql' (works for MariaDB too) or 'sqlite'
-	$sqlMode = 'mysql';
+	$sqlMode = 'sqlite';
 
 	// ==== MySQL/MariaDB SETTINGS ====
 

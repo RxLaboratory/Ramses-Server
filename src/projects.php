@@ -590,6 +590,12 @@
 
 	function getProject( $project, $details=true )
 	{
+		// Adjust project values
+		$project['framerate'] = (float)$project['framerate'];
+		$project['aspectRatio'] = (float)$project['aspectRatio'];
+		$project['width'] = (float)$project['width'];
+		$project['height'] = (float)$project['height'];
+
 		$project['users'] = getProjectUsers( $project['id'] );
 
 		if ($details) {
