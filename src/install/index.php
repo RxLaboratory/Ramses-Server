@@ -5,11 +5,26 @@
 		Installs the SQL Database
 	*/
 
+    include('../config.php');
+
     //connect to database
+
+    if ($sqlMode == "sqlite") // Copy the default db first
+    {
+        echo ( "Writing the new database scheme (using SQLite)...<br />" );
+
+        $ok = copy("ramses.sqlite", "../ramses_data");
+
+        if (!$ok)
+        {
+            die( "Sorry, something went wrong while writing the database. Make sure the server has write access to its folder." );
+        }
+
+        echo ( "The new database is ready!<br />" );
+    }
 
     echo ( "Connecting to the database...<br />" );
 
-    include('../config.php');
     include('../functions.php');
     include('../db.php');
 
@@ -29,7 +44,7 @@
     // Set the DB if MySQL (if SQLite, the file is already available)
     if ($sqlMode != "sqlite")
     {
-        echo ( "Writing the new database scheme...<br />" );
+        echo ( "Writing the new database scheme (using MySQL)...<br />" );
 
         $sql = file_get_contents('ramses_scheme.sql');
         // Run the installer SQL Script
@@ -58,6 +73,8 @@
         echo ( "The new data is ready!<br />" );
     }
 
+    echo( "Setuping the administrator user...<br />" );
+
     //Setup admin user
     $uuid = uuid();
     $shortName = "Admin";
@@ -67,7 +84,7 @@
     $comment = "The default Administrator user. Don't forget to rename it and change its password!";
     $role = hashRole('admin');
    
-    $qString = "INSERT INTO
+    $qString = "REPLACE INTO
         {$tablePrefix}users (
             `name`,
             `shortName`,

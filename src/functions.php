@@ -66,17 +66,25 @@
     {
         global $encrypt_key;
         if ( $encrypt_key == '' ) return '';
+        if (!isEncrypted($data)) return $data;
 
-        list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
-        $iv = base64_decode( $iv );    
+        $dec_txt = "";
 
-        $dec_txt = openssl_decrypt(
-            $encrypted_data,
-            'AES-256-CBC',
-            $encrypt_key,
-            0,
-            $iv
-        );
+        try {
+            list($encrypted_data, $iv) = explode('::', base64_decode($data), 2);
+            $iv = base64_decode( $iv );    
+
+            $dec_txt = openssl_decrypt(
+                $encrypted_data,
+                'AES-256-CBC',
+                $encrypt_key,
+                0,
+                $iv
+            );
+        }
+        catch (exception $e) {
+            return "";
+        }
 
         return $dec_txt;
     }

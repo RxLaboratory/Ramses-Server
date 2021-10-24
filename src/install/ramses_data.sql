@@ -435,7 +435,7 @@ INSERT INTO `ram_applications` (`id`, `uuid`, `name`, `shortName`, `executableFi
 (11, '2ce359cc-666c-5d49-8074-203884f80b2b', 'Maxon Cinema4D', 'C4D', '', '2021-07-03 12:12:33', 0, 0, ''),
 (12, 'e89d029e-4831-512a-874f-449f22b3b47d', 'The Foundry Mari', 'MARI', '', '2021-07-03 12:14:11', 0, 0, ''),
 (13, '48c5e50c-6f0a-5403-9844-7883f499fcdc', 'Adobe Substance Designer', 'SBSTDSGN', '', '2021-07-03 12:22:21', 0, 0, ''),
-(14, '2dd8a108-fc08-5d24-9de4-4b95ce228809', 'Adober Substance Painter', 'SBSTPNTR', '', '2021-07-03 12:23:57', 0, 0, ''),
+(14, '2dd8a108-fc08-5d24-9de4-4b95ce228809', 'Adobe Substance Painter', 'SBSTPNTR', '', '2021-07-03 12:23:57', 0, 0, ''),
 (15, '140f6f9c-1f2c-5989-a2b4-867bd4460123', 'The Foundry Nule', 'NUKE', '', '2021-07-03 12:24:26', 0, 0, ''),
 (16, '8e3f3080-5b37-57c1-8090-60688611fbe2', 'Lightworks', 'LWKS', '', '2021-07-03 12:26:22', 0, 0, ''),
 (17, '234246cb-a8c0-525e-a9a8-e8ba7399a606', 'SideFX Houdini', 'HOUDINI', '', '2021-10-20 13:55:05', 0, 0, '');
@@ -547,7 +547,7 @@ INSERT INTO `ram_templatesteps` (`id`, `uuid`, `name`, `shortName`, `autoCreateA
 
 INSERT INTO `ram_users` (`id`, `uuid`, `name`, `shortName`, `password`, `email`, `latestUpdate`, `folderPath`, `role`, `color`, `removed`, `order`, `comment`) VALUES
 (2, '9804963f-5a6f-5987-8adc-3a70ac6a1a68', 'Ramses Daemon', 'Ramses', '$2y$13$Woc8BBF.13i1dsKuNjX.y.SN4afvi/hUpaevDViqt7.WO.HZSR/3G', 'TDJQVWJITzczekFpVUxnWjFsRFJrUT09OjpYRTFJRTFLdFR3SXJOeG9kendFRkp3PT0=', '2021-10-20 13:44:59', 'auto', '$2y$04$K3QIYoKF8WAFkXDXatWqRea8Is9Cx8iQo3fhGcBez/qvKFIg/z0qq', '#e3e3e3', 0, 0, 'This is the little daemon which works discretely for you in the backyard of the Rx Asset Management System.'),
-(3, 'e49e0411-19c8-5c85-8b33-d57ca9d72086', 'Nicolas "Duduf" Dufresne', 'Duduf', '$2y$13$jPdpAs8S54iy0SCk9zl07OZVn/P/JDoaykdfSLgw7EOolzWu.9pEe', 'ZjJTc1VXKy9EUXlxMzJGc29wSXgxdz09OjpWUTF3RVF2YjZYWFpzZmxYNUIwbmtRPT0=', '2021-10-20 13:44:59', 'auto', '$2y$04$E1cY68.5ZeIJ9jxpA4VD9OJyAUyElcwvCrOgmwWSDKWsLr1ZBviNC', '#e3e3e3', 0, 0, 'Duduf is the developer of Ramses! As Ramses is free, he really needs your support, please have a look at https://patreon.com/duduf or make a donation to RxLab on https://rainboxlab.org\nThanks!');
+(3, 'e49e0411-19c8-5c85-8b33-d57ca9d72086', 'Nicolas Duduf Dufresne', 'Duduf', '$2y$13$jPdpAs8S54iy0SCk9zl07OZVn/P/JDoaykdfSLgw7EOolzWu.9pEe', 'ZjJTc1VXKy9EUXlxMzJGc29wSXgxdz09OjpWUTF3RVF2YjZYWFpzZmxYNUIwbmtRPT0=', '2021-10-20 13:44:59', 'auto', '$2y$04$E1cY68.5ZeIJ9jxpA4VD9OJyAUyElcwvCrOgmwWSDKWsLr1ZBviNC', '#e3e3e3', 0, 0, 'Duduf is the developer of Ramses! As Ramses is free, he really needs your support, please have a look at https://patreon.com/duduf or make a donation to RxLab on https://rainboxlab.org\nThanks!');
 SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 

@@ -18,7 +18,7 @@
 			
 		else if ( $sqlMode == 'sqlite' )
 		{
-			$db = new PDO( 'sqlite:' . __DIR__ . '/ram_db' );
+			$db = new PDO( 'sqlite:' . __DIR__ . '/ramses_data' );
 			$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 		}
 		else

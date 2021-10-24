@@ -30,8 +30,10 @@
 
 	// ==== SQL SETTINGS ====
 
-	// either 'mysql' or 'sqlite'
+	// either 'mysql' (works for MariaDB too) or 'sqlite'
 	$sqlMode = 'mysql';
+
+	// ==== MySQL/MariaDB SETTINGS ====
 
 	// Host URL
 	$sqlHost = "localhost";
