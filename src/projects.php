@@ -27,62 +27,72 @@
 		global $tablePrefix;
 
 		$q = new DBQuery();
-		$steps = $q->getAll(
-			"steps",
-			array(
-				'uuid',
-				'shortName',
-				'comment',
-				'name',
-				'type',
-				'id',
-				'color',
-				'estimationMethod',
-				'estimationVeryEasy',
-				'estimationEasy',
-				'estimationMedium',
-				'estimationHard',
-				'estimationVeryHard',
-				'estimationMultiplyGroupId',
-				'order'
-			),
-			array(
-				'order',
-				'shortName',
-				'name'
-			)
-		);
+		$q->prepare( "SELECT 
+			steps.`uuid`,
+			steps.`shortName`,
+			steps.`name`,
+			steps.`type`,
+			steps.`id`,
+			steps.`color`,
+			steps.`estimationMethod`,
+			steps.`estimationVeryEasy`,
+			steps.`estimationEasy`,
+			steps.`estimationMedium`,
+			steps.`estimationHard`,
+			steps.`estimationVeryHard`,
+			steps.`estimationMultiplyGroupId`,
+			steps.`order`
+			FROM {$tablePrefix}steps as steps
+			WHERE steps.projectId = {$pid}
+				AND steps.`removed` = 0
+			ORDER BY steps.`order`, steps.`shortName`, steps.`name`
+		;");
+
+		$q->execute();
+
+		$steps = array();
 		
-		for ($s = 0; $s < count($steps); $s++)
+		while ($s = $q->fetch())
 		{
-			$steps[$s]['estimationVeryEasy'] = (float)$steps[$s]['estimationVeryEasy'];
-			$steps[$s]['estimationEasy'] = (float)$steps[$s]['estimationEasy'];
-			$steps[$s]['estimationMedium'] = (float)$steps[$s]['estimationMedium'];
-			$steps[$s]['estimationHard'] = (float)$steps[$s]['estimationHard'];
-			$steps[$s]['estimationVeryHard'] = (float)$steps[$s]['estimationVeryHard'];
-			$steps[$s]['multiplyGroupUuid'] = $q->uuid( "assetgroups", $steps[$s]['estimationMultiplyGroupId'] );
-			$steps[$s]['projectUuid'] = $puuid;
+			$step = array();
+			$step['uuid'] = $s['uuid'];
+			$step['shortName'] = $s['shortName'];
+			$step['name'] = $s['name'];
+			$step['type'] = $s['type'];
+			$step['color'] = $s['color'];
+			$step['order'] = (int)$s['order'];
+			$step['estimationVeryEasy'] = (float)$s['estimationVeryEasy'];
+			$step['estimationEasy'] = (float)$s['estimationEasy'];
+			$step['estimationMedium'] = (float)$s['estimationMedium'];
+			$step['estimationHard'] = (float)$s['estimationHard'];
+			$step['estimationVeryHard'] = (float)$s['estimationVeryHard'];
+			$step['multiplyGroupUuid'] = $q->uuid( "assetgroups", $s['estimationMultiplyGroupId'] );
+			$step['projectUuid'] = $puuid;
 
 			//get applications
-			$q->prepare( "SELECT {$tablePrefix}applications.`uuid`
+			$qa = new DBQuery();
+			$qa->prepare( "SELECT {$tablePrefix}applications.`uuid`
 				FROM {$tablePrefix}stepapplication
 				JOIN {$tablePrefix}applications
 					ON {$tablePrefix}stepapplication.`applicationId` = {$tablePrefix}applications.`id`
-				WHERE {$tablePrefix}stepapplication.`stepId` = " . $steps[$s]['id'] .
+				WHERE {$tablePrefix}stepapplication.`stepId` = " . $s['id'] .
 					" AND {$tablePrefix}applications.`removed` = 0
 					AND {$tablePrefix}stepapplication.`removed` = 0
 				ORDER BY {$tablePrefix}applications.`name`, {$tablePrefix}applications.`shortName`;"
 			);
-			$q->execute();
+			$qa->execute();
 
-			while ($a = $q->fetch())
+			while ($a = $qa->fetch())
 			{
-				$steps[$s]['applications'][] = $a['uuid'];
+				$step['applications'][] = $a['uuid'];
 			}
 
-			$q->close();
+			$qa->close();
+
+			$steps[] = $step;
 		}
 
+		$q->close();
 		return $steps;
 	}
 
@@ -129,7 +139,7 @@
 				ON pipes.inputStepId = inputSteps.id
 			JOIN {$tablePrefix}steps AS outputSteps
 				ON pipes.outputStepId = outputSteps.id
-			WHERE inputSteps.projectId= {$pid} AND pipes.removed = 0 ;"
+			WHERE inputSteps.projectId = {$pid} AND pipes.removed = 0 ;"
 		);
 		$q->execute();
 
