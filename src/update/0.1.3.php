@@ -48,7 +48,7 @@
                 ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                 ADD UNIQUE `pipes_in_out_unique` (`outputStepId`, `inputStepId`) USING BTREE; 
 
-            ALTER TABLE {$tablePrefix}pipefile ADD `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
+            ALTER TABLE {$tablePrefix}pipefile ADD COLUMN `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
 
             ALTER TABLE {$tablePrefix}applications DROP INDEX `exec_unique`;
 
@@ -58,11 +58,11 @@
 
             ALTER TABLE {$tablePrefix}shotasset
                 ADD UNIQUE `shot_asset_unique` (`shotId`, `assetId`) USING BTREE,
-                ADD `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
+                ADD COLUMN `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
 
             ALTER TABLE {$tablePrefix}templateassetgroups DROP INDEX `shortName_UNIQUE`;
 
-            ALTER TABLE {$tablePrefix}schedule ADD `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
+            ALTER TABLE {$tablePrefix}schedule ADD COLUMN `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
 
             UNLOCK TABLES;");
         
