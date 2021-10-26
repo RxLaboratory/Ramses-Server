@@ -48,7 +48,7 @@
                 ADD CONSTRAINT `fk_pipes_output` FOREIGN KEY (`outputStepId`) REFERENCES `ram_steps`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
                 ADD UNIQUE `pipes_in_out_unique` (`outputStepId`, `inputStepId`) USING BTREE; 
 
-            ALTER TABLE {$tablePrefix}pipefile ADD COLUM `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
+            ALTER TABLE {$tablePrefix}pipefile ADD COLUMN `customSettings` TEXT NULL DEFAULT NULL AFTER `colorSpaceId`;
 
             ALTER TABLE {$tablePrefix}applications DROP INDEX `exec_unique`;
 
