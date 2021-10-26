@@ -58,11 +58,11 @@
 
             ALTER TABLE {$tablePrefix}shotasset
                 ADD UNIQUE `shot_asset_unique` (`shotId`, `assetId`) USING BTREE,
-                ADD COLUM `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
+                ADD COLUMN `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
 
             ALTER TABLE {$tablePrefix}templateassetgroups DROP INDEX `shortName_UNIQUE`;
 
-            ALTER TABLE {$tablePrefix}schedule ADD COLUM `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
+            ALTER TABLE {$tablePrefix}schedule ADD COLUMN `removed` TINYINT(4) NOT NULL DEFAULT '0' AFTER `latestUpdate`; 
 
             UNLOCK TABLES;");
         
