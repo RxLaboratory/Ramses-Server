@@ -41,7 +41,9 @@
 			steps.`estimationHard`,
 			steps.`estimationVeryHard`,
 			steps.`estimationMultiplyGroupId`,
-			steps.`order`
+			steps.`order`,
+			steps.`latestUpdate`,
+			steps.`removed`
 			FROM {$tablePrefix}steps as steps
 			WHERE steps.projectId = {$pid}
 				AND steps.`removed` = 0
@@ -54,6 +56,8 @@
 		
 		while ($s = $q->fetch())
 		{
+			$qa = new DBQuery();
+
 			$step = array();
 			$step['uuid'] = $s['uuid'];
 			$step['shortName'] = $s['shortName'];
@@ -61,16 +65,18 @@
 			$step['type'] = $s['type'];
 			$step['color'] = $s['color'];
 			$step['order'] = (int)$s['order'];
+			$step['latestUpdate'] = $s['latestUpdate'];
+			$step['removed'] = (int)$s['order'];
 			$step['estimationVeryEasy'] = (float)$s['estimationVeryEasy'];
 			$step['estimationEasy'] = (float)$s['estimationEasy'];
 			$step['estimationMedium'] = (float)$s['estimationMedium'];
 			$step['estimationHard'] = (float)$s['estimationHard'];
 			$step['estimationVeryHard'] = (float)$s['estimationVeryHard'];
-			$step['multiplyGroupUuid'] = $q->uuid( "assetgroups", $s['estimationMultiplyGroupId'] );
+			$step['multiplyGroupUuid'] = $qa->uuid( "assetgroups", $s['estimationMultiplyGroupId'] );
 			$step['projectUuid'] = $puuid;
 
 			//get applications
-			$qa = new DBQuery();
+			
 			$qa->prepare( "SELECT {$tablePrefix}applications.`uuid`
 				FROM {$tablePrefix}stepapplication
 				JOIN {$tablePrefix}applications
