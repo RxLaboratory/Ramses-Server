@@ -77,7 +77,7 @@
 	{
 		$uuid = getArg ( "uuid" );
 		$q = new DBQuery();
-		$q->remove( "pipes", $uuid );
+		$q->remove( "pipes", $uuid, false );
 	}
 
 	// ========= ASSIGN ==========
