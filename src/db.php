@@ -301,14 +301,14 @@
 
 			if ( !$this->ok ) return;
 
-			if ($int == "" && $mandatory)
+			if ($int === "" && $mandatory)
 			{
 				$reply["message"] = "Invalid request, missing value (int): '{$key}'";
             	$reply["success"] = false;
 				$this->ok = false;
 				return;
 			}
-			else if ($int == "")
+			else if ($int === "")
 			{
 				$this->query->bindValue( ":{$key}", null, PDO::PARAM_STR );
 			}

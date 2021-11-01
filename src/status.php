@@ -32,15 +32,17 @@
 		$uuid = getArg ("uuid" );
         $published = getArg("published", 0);
         $assignedUserUuid = getArg("assignedUserUuid");
-        $timeSpent = getArg("timeSpent", -1);
+        $timeSpent = getArg("timeSpent", 0);
         $date = getArg("date");
         $estimation = getArg("estimation");
         $difficulty = getArg("difficulty");
 
+		$timeSpent = (int)$timeSpent;
+		if ($timeSpent < 0) $timeSpent = 0;
+
         $q = new DBQuery();
 
         $stateId = $q->id("states", $stateUuid);
-
         $assignedUserId = $q->id('users', $assignedUserUuid);
 
 		$q->update(
