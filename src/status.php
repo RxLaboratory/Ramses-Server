@@ -30,15 +30,12 @@
 		$completionRatio = getArg ("completionRatio" );
 		$stateUuid = getArg ( "stateUuid" );
 		$uuid = getArg ("uuid" );
-        $published = getArg("published", 0);
+        $published = getArg("published", "0");
         $assignedUserUuid = getArg("assignedUserUuid");
-        $timeSpent = getArg("timeSpent", 0);
+        $timeSpent = getArg( "timeSpent", "0" );
         $date = getArg("date");
-        $estimation = getArg("estimation");
+        $estimation = getArg("estimation", "-1");
         $difficulty = getArg("difficulty");
-
-		$timeSpent = (int)$timeSpent;
-		if ($timeSpent < 0) $timeSpent = 0;
 
         $q = new DBQuery();
 
