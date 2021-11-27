@@ -27,7 +27,17 @@
         $reply["accepted"] = true;
         $reply["query"] = "ping";
         $reply["content"]["version"] = $ramsesVersion;
-        if ($installed)
+        
+        $clientVersion = strtolower( getArg("version") );
+        $ramVersion = strtolower($ramsesVersion);
+
+        if ($clientVersion != $ramVersion)
+        {
+            $reply["content"]["installed"] = true;
+            $reply["success"] = true;
+            $reply["message"] = "Warning, the version of Ramses you're using ({$clientVersion}) differs with the one of this server ({$ramVersion}).";
+        }
+        else if ($installed)
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;
