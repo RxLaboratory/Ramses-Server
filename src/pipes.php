@@ -90,12 +90,21 @@
 		$pipeId = $q->id("pipes", $pipeUuid);
 		$pipeFileId = $q->id("pipefile", $pipeFileUuid);
 
-		$q->insert('pipefilepipe', array('pipeId', 'pipeFileId'));
-		$q->bindInt( "pipeId", $pipeId );
-		$q->bindInt( "pipeFileId", $pipeFileId );
+		if (!$pipeId || !$pipeFileId)
+		{
+			if (!$pipeId) $reply["message"] = "Sorry, I can't find this pipe.";
+			else $reply["message"] = "Sorry, I can't find this pipe file.";
+			$reply["success"] = false;
+		}
+		else 
+		{
+			$q->insert('pipefilepipe', array('pipeId', 'pipeFileId'));
+			$q->bindInt( "pipeId", $pipeId );
+			$q->bindInt( "pipeFileId", $pipeFileId );
 
-		$q->execute("New File assigned to pipe.");
-		$q->close();
+			$q->execute("New File assigned to pipe.");
+			$q->close();
+		}
 	}
 
 	// ========= UNASSIGN ==========

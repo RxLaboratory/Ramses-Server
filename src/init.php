@@ -1,5 +1,5 @@
 <?php
-    $ramsesVersion = "0.2.4-alpha";
+    $ramsesVersion = "0.2.5-alpha";
 	$installed = file_exists("config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db
