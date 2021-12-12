@@ -498,7 +498,7 @@ INSERT INTO `ram_filetypes` (`id`, `uuid`, `name`, `shortName`, `extensions`, `p
 (55, '6a6e19e0-f6ac-5227-b42f-f12f3aec470f', 'Waveform', 'wav', 'wav', 1, '2021-07-03 12:32:03', 0, 0, '');
 
 INSERT INTO `ram_servermetadata` (`id`, `version`, `date`) VALUES
-(1, '0.2.5-alpha', '2021-11-27 10:44:59');
+(1, '0.2.6-alpha', '2021-12-12 10:44:59');
 
 INSERT INTO `ram_states` (`id`, `uuid`, `name`, `shortName`, `color`, `latestUpdate`, `completionRatio`, `removed`, `comment`) VALUES
 (1, 'f1b78562-0964-5e04-adcc-5f9f7b61d155', 'Nothing to do', 'NO', '#484848', '2021-07-03 11:22:55', 0, 0, 'There\'s nothing to do at this step.'),
