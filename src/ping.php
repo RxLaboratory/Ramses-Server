@@ -31,6 +31,8 @@
         $clientVersion = strtolower( getArg("version") );
         $ramVersion = strtolower($ramsesVersion);
 
+        $_SESSION["clientVersion"] = $clientVersion;
+
         if ($clientVersion != $ramVersion)
         {
             $reply["content"]["installed"] = true;

@@ -28,7 +28,10 @@
 	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
 	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
 	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
+	if (!isset($_SESSION["userId"])) $_SESSION["userId"] = "";
+	if (!isset($_SESSION["userName"])) $_SESSION["userName"] = "";
 	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
+	if (!isset($_SESSION["clientVersion"])) $_SESSION["clientVersion"] = "unknown";
 	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
 
 	$now = time();
@@ -52,6 +55,9 @@
 
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
+
+	//prepare log
+	$log = new Logger();
 
 	// Parse body content to make it quickly available later
 	// Check the content type, accept either application/json or application/x-www-form-urlencoded

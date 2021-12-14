@@ -47,10 +47,12 @@
 				$role = $testPass["role"];
 				// Role is hashed, find it
 				$role = checkRole($role);
-				$token = login($uuid, $role);
+				// Name is encrypted
+				$name = decrypt( $testPass["name"] );
+				$token = login($uuid, $role, $username, $name);
 				//reply content
 				$content = array();
-				$content["name"] = decrypt( $testPass["name"] );
+				$content["name"] = $name;
 				$content["shortName"] = $username;
 				$content["uuid"] = $uuid;
 				$content["folderPath"] = $testPass["folderPath"];
@@ -65,14 +67,17 @@
 			{
 				$reply["message"] = "Invalid password";
 				$reply["success"] = false;
-				logout();
+				$_SESSION["userId"] = $username;
+				$_SESSION["userUuid"] = $uuid;
+				logout("Connexion refused (invalid password)");
 			}
 		}
 		else
 		{
 			$reply["message"] = "Invalid username";
 			$reply["success"] = false;
-			logout();
+			$_SESSION["userId"] = $username;
+			logout("Connexion refused (invalid username)");
 		}		
 	}
 ?>

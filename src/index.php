@@ -24,7 +24,9 @@
 
 	//configuration and init 
 	include ("config.php");
+	include ("config_logs.php");
 	include ("functions.php");
+	include ("logger.php");
 	include ("init.php");
 
 	//prepare reply
@@ -86,6 +88,7 @@
 						$reply["query"] = "loggedout";
 						$reply["success"] = false;
 						$reply["accepted"] = false;
+						logout("Disconnected (Invalid token)");
 					}
 				}
 				else
@@ -94,6 +97,7 @@
 					$reply["query"] = "loggedout";
 					$reply["success"] = false;
 					$reply["accepted"] = false;
+					logout("Disconnected (Session expired)");
 				}
 			}
 		}

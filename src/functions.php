@@ -103,12 +103,17 @@
     /**
      * Logs in and returns the new session token
      */
-    function login($uuid, $role)
+    function login($uuid, $role, $id, $name)
     {
+        global $log;
         //Keep session info
         $_SESSION["userRole"] = $role;
         $_SESSION["userUuid"] = $uuid;
+        $_SESSION["userId"] = $id;
+        $_SESSION["userName"] = $name;
         $_SESSION["login"] = true;
+        //Log
+        $log->login();
         //Generate token
         $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
         return $_SESSION["sessionToken"];
@@ -117,8 +122,12 @@
     /**
      * Logs out and reset the session token
      */
-    function logout()
+    function logout($reason="logout")
     {
+        global $log;
+        //Log
+        $log->logout($reason);
+
         $_SESSION["userRole"] = "standard";
         $_SESSION["userUuid"] = "";
         $_SESSION["login"] = false;
@@ -373,5 +382,12 @@
     {
         $currentDate = new DateTime();
         return $currentDate->format('Y-m-d H:i:s');
+    }
+
+    function createFolder( $path, $recursive=false )
+    {
+        if (is_file($path)) return;
+        if (is_dir($path)) return;
+        mkdir($path, 0777, $recursive);
     }
 ?>
