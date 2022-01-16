@@ -43,7 +43,7 @@
 	// User
 	$sqlUser = "ramses";
 	// Password
-	$sqlpassword = "rZ63G4eW";
+	$sqlpassword = "password";
 	// Table prefix
 	// DO NOT CHANGE THIS, not working yet
 	$tablePrefix = "ram";
