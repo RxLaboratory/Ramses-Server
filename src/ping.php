@@ -28,12 +28,10 @@
         $reply["query"] = "ping";
         $reply["content"]["version"] = $ramsesVersion;
         
-        $clientVersion = strtolower( getArg("version") );
         $ramVersion = strtolower($ramsesVersion);
+        $clientVersion = $_SESSION["clientVersion"];
 
-        $_SESSION["clientVersion"] = $clientVersion;
-
-        if ($clientVersion != $ramVersion)
+        if ($_SESSION["clientVersion"] != $ramVersion)
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;

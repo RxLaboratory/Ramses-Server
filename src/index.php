@@ -32,6 +32,9 @@
 	//prepare reply
 	include ("reply.php");
 
+	//get request metadata
+	include ("clientmetadata.php");
+
 	//ping
 	include ("ping.php");
 
