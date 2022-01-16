@@ -19,7 +19,7 @@
 
             // Prepare files
             $this->connexionLogFile = $this->logsPath . "/" . date("Y-m-d") . "_connexionLog.csv";
-            if (!is_file($this->connexionLogFile)) $this->appendConnexionLog("UUID,ID,Name,Role,Action,Client version,Date");
+            if (!is_file($this->connexionLogFile)) $this->appendConnexionLog("UUID,ID,Name,Role,Action,Client version,Date", false);
         }
 
         public function login()
@@ -56,7 +56,7 @@
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},{$reason}");
         }
 
-        private function appendConnexionLog($text)
+        private function appendConnexionLog($text, $appendDateAndVersion = true)
         {
             $date = date("Y/m/d H:i:s");
             if (isset($_SESSION["clientVersion"])) $clientVer = $_SESSION["clientVersion"];
@@ -64,7 +64,9 @@
             
             $file = fopen($this->connexionLogFile, "a");
             
-            fwrite($file, "{$text},{$clientVer},{$date}\n");
+            if ($appendDateAndVersion) fwrite($file, "{$text},{$clientVer},{$date}\n");
+            else fwrite($file, "{$text}\n");
+
             fclose($file);
         }
     }
