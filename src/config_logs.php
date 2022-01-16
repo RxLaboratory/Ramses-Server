@@ -28,4 +28,7 @@
 
     // Connexion logs
     $connexionLogs = true;
+
+    // How long do we keep logs? (days)
+    $logsExpiration = 30;
 ?>

@@ -357,6 +357,27 @@
         );
     }
 
+    /**
+     * Recursively deletes a directory
+     */
+    function deleteDir($dirPath) {
+        if (! is_dir($dirPath)) {
+            throw new InvalidArgumentException("$dirPath must be a directory");
+        }
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
+            $dirPath .= '/';
+        }
+        $files = glob($dirPath . '*', GLOB_MARK);
+        foreach ($files as $file) {
+            if (is_dir($file)) {
+                deleteDir($file);
+            } else {
+                unlink($file);
+            }
+        }
+        rmdir($dirPath);
+    }
+
     function acceptReply($queryName, $role = "")
     {
         global $reply;
@@ -384,10 +405,23 @@
         return $currentDate->format('Y-m-d H:i:s');
     }
 
-    function createFolder( $path, $recursive=false )
+    function createFolder( $path, $recursive=false, $addIndex = true )
     {
         if (is_file($path)) return;
-        if (is_dir($path)) return;
-        mkdir($path, 0777, $recursive);
+        if (!is_dir($path)) mkdir($path, 0700, $recursive);
+        
+        if ($addIndex)
+        {
+            if (substr($path, strlen($path) - 1, 1) != '/') {
+                $path .= '/';
+            }
+
+            if (is_file($path . "index.html")) return;
+
+            $file = fopen($path . "index.html", "a");
+            if (!$file) return;
+            fwrite($file, "<h1>Forbidden</h1>");
+            fclose($file);
+        }
     }
 ?>
