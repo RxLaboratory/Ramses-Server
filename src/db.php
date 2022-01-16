@@ -8,6 +8,9 @@
 	// sqlMode may not be set if the config file is from an old version
 	if (!isset($sqlMode)) $sqlMode = 'mysql';
 
+	// Security, chmod the data file
+	if (is_file(__DIR__ . '/ramses_data')) chmod(__DIR__ . '/ramses_data', 0600);
+
 	try
 	{
 		if ( $sqlMode == 'mysql' )
