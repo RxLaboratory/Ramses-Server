@@ -112,7 +112,7 @@
 		$q->bindStr( "estimationMedium", $medium );
 		$q->bindStr( "estimationHard", $hard );
 		$q->bindStr( "estimationVeryHard", $veryHard );
-		$q->bindStr( "estimationMultiplyGroupId", $multiplyGroupId );
+		$q->bindInt( "estimationMultiplyGroupId", $multiplyGroupId );
 
 		$q->execute("Step estimations updated.");
 		$q->close();
