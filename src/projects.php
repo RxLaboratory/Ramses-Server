@@ -66,7 +66,8 @@
 			$step['color'] = $s['color'];
 			$step['order'] = (int)$s['order'];
 			$step['latestUpdate'] = $s['latestUpdate'];
-			$step['removed'] = (int)$s['order'];
+			$step['removed'] = (int)$s['removed'];
+			$step['estimationMethod'] = $s['estimationMethod'];
 			$step['estimationVeryEasy'] = (float)$s['estimationVeryEasy'];
 			$step['estimationEasy'] = (float)$s['estimationEasy'];
 			$step['estimationMedium'] = (float)$s['estimationMedium'];
