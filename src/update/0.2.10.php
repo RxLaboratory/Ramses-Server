@@ -6,12 +6,11 @@
 
         echo ( " ▸ Updating Database structure.<br />" );
 
-        $rep = $db->query( "LOCK TABLES
-            {$tablePrefix}steps WRITE;
+        $rep = $db->query( 
+        
+        "ALTER TABLE `{$tablePrefix}schedule` CHANGE `stepId` `stepId` INT(11) NULL DEFAULT NULL;
 
-        ALTER TABLE `ram_schedule` CHANGE `stepId` `stepId` INT(11) NULL DEFAULT NULL;
-
-        UNLOCK TABLES;");
+        DELETE FROM `{$tablePrefix}schedule` WHERE `removed` = 1;");
     }
 
     $ok = $rep->execute();
