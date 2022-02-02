@@ -67,7 +67,15 @@
     function deleteEntry( $uuid )
     {
         $q = new DBQuery();
-		$q->remove( "schedule", $uuid, false );
+        $q->update(
+            "schedule",
+            array(
+                'stepId'
+            ),
+            $uuid );
+		$q->bindNull( "stepId" );
+        $q->execute("Schedule updated.");
+		$q->close();
     }
 
     // ========= CREATE ENTRY ==========

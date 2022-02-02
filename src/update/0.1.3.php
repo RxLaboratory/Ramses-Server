@@ -139,6 +139,6 @@
         echo ( "     ▪ OK!<br />" );
 
         // Ready for the next step
-        $currentVersion = '0.2.0-alpha';
+        $currentVersion = '0.2.10-alpha';
     }
 ?>

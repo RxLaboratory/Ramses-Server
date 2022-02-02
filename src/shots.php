@@ -149,7 +149,7 @@
 
 		$q->bindStr( 'uuid', $uuid );
 		$q->execute();
-		$r = $q.fetch();
+		$r = $q->fetch();
 		$q->close();
 
 		$previous = -1;

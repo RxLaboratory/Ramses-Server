@@ -424,4 +424,43 @@
             fclose($file);
         }
     }
+
+    function versionLowerThan( $version, $other )
+    {
+        $re = "/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$/i";
+        $c = array();
+        $v = array();
+        preg_match($re, $version, $c);
+        preg_match($re, $other, $v);
+
+        $cn = count($c);
+        $vn = count($v);
+        if ($cn < 2 || $vn < 2) return strcmp($version,$other ) > 0;
+
+        //compare major version
+        if ( strcmp( $c[1],$v[1] ) > 0 ) return true;
+        if ( strcmp( $c[1],$v[1] ) < 0 ) return false;
+
+        if ($cn < 3 || $vn < 3) return strcmp($version,$other ) > 0;
+
+        //minor
+        if ( strcmp( $c[2],$v[2] ) > 0 ) return true;
+        if ( strcmp( $c[2],$v[2] ) < 0 ) return false;
+
+        if ($cn < 4 || $vn < 4) return strcmp($version,$other ) > 0;
+
+        //patch
+        if ( strcmp( $c[3],$v[3] ) > 0 ) return true;
+        if ( strcmp( $c[3],$v[3] ) < 0 ) return false;
+
+        if ($cn < 5 && $vn < 5) return strcmp($version,$other ) > 0;
+		if ($vn < 5) return false;
+		if ($cn < 5) return true;
+
+        //build 
+        if ( strcmp( $c[4],$v[4] ) > 0 ) return true;
+        if ( strcmp( $c[4],$v[4] ) < 0 ) return false;
+
+        return strcmp($version,$other ) > 0;
+    }
 ?>

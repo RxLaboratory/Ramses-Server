@@ -14,6 +14,7 @@
 
     include('../config.php');
     include('../functions.php');
+    include ('../logger.php');
     include ('../init.php');
     include('../db.php');
 
@@ -55,7 +56,7 @@
 
     $rep = $db->query( "SELECT `version`, `date`
         FROM {$tablePrefix}servermetadata
-        ORDER BY `date`;" );
+        ORDER BY `date` DESC;" );
 
     $currentVersion = '0.1.3-alpha';
     if ($v = $rep->fetch()) $currentVersion = $v['version'];
@@ -75,13 +76,15 @@
     echo ( "Updating...<br />" );
 
     include('0.1.3.php');
+    include('0.2.10.php');
 
     // ==== Set new metadata ====
 
     echo ( "Finishing update...<br />" );
     echo ( " ▸ Writing new server metadata.<br />" );
 
-    $qString = "INSERT INTO {$tablePrefix}servermetadata (`version`)
+    $qString = "UNLOCK TABLES;
+        INSERT INTO {$tablePrefix}servermetadata (`version`)
         VALUES ( :version );";
 
     $rep = $db->prepare($qString);

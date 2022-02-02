@@ -154,7 +154,7 @@
 		$uuid = getArg("uuid");
 
 		$q = new DBQuery();
-		$r = $q.get( "steps", array('order', 'projectId'), $uuid);
+		$r = $q->get( "steps", array('order', 'projectId'), $uuid);
 
 		$previous = -1;
 		$projectId = -1;
@@ -188,7 +188,7 @@
 			$q->bindStr('udpateTime', dateTimeStr() );
 
 			$q->execute();
-			$rep->close();
+			$q->close();
 		}
 		else if ($previous >= 0)
 		{
@@ -211,7 +211,7 @@
 			$q->bindStr('udpateTime', dateTimeStr() );
 			
 			$q->execute();
-			$rep->close();
+			$q->close();
 		}
 
 		$q->update(
