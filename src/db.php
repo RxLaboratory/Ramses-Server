@@ -313,7 +313,7 @@
 			}
 			else if ($int === "")
 			{
-				$this->query->bindNull( $key );
+				$this->bindNull( $key );
 			}
 			else 
 			{
