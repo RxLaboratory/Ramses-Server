@@ -313,12 +313,17 @@
 			}
 			else if ($int === "")
 			{
-				$this->query->bindValue( ":{$key}", null, PDO::PARAM_STR );
+				$this->query->bindNull( $key );
 			}
 			else 
 			{
 				$this->query->bindValue( ":{$key}", $int, PDO::PARAM_INT );
 			}
+		}
+
+		public function bindNull( $key )
+		{
+			$this->query->bindValue( ":{$key}", null, PDO::PARAM_STR );
 		}
 
 		// Bind a float (rounds it)
