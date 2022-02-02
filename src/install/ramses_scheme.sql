@@ -151,7 +151,7 @@ CREATE TABLE `ram_schedule` (
   `id` int(11) NOT NULL,
   `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
   `userId` int(11) NOT NULL,
-  `stepId` int(11) NOT NULL,
+  `stepId` int(11) DEFAULT NULL,
   `date` datetime NOT NULL,
   `comment` text COLLATE utf8_unicode_ci DEFAULT NULL,
   `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
