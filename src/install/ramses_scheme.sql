@@ -168,7 +168,8 @@ CREATE TABLE `ram_sequences` (
   `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `removed` tinyint(4) NOT NULL DEFAULT 0,
   `order` int(11) NOT NULL DEFAULT 0,
-  `comment` text COLLATE utf8_unicode_ci DEFAULT NULL
+  `comment` text COLLATE utf8_unicode_ci DEFAULT NULL,
+  `color` varchar(15) COLLATE utf8_unicode_ci NOT NULL DEFAULT '#434343'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `ram_servermetadata`;

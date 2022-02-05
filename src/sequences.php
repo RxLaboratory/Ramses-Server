@@ -28,16 +28,18 @@
 		$shortName = getArg("shortName");
 		$projectUuid = getArg("projectUuid");
 		$uuid = getArg("uuid");
+		$color = getArg("color", "#434343");
 
 		$q = new DBQuery();
 		$projectId = $q->id('projects', $projectUuid);
 
-		$q->insert( "sequences", array( 'name', 'shortName', 'projectId', 'uuid' ));
+		$q->insert( "sequences", array( 'name', 'shortName', 'projectId', 'uuid', 'color' ));
 
 		$q->bindName( $name );
 		$q->bindShortName( $shortName );
 		$q->bindStr( "uuid", $uuid, true );
 		$q->bindInt( "projectId", $projectId );
+		$q->bindStr( "color", $color );
 
 		$q->execute("Sequence '{$shortName}' added.");
 		$q->close();
@@ -50,6 +52,7 @@
 		$shortName = getArg( "shortName" );
 		$uuid = getArg( "uuid" );
 		$comment = getArg( "comment" );
+		$color = getArg("color", "#434343");
 
 		$q = new DBQuery();
 		$q->update(
@@ -57,7 +60,8 @@
 			array(
 				'name',
 				'shortName',
-				'comment'
+				'comment',
+				'color'
 			),
 			$uuid
 		);
@@ -65,6 +69,7 @@
 		$q->bindName( $name );
 		$q->bindShortName( $shortName );
 		$q->bindStr( "comment", $comment );
+		$q->bindStr( "color", $color );
 
 		$q->execute("Sequence '{$shortName}' updated.");
 		$q->close();

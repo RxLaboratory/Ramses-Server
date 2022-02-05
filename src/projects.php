@@ -396,7 +396,8 @@
 				`name`,
 				`order`,
 				`removed`,
-				`latestUpdate`
+				`latestUpdate`,
+				`color`
 			FROM {$tablePrefix}sequences
 			WHERE `projectId`= {$pid} AND `removed` = 0 
 			ORDER BY `shortName`, `name`;"
@@ -416,6 +417,7 @@
 			$sequence['removed'] = (int)$s['removed'];
 			$sequence['latestUpdate'] = $s['latestUpdate'];
 			$sequence['projectUuid'] = $puuid;
+			$sequence['color'] = $s['color'];
 
 			$sequences[] = $sequence;
 		}

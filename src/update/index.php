@@ -76,7 +76,7 @@
     echo ( "Updating...<br />" );
 
     include('0.1.3.php');
-    include('0.2.10.php');
+    include('0.2.11.php');
 
     // ==== Set new metadata ====
 
