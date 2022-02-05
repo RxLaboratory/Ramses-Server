@@ -90,7 +90,7 @@
 
 		$q = new DBQuery();
 		$q->update(
-			"templatesteps",
+			"states",
 			array(
 				'name',
 				'shortName',
