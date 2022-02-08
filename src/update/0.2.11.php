@@ -9,7 +9,7 @@
         $rep = $db->query( 
         
         "ALTER TABLE `{$tablePrefix}schedule` CHANGE `stepId` `stepId` INT(11) NULL DEFAULT NULL;
-        ALTER TABLE `{$tablePrefix}sequences` CHANGE `color` VARCHAR(15) NOT NULL DEFAULT '#434343' AFTER `comment`; 
+        ALTER TABLE `{$tablePrefix}sequences` ADD `color` VARCHAR(15) NOT NULL DEFAULT '#434343' AFTER `comment`; 
 
         DELETE FROM `{$tablePrefix}schedule` WHERE `removed` = 1;");
     }
