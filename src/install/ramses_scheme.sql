@@ -319,6 +319,17 @@ CREATE TABLE `ram_users` (
   `comment` text COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+DROP TABLE IF EXISTS `ram_schedulecomments`;
+CREATE TABLE `ram_schedulecomments` (
+  `id` int(11) NOT NULL,
+  `uuid` varchar(36) NOT NULL,
+  `projectId` int(11) NOT NULL,
+  `date` datetime NOT NULL,
+  `comment` text DEFAULT NULL,
+  `color` varchar(8) NOT NULL DEFAULT '#e3e3e3',
+  `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `removed` tinyint(4) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 ALTER TABLE `ram_applicationfiletype`
   ADD PRIMARY KEY (`id`),
@@ -458,6 +469,10 @@ ALTER TABLE `ram_users`
   ADD UNIQUE KEY `uuid` (`uuid`),
   ADD UNIQUE KEY `shortName` (`shortName`);
 
+ALTER TABLE `ram_schedulecomments`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uuid_unique` (`uuid`),
+  ADD UNIQUE KEY `unique_project_date` (`projectId`,`date`);
 
 ALTER TABLE `ram_applicationfiletype`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
@@ -528,6 +543,8 @@ ALTER TABLE `ram_templatesteps`
 ALTER TABLE `ram_users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
+ALTER TABLE `ram_schedulecomments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 ALTER TABLE `ram_applicationfiletype`
   ADD CONSTRAINT `fk_applicationfiletype_app` FOREIGN KEY (`applicationId`) REFERENCES `ram_applications` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -585,6 +602,10 @@ ALTER TABLE `ram_stepapplication`
 ALTER TABLE `ram_steps`
   ADD CONSTRAINT `fk_estimationGroupId` FOREIGN KEY (`estimationMultiplyGroupId`) REFERENCES `ram_assetgroups` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `fk_steps_projectId` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE `ram_schedulecomments`
+  ADD CONSTRAINT `fk_project` FOREIGN KEY (`projectId`) REFERENCES `ram_projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
 SET FOREIGN_KEY_CHECKS=1;
 COMMIT;
 

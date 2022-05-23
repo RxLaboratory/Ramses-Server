@@ -64,6 +64,33 @@
 		$q->close();
     }
 
+    function updateScheduleComment( $uuid, $projectUuid, $date, $comment, $color)
+    {
+        $q = new DBQuery();
+
+        $projectId = $q->id('projects', $projectUuid);
+
+        $q->insert(
+            "schedulecomments",
+            array(
+                'projectId',
+                'date',
+                'comment',
+                'color',
+                'uuid'
+            )
+        );
+
+        $q->bindStr("comment", $comment);
+        $q->bindStr("color", $color);
+        $q->bindStr("date", $date);
+        $q->bindStr("projectId", $projectId);
+        $q->bindStr("uuid", $uuid, true);
+
+        $q->execute("Schedule comment updated.");
+		$q->close();
+    }
+
     function deleteEntry( $uuid )
     {
         $q = new DBQuery();
@@ -172,6 +199,41 @@
             $uuid = getAttr("uuid", $entry );
 
             deleteEntry( $uuid );
+        }
+    }
+
+    // ============ SCHEDULE COMMENT ========
+    else if (acceptReply( "updateScheduleComment", 'lead'))
+    {
+        $uuid = getArg("uuid", uuid());
+        $projectUuid = getArg("projectUuid");
+        $date = getArg("date");
+        $comment = getArg("comment");
+        $color = getArg("color", "#e3e3e3");
+
+        updateScheduleComment( $uuid, $projectUuid, $date, $comment, $color);
+    }
+
+    // ========= UPDATE SCHEDULE COMMENTS ==========
+    else if (acceptReply( "updateScheduleComments", 'lead' ))
+    {
+        $comments = getArg("comments", array());
+
+        if (count($comments) == 0)
+        {
+            $reply["message"] = "Schedule comments updated.";
+            $reply["success"] = true;
+        }
+
+        foreach($comments as $c)
+        {
+            $uuid = getAttr("uuid", $c, uuid());
+            $projectUuid = getAttr("projectUuid", $c);
+            $date = getAttr("date", $c);
+            $comment = getAttr("comment", $c);
+            $color = getAttr("color", $c, "#e3e3e3");
+
+            updateScheduleComment( $uuid, $projectUuid, $date, $comment, $color);
         }
     }
 

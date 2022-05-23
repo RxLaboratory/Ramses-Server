@@ -31,7 +31,7 @@
 	// ==== SQL SETTINGS ====
 
 	// either 'mysql' (works for MariaDB too) or 'sqlite'
-	$sqlMode = 'sqlite';
+	$sqlMode = 'mysql';
 
 	// ==== MySQL/MariaDB SETTINGS ====
 
@@ -43,7 +43,7 @@
 	// User
 	$sqlUser = "ramses";
 	// Password
-	$sqlpassword = "password";
+	$sqlpassword = "a89pppuD";
 	// Table prefix
 	// DO NOT CHANGE THIS, not working yet
 	$tablePrefix = "ram";

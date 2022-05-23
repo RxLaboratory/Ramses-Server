@@ -12,20 +12,19 @@
         ALTER TABLE `{$tablePrefix}sequences` ADD `color` VARCHAR(15) NOT NULL DEFAULT '#434343' AFTER `comment`; 
 
         DELETE FROM `{$tablePrefix}schedule` WHERE `removed` = 1;");
+
+        $ok = $rep->execute();
+        $rep->closeCursor();
+
+        if (!$ok)
+        {
+            echo( "    ▫ Failed. Could not update data, here's the error:<br />" );
+            die( print_r($db->errorInfo(), true) );
+        }
+
+        echo ( "     ▪ OK!<br />" );
+
+        ob_flush();
+        flush();
     }
-
-    $ok = $rep->execute();
-    $rep->closeCursor();
-
-    if (!$ok)
-    {
-        echo( "    ▫ Failed. Could not update data, here's the error:<br />" );
-        die( print_r($db->errorInfo(), true) );
-    }
-
-    echo ( "     ▪ OK!<br />" );
-
-    ob_flush();
-    flush();
-
 ?>

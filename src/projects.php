@@ -607,6 +607,44 @@
 		return $schedule;
 	}
 
+	function getScheduleComments( $projectId, $projectUuid )
+	{
+		global $tablePrefix;
+
+		$q = new DBQuery();
+		$q->prepare( "SELECT
+			comments.`uuid`,
+			comments.`date`,
+			comments.`comment`,
+			comments.`color`,
+			comments.`removed`,
+			comments.`latestUpdate`
+			FROM {$tablePrefix}schedulecomments as comments
+			WHERE comments.`projectId` = {$projectId}
+			ORDER BY `date`;"
+		);
+
+		$q->execute();
+		$comments = array();
+
+		while ($c = $q->fetch())
+		{
+			$comment['uuid'] = $c['uuid'];
+			$comment['date'] = $c['date'];
+			$comment['comment'] = $c['comment'];
+			$comment['color'] = $c['color'];
+			$comment['projectUuid'] = $projectUuid;
+			$comment['removed'] = (int)$c['removed'];
+			$comment['latestUpdate'] = $c['latestUpdate'];
+
+			$comments[] = $comment;
+		}
+
+		$q->close();
+
+		return $comments;
+	}
+
 	function getProject( $project, $details=true )
 	{
 		// Adjust project values
@@ -626,6 +664,7 @@
 			$project['sequences'] = getSequences($project['id'], $project['uuid']);
 			$project['shots'] = getShots($project['id']);
 			$project['schedule'] = getSchedule($project['id']);
+			$project['scheduleComments'] = getScheduleComments($project['id'], $project['uuid']);
 		} else {
 			$project['pipeFiles'] = Array();
 			$project['steps'] = Array();
