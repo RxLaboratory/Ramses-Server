@@ -620,7 +620,7 @@
 			comments.`removed`,
 			comments.`latestUpdate`
 			FROM {$tablePrefix}schedulecomments as comments
-			WHERE comments.`projectId` = {$projectId}
+			WHERE comments.`projectId` = {$projectId} AND comments.`removed` = 0
 			ORDER BY `date`;"
 		);
 

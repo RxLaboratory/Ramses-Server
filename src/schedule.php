@@ -105,6 +105,20 @@
 		$q->close();
     }
 
+    function deleteScheduleComment( $uuid )
+    {
+        $q = new DBQuery();
+        $q->update(
+            "schedulecomments",
+            array(
+                'removed'
+            ),
+            $uuid );
+        $q->bindInt("removed", 1);
+        $q->execute("Schedule updated.");
+        $q->close();
+    }
+
     // ========= CREATE ENTRY ==========
     if ( acceptReply( "createSchedule", 'lead' ) )
     {
@@ -234,6 +248,31 @@
             $color = getAttr("color", $c, "#e3e3e3");
 
             updateScheduleComment( $uuid, $projectUuid, $date, $comment, $color);
+        }
+    }
+
+    else if (acceptReply( "removeScheduleComment", 'lead'))
+    {
+        $uuid = getArg("uuid", uuid());
+
+        deleteScheduleComment( $uuid );
+    }
+
+    else if (acceptReply( "removeScheduleComments", 'lead'))
+    {
+        $comments = getArg("comments", array());
+
+        if (count($comments) == 0)
+        {
+            $reply["message"] = "Schedule comments updated.";
+            $reply["success"] = true;
+        }
+
+        foreach($comments as $c)
+        {
+            $uuid = getAttr("uuid", $c, uuid());
+
+            deleteScheduleComment( $uuid );
         }
     }
 
