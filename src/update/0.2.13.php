@@ -20,7 +20,11 @@
                     PRIMARY KEY(\"id\" AUTOINCREMENT),
                     UNIQUE(\"uuid\"),
                     FOREIGN KEY(\"projectId\") REFERENCES \"{$tablePrefix}projects\"(\"id\") ON DELETE CASCADE ON UPDATE CASCADE
-                );");
+                );
+                
+                ALTER TABLE `{$tablePrefix}steps` ADD `publishSettings` TEXT NULL DEFAULT NULL AFTER `comment`;
+                
+                ");
         }
         else {
             $rep = $db->query(
@@ -48,6 +52,9 @@
                   
                   ALTER TABLE `{$tablePrefix}schedulecomments`
                     ADD CONSTRAINT `fk_project` FOREIGN KEY (`projectId`) REFERENCES `{$tablePrefix}projects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+                
+                  ALTER TABLE `{$tablePrefix}steps` ADD `publishSettings` TEXT NULL DEFAULT NULL AFTER `comment`; 
+                
                 ");
         }
 

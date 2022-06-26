@@ -43,7 +43,9 @@
 			steps.`estimationMultiplyGroupId`,
 			steps.`order`,
 			steps.`latestUpdate`,
-			steps.`removed`
+			steps.`removed`,
+			steps.`comment`,
+			steps.`publishSettings`
 			FROM {$tablePrefix}steps as steps
 			WHERE steps.projectId = {$pid}
 				AND steps.`removed` = 0
@@ -62,6 +64,8 @@
 			$step['uuid'] = $s['uuid'];
 			$step['shortName'] = $s['shortName'];
 			$step['name'] = $s['name'];
+			$step['comment'] = $s['comment'];
+			$step['publishSettings'] = $s['publishSettings'];
 			$step['type'] = $s['type'];
 			$step['color'] = $s['color'];
 			$step['order'] = (int)$s['order'];

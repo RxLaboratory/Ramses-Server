@@ -52,6 +52,7 @@
 		$type = getArg( "type" );
 		$comment = getArg( "comment" );
 		$color = getArg( "color" );
+		$publishSettings = getArg( "publishSettings" );
 
 		$q = new DBQuery();
 		$q->update(
@@ -61,7 +62,8 @@
 				'shortName',
 				'comment',
 				'type',
-				'color'
+				'color',
+				'publishSettings'
 			),
 			$uuid
 		);
@@ -69,6 +71,7 @@
 		$q->bindName( $name );
 		$q->bindShortName( $shortName );
 		$q->bindStr( "comment", $comment );
+		$q->bindStr( "publishSettings", $publishSettings );
 		$q->bindStr( "type", $type );
 		$q->bindStr( "color", $color );
 

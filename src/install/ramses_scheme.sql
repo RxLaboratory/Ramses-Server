@@ -267,6 +267,7 @@ CREATE TABLE `ram_steps` (
   `latestUpdate` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `removed` tinyint(4) NOT NULL DEFAULT 0,
   `comment` text COLLATE utf8_unicode_ci DEFAULT NULL
+  `publishSettings` text COLLATE utf8_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 DROP TABLE IF EXISTS `ram_templateassetgroups`;
