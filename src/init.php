@@ -26,6 +26,7 @@
 	
 	// Init session variables
 	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
+	if (!isset($_SESSION["sessionKey"])) $_SESSION["sessionKey"] = "";
 	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
 	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
 	if (!isset($_SESSION["userId"])) $_SESSION["userId"] = "";
