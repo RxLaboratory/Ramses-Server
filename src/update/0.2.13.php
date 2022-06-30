@@ -67,7 +67,63 @@
             die( print_r($db->errorInfo(), true) );
         }
 
+        // ==== Add/Update an admin user to re-set passwords ====
+
+        echo ( " ▸ Updating User Data.<br />" );
+
+        //Setup admin user
+        $uuid = uuid();
+        $shortName = "Admin";
+        $name = encrypt("Administrator");
+        $email = encrypt("");
+        //Prepare password
+        $pswd = str_replace("/", "", $serverAdress) . "password" . $clientKey;
+        $pswd = hash("sha3-512", $pswd);
+        $pswd = hashPassword($pswd, $uuid);
+        $comment = "The default Administrator user. Don't forget to rename it and change its password!";
+        $role = hashRole('admin');
+      
+        $qString = "REPLACE INTO
+            {$tablePrefix}users (
+                `name`,
+                `shortName`,
+                `uuid`,
+                `password`,
+                `role`,
+                `comment`,
+                `email` )
+            VALUES (
+                :name ,
+                :shortName ,
+                :uuid,
+                :password,
+                :role,
+                :comment,
+                :email );
+            COMMIT;";
+
+        $rep = $db->prepare($qString);
+        $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
+        $rep->bindValue(':name', $name, PDO::PARAM_STR);
+        $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
+        $rep->bindValue(':password', $pswd, PDO::PARAM_STR);
+        $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
+        $rep->bindValue(':role', $role, PDO::PARAM_STR);
+        $rep->bindValue(':email', $email, PDO::PARAM_STR);
+
+        $ok = $rep->execute();
+        $rep->closeCursor();
+
+        if (!$ok)
+        {
+            echo( "    ▫ Failed. Could not update data, here's the error:<br />" );
+            die( print_r($db->errorInfo(), true) );
+        }
+
         echo ( "     ▪ OK!<br />" );
+
+        echo ( "<p>User <strong>\"Admin\" with password \"password\"</strong> has been added.<br />Do not forget to change this name and password!</p>" );
+        echo ( "<p>You now have to use this Admin account to update the passwords for all users and re-enable their accounts.</p>" );
 
         ob_flush();
         flush();
