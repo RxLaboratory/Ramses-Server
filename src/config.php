@@ -59,4 +59,12 @@
 	// The client will be disconnected no matter what after this time
 	// 5 hours by default( 18000 )
 	$cookieTimeout = 18000;
+
+	// This must be the server public adress, exactly as used in the clients
+	$serverAdress = "localhost/ramses";
+
+	// This should never be changed, unless you change the key before building the official client or implementing your own client.
+	// It can be used to make sure only your own client, built by yourself, can connect to your own server. In this case, keep it secret!
+	// It is used to hash passwords.
+	$clientKey = "H6BuYLsW";
 ?>
