@@ -30,28 +30,24 @@
         
         $ramVersion = strtolower($ramsesVersion);
         $clientVersion = $_SESSION["clientVersion"];
-        $_SESSION["sessionKey"] = bin2hex(random_bytes(20));
 
         if ($_SESSION["clientVersion"] != $ramVersion)
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;
             $reply["message"] = "Warning, the version of Ramses you're using ({$clientVersion}) differs with the one of this server ({$ramVersion}).";
-            $reply["sessionKey"] = bin2hex(random_bytes(20));
         }
         else if ($installed)
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;
             $reply["message"] = "Server ready.";
-            $reply["sessionKey"] = bin2hex(random_bytes(20));
         }
         else
         {
             $reply["content"]["installed"] = false;
             $reply["success"] = false;
             $reply["message"] = "The server is not installed!";
-            $reply["sessionKey"] = "";
         }
     }
 ?>

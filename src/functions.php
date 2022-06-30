@@ -132,7 +132,6 @@
         $_SESSION["userUuid"] = "";
         $_SESSION["login"] = false;
         $_SESSION["sessionToken"] = "";
-        $_SESSION["sessionKey"] = "";
         session_destroy();
     }
 

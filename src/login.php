@@ -26,7 +26,6 @@
 	{
 		$username = getArg( "username" );
 		$password = getArg( "password" );
-		$hashAlgo = getArg( "hashAlgo", "sha3-512" );
 
 		$q = new DBQuery();
 		$q->prepare( "SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM {$tablePrefix}users WHERE `shortName` = :shortName AND removed = 0;" );
