@@ -38,24 +38,50 @@
 	//ping
 	include ("ping.php");
 
+	$now = time();
+
 	if (!$reply['accepted'])
 	{
 		//queries
 		if ($installed)
 		{
-			//connect to database
-			include('db.php');
+			// Check if session has expired
+			$expired = $now > $_SESSION['discard_after'];
 
-			//login first
-			include ("login.php");
-
-			if (!$reply['accepted'])
+			if ($expired)
 			{
+				// this session has worn out its welcome; kill it and start a brand new one
+				session_unset();
+				session_destroy();
+				session_start();
+
+				$reply["message"] = "Your session has expired, you need to log-in.";
+				$reply["query"] = "loggedout";
+				$reply["success"] = false;
+				$reply["accepted"] = false;
+				logout("Disconnected (Session expired)");
+				$_SESSION["expired"] = false;
+			}
+			else {
 				//secured operations, check token first
 				$token = getArg("token");
-				if ( $_SESSION["sessionToken"] != "")
+				if ($token != $_SESSION["sessionToken"])
 				{
-					if ($token == $_SESSION["sessionToken"])
+					$reply["message"] = "Invalid token! [Warning] This may be a security issue!";
+					$reply["query"] = "loggedout";
+					$reply["success"] = false;
+					$reply["accepted"] = false;
+					logout("Disconnected (Invalid token)");
+				}
+				else
+				{
+					//connect to database
+					include('db.php');
+
+					//login
+					include ("login.php");
+
+					if (!$reply['accepted'])
 					{
 						if (hasArg("init"))
 						{
@@ -85,24 +111,8 @@
 						include ("status.php");
 						include ("schedule.php");
 					}
-					else 
-					{
-						$reply["message"] = "Invalid token! How did you arrive here?";
-						$reply["query"] = "loggedout";
-						$reply["success"] = false;
-						$reply["accepted"] = false;
-						logout("Disconnected (Invalid token)");
-					}
-				}
-				else
-				{
-					$reply["message"] = "Your session has expired, you need to log-in.";
-					$reply["query"] = "loggedout";
-					$reply["success"] = false;
-					$reply["accepted"] = false;
-					logout("Disconnected (Session expired)");
-				}
-			}
+				}			
+			}			
 		}
 		else
 		{
@@ -110,7 +120,8 @@
 		}
 	}
 
-	
+	// Set time out
+	$_SESSION['discard_after'] = $now + $sessionTimeout;
 
 	echo json_encode($reply);
 ?>

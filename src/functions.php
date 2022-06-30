@@ -114,9 +114,6 @@
         $_SESSION["login"] = true;
         //Log
         $log->login();
-        //Generate token
-        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
-        return $_SESSION["sessionToken"];
     }
 
     /**
@@ -131,7 +128,7 @@
         $_SESSION["userRole"] = "standard";
         $_SESSION["userUuid"] = "";
         $_SESSION["login"] = false;
-        $_SESSION["sessionToken"] = "";
+        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
         session_destroy();
     }
 

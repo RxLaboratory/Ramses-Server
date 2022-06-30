@@ -25,7 +25,8 @@
 	session_start();
 	
 	// Init session variables
-	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
+	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
+	if (!isset($_SESSION["expired"])) $_SESSION["expired"] = false;
 	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
 	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
 	if (!isset($_SESSION["userId"])) $_SESSION["userId"] = "";
@@ -33,25 +34,6 @@
 	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
 	if (!isset($_SESSION["clientVersion"])) $_SESSION["clientVersion"] = "unknown";
 	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
-
-	$now = time();
-
-	if ($now > $_SESSION['discard_after'])
-	{
-		// this session has worn out its welcome; kill it and start a brand new one
-		session_unset();
-		session_destroy();
-		session_start();
-
-		if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
-		if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
-		if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
-		if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
-		if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
-	
-	}
-	
-	$_SESSION['discard_after'] = $now + $sessionTimeout;
 
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
