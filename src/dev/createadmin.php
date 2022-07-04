@@ -25,7 +25,7 @@
     $shortName = "Admin";
     $name = encrypt("Administrator");
     $email = encrypt("");
-    $pswd = str_replace("/", "", $serverAdress) . "password" . $clientKey;
+    $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
     $pswd = hashPassword($pswd, $uuid);
     $comment = "The default Administrator user. Don't forget to rename it and change its password!";
