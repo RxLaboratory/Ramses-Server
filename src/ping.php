@@ -49,9 +49,5 @@
             $reply["success"] = false;
             $reply["message"] = "The server is not installed!";
         }
-
-        // Generate a new token
-        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
-        $reply['token'] = $_SESSION["sessionToken"];
     }
 ?>

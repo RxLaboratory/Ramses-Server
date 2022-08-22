@@ -54,9 +54,19 @@
         flush();
 
         // Create the RamUser Table
-        $ok = createTable("RamUser");
+        createTable("RamUser");
 
-        if ( !$ok )
+        // Add username row
+        $q = new DBQuery();
+        $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
+            ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
+            ADD UNIQUE KEY `userName` (`userName`);
+            ");
+
+        $q->execute();
+        $q->close();
+
+        if ( !$q->isOK() )
         {
             die( "Sorry, something went wrong while writing the database." );
         }
@@ -76,15 +86,15 @@
     $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"password\":\"{$pswd}\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
-    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `data` )
-		VALUES ( :uuid, :data );
+    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `data` )
+		VALUES ( :uuid, 'Admin', :data );
 		COMMIT;";
     $q->prepare( $qStr );
 
     $q->bindStr('uuid', $uuid);
     $q->bindStr('data', $data);
     
-    $q->execute("");
+    $q->execute();
     $q->close();
 
     if ( !$q->isOK() )

@@ -27,7 +27,7 @@
             $this->cleanLogs();
         }
 
-        public function login()
+        public function login($uuid, $role, $id, $name)
         {
             // Check if we're logging
             global $enableLogs; 
@@ -35,10 +35,6 @@
             if (!$enableLogs) return;
             if (!$connexionLogs) return;
 
-            $uuid = $_SESSION["userUuid"];
-            $id = $_SESSION["userId"];
-            $name = $_SESSION["userRole"];
-            $role = $_SESSION["userName"];
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},login");
         }
 

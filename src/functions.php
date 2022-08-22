@@ -119,14 +119,12 @@
     {
         global $log;
         //Keep session info
-        $_SESSION["userRole"] = $role;
-        $_SESSION["userUuid"] = $uuid;
-        $_SESSION["userId"] = $id;
-        $_SESSION["userName"] = $name;
         $_SESSION["login"] = true;
-        // token bin2hex(random_bytes(20))
+        // Generate a new token
+        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
+        $reply['token'] = $_SESSION["sessionToken"];
         //Log
-        $log->login();
+        $log->login($uuid, $role, $id, $name);
     }
 
     /**
