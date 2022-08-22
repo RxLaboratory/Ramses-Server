@@ -94,7 +94,7 @@
     $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
     $pswd = hashPassword($pswd, $uuid);
-    $data = encrypt("{\"name\":\"Administrator\",\"password\":\"{$pswd}\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
+    $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"password\":\"{$pswd}\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
     $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `data` )
