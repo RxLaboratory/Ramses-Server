@@ -28,8 +28,8 @@
 		$password = getArg( "password" );
 
 		$q = new DBQuery();
-		$q->prepare( "SELECT `password`,`name`,`email`,`folderPath`,`uuid`,`role` FROM {$tablePrefix}users WHERE `shortName` = :shortName AND removed = 0;" );
-		$q->bindShortName( $username );
+		$q->prepare( "SELECT `userName`,`uuid`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username AND removed = 0;" );
+		$q->bindStr( ":username", $username );
 		$q->execute();
 
 		$testPass = $q->fetch();
@@ -39,45 +39,49 @@
 		{
 			$found = true;
 			$uuid = $testPass["uuid"];
+			$data = $testPass["data"];
+			// decrypt data
+			$data = decrypt( $data );
+			$data = json_decode( $data, true);
+			// Get password
+			$tPassword = "";
+			if ( isset($data["password"]) ) $tPassword = $data["password"];
 
 			//check password
-			if ( checkPassword($password, $uuid, $testPass["password"]) )
+			if ( checkPassword($password, $uuid, $tPassword ) )
 			{
-				//login
-				$role = $testPass["role"];
-				// Role is hashed, find it
-				$role = checkRole($role);
-				// Name is encrypted
-				$name = decrypt( $testPass["name"] );
+				// Get other data for the log
+				$name = "unknown";
+				if ( isset($data["name"]) ) $name = $data["name"];
+				$role = "unknown";
+				if ( isset($data["role"]) ) $role = $data["role"];
+
+				// Login
 				$token = login($uuid, $role, $username, $name);
+
 				//reply content
 				$content = array();
-				$content["name"] = $name;
-				$content["shortName"] = $username;
+				$content["username"] = $username;
 				$content["uuid"] = $uuid;
-				$content["folderPath"] = $testPass["folderPath"];
-				$content["role"] = $role;
 				$content["token"] = $token;
-				$content["email"] = decrypt( $testPass["email"] );
 				$reply["content"] = $content;
 				$reply["message"] = "Successful login. Welcome " . $content["name"] . "!";
 				$reply["success"] = true;
 			}
 			else
 			{
-				$reply["message"] = "Invalid password";
+				$reply["message"] = "Invalid password or username";
 				$reply["success"] = false;
-				$_SESSION["userId"] = $username;
-				$_SESSION["userUuid"] = $uuid;
-				logout("Connexion refused (invalid password)");
+				logout($username, "Connexion refused (invalid password)");
 			}
 		}
 		else
 		{
-			$reply["message"] = "Invalid username";
+			$reply["message"] = "Invalid password or username";
 			$reply["success"] = false;
-			$_SESSION["userId"] = $username;
-			logout("Connexion refused (invalid username)");
-		}		
+			logout($username, "Connexion refused (invalid username)");
+		}
+
+		printAndDie();
 	}
 ?>

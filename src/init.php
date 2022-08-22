@@ -46,22 +46,13 @@
 		$contentArray = explode(";", $cType);
 		$contentType = "";
 		$charset = "";
-		$contentAsJson = false;
-		$contentInPost = false;
+		$ok = false;
 		foreach( $contentArray as $c)
 		{
 			$c = trim($c);
 			if ($c == "application/json")
 			{
-				$contentAsJson = true;
-				$contentInPost = true;
-				continue;
-			}
-
-			if ($c == "application/x-www-form-urlencoded")
-			{
-				$contentInPost = true;
-				$contentAsJson = false;
+				$ok = true;
 				continue;
 			}
 
@@ -78,10 +69,16 @@
 
 		// If json, parse it right now
 		$bodyContent = array();
-		if ($contentAsJson)
+		if ($ok)
 		{
 			$rawBody = file_get_contents('php://input');
 			$bodyContent = json_decode($rawBody, true);
+		}
+		else
+		{
+			$reply["success"] = false;
+			$reply["message"] = "Sorry, malformed request. We accept only application/json POST";
+			die(json_encode($reply));
 		}
 	}
 	

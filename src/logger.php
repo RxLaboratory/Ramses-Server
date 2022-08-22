@@ -38,7 +38,7 @@
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},login");
         }
 
-        public function logout($reason)
+        public function logout($userName, $reason)
         {
             // Check if we're logging
             global $enableLogs; 
@@ -46,14 +46,6 @@
             if (!$enableLogs) return;
             if (!$connexionLogs) return;
 
-            if (isset($_SESSION["userUuid"])) $uuid = $_SESSION["userUuid"];
-            else $uuid = "";
-            if (isset($_SESSION["userId"])) $id = $_SESSION["userId"];
-            else $id = "";
-            if (isset($_SESSION["userRole"])) $role = $_SESSION["userRole"];
-            else $role = "";
-            if (isset($_SESSION["userName"])) $name = $_SESSION["userName"];
-            else $name = "";
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},{$reason}");
         }
 

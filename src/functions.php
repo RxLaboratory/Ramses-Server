@@ -122,9 +122,10 @@
         $_SESSION["login"] = true;
         // Generate a new token
         $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
-        $reply['token'] = $_SESSION["sessionToken"];
         //Log
         $log->login($uuid, $role, $id, $name);
+
+        return $_SESSION["sessionToken"];
     }
 
     /**
@@ -204,29 +205,12 @@
         */
     function getArg($name, $defaultValue = "")
     {
-        global $contentInPost, $contentAsJson, $bodyContent;
+        global $bodyContent;
 
         $decordedArg = "";
 
-        // First, try from URL
-        if ( hasArg( $name ) )
-        {
-            $decordedArg = rawurldecode ( $_GET[$name] );
-        }
-        // Not found, get from body
-        else if ($contentInPost)
-        {
-            if ($contentAsJson)
-            {
-                if (isset($bodyContent[$name]))
-                    $decordedArg = $bodyContent[$name];
-            }
-            else 
-            {
-                if (isset($_POST[$name]))
-                    $decordedArg = rawurldecode ( $_POST[$name] );
-            }
-        }
+        if (isset($bodyContent[$name]))
+            $decordedArg = $bodyContent[$name];
 
         if ($decordedArg == "") return $defaultValue;       
 
@@ -312,11 +296,6 @@
         $reply["query"] = $queryName;
         $reply["accepted"] = true;
 
-        // Check privileges
-        if ($role == 'admin') if (!isAdmin()) return false;
-        if ($role == 'projectAdmin') if (!isProjectAdmin()) return false;
-        if ($role == 'lead') if (!isLead()) return false;
-
         return true;
     }
     
@@ -385,29 +364,39 @@
         return strcmp($version,$other ) > 0;
     }
 
-    function createTable( $name )
+    function createTable( $name, $drop = false )
     {
         global $tablePrefix;
         
         $q = new DBQuery();
-        $q->prepare("
-                        DROP TABLE IF EXISTS `{$tablePrefix}{$name}`;
-                        CREATE TABLE `{$tablePrefix}{$name}` (
-                            `id` int(11) NOT NULL,
-                            `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
-                            `data` text NOT NULL,
-                            `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-                            `removed` tinyint(4) NOT NULL DEFAULT 0
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-                        ALTER TABLE `{$tablePrefix}{$name}`
-                            ADD PRIMARY KEY (`id`),
-                            ADD UNIQUE KEY `uuid` (`uuid`);
-                        ALTER TABLE `{$tablePrefix}{$name}`
-                            MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-                    ");
+        $qStr = "";
+        if ($drop) $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}{$name}`; ";
+        $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+                    `id` int(11) NOT NULL,
+                    `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+                    `data` text NOT NULL,
+                    `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+                    `removed` tinyint(4) NOT NULL DEFAULT 0
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                ALTER TABLE `{$tablePrefix}{$name}`
+                    ADD PRIMARY KEY (`id`),
+                    ADD UNIQUE KEY `uuid` (`uuid`);
+                ALTER TABLE `{$tablePrefix}{$name}`
+                    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+                ";
+        $q->prepare($qStr);
 
         $q->execute();
         $q->close();
         return $q->isOK();
+    }
+
+    function printAndDie()
+    {
+        global $reply, $sessionTimeout;
+        // Set time out
+        $_SESSION['discard_after'] = time() + $sessionTimeout;
+
+        echo json_encode($reply);
     }
 ?>

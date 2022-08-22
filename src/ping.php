@@ -49,5 +49,7 @@
             $reply["success"] = false;
             $reply["message"] = "The server is not installed!";
         }
+
+        printAndDie();
     }
 ?>

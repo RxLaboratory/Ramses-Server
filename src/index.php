@@ -40,62 +40,52 @@
 
 	$now = time();
 
-	if (!$reply['accepted'])
+	//queries
+	if ($installed)
 	{
-		//queries
-		if ($installed)
+		// Check if session has expired
+		$expired = $now > $_SESSION['discard_after'];
+
+		if ($expired)
 		{
-			// Check if session has expired
-			$expired = $now > $_SESSION['discard_after'];
+			// this session has worn out its welcome; kill it and start a brand new one
+			session_unset();
+			session_destroy();
+			session_start();
 
-			if ($expired)
-			{
-				// this session has worn out its welcome; kill it and start a brand new one
-				session_unset();
-				session_destroy();
-				session_start();
-
-				$reply["message"] = "Your session has expired, you need to log-in.";
-				$reply["query"] = "loggedout";
-				$reply["success"] = false;
-				$reply["accepted"] = false;
-				logout("Disconnected (Session expired)");
-				$_SESSION["expired"] = false;
-			}
-			else {
-				//secured operations, check token first
-				$token = getArg("token");
-				if ($token != $_SESSION["sessionToken"])
-				{
-					$reply["message"] = "Invalid token! [Warning] This may be a security issue!";
-					$reply["query"] = "loggedout";
-					$reply["success"] = false;
-					$reply["accepted"] = false;
-					logout("Disconnected (Invalid token)");
-				}
-				else
-				{
-					//connect to database
-					include('db.php');
-
-					//login
-					include ("login.php");
-
-					if (!$reply['accepted'])
-					{
-
-					}
-				}			
-			}			
+			$reply["message"] = "Your session has expired, you need to log-in.";
+			$reply["query"] = "loggedout";
+			$reply["success"] = false;
+			$reply["accepted"] = false;
+			logout("Disconnected (Session expired)");
+			$_SESSION["expired"] = false;
+			printAndDie();
 		}
-		else
+
+		//connect to database
+		include('db.php');
+
+		//login
+		include ("login.php");
+
+		//secured operations, check token first
+		$token = getArg("token");
+		if ($token != $_SESSION["sessionToken"])
 		{
-			$reply["message"] = "This Ramses server is not installed yet.";
+			$reply["message"] = "Invalid token! [Warning] This may be a security issue!";
+			$reply["query"] = "loggedout";
+			$reply["success"] = false;
+			$reply["accepted"] = false;
+			logout("Disconnected (Invalid token)");
+			printAndDie();
 		}
+
+		//sync
+		include ("sync.php");
 	}
-
-	// Set time out
-	$_SESSION['discard_after'] = $now + $sessionTimeout;
-
-	echo json_encode($reply);
+	else
+	{
+		$reply["message"] = "This Ramses server is not installed yet.";
+		printAndDie();
+	}
 ?>

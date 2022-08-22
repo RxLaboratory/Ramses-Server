@@ -9,7 +9,7 @@
 
 <body>
 
-<form method="post" action="index.php?type=login">
+<form method="post" action="index.php?login">
  
 <p>
     <input type="text" name="username" />

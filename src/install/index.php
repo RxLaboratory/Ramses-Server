@@ -54,7 +54,7 @@
         flush();
 
         // Create the RamUser Table
-        createTable("RamUser");
+        createTable("RamUser", true);
 
         // Add username row
         $q = new DBQuery();
