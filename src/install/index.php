@@ -56,19 +56,19 @@
         // Create the RamUser Table
         $q = new DBQuery();
         $q->prepare("
-                        DROP TABLE IF EXISTS {$tablePrefix}RamUser;
-                        CREATE TABLE {$tablePrefix}`RamUser` (
+                        DROP TABLE IF EXISTS `{$tablePrefix}RamUser`;
+                        CREATE TABLE `{$tablePrefix}RamUser` (
                             `id` int(11) NOT NULL,
                             `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
                             `userName` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NEW',
-                            `data` text NOT NULL DEFAULT '{}',
+                            `data` text NOT NULL,
                             `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
                             `removed` tinyint(4) NOT NULL DEFAULT 0
                             ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-                        ALTER TABLE `ram_users`
+                        ALTER TABLE `{$tablePrefix}RamUser`
                             ADD PRIMARY KEY (`id`),
                             ADD UNIQUE KEY `uuid` (`uuid`);
-                        ALTER TABLE {$tablePrefix}`RamUser`
+                        ALTER TABLE `{$tablePrefix}RamUser`
                             MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
                     ");
 
