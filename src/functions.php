@@ -1,5 +1,17 @@
 <?php
 
+    if (!function_exists('getallheaders')) {
+        function getallheaders() {
+            $headers = [];
+            foreach ($_SERVER as $name => $value) {
+                if (substr($name, 0, 5) == 'HTTP_') {
+                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                }
+            }
+            return $headers;
+        }
+    }
+
     function createEncryptionKey ()
     {
         // Compute appropriate cost for passwords
@@ -112,6 +124,7 @@
         $_SESSION["userId"] = $id;
         $_SESSION["userName"] = $name;
         $_SESSION["login"] = true;
+        // token bin2hex(random_bytes(20))
         //Log
         $log->login();
     }
@@ -133,70 +146,6 @@
     }
 
     /**
-     * Checks if the current user has admin rights
-     */
-    function isAdmin()
-    {
-        global $reply;
-
-        $ok = $_SESSION["userRole"] == "admin";
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights, you need to be Admin.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
-     * Checks if the current user has project admin rights
-     */
-    function isProjectAdmin()
-    {
-        global $reply;
-
-        $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "project";
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights, you need to be Project Admin.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
-     * Checks if the current user has lead rights
-     */
-    function isLead()
-    {
-        global $reply;
-
-        $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead" || $_SESSION["userRole"] == "project";
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights, you need to be Lead.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
-     * Checks if this uuid is the current logged in user
-     */
-    function isSelf($uuid)
-    {
-        global $reply;
-
-        $ok = $uuid == $_SESSION["userUuid"];
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
      * Hashes a password adding the user id at the beginning
      */
     function hashPassword($pswd, $uuid)
@@ -209,29 +158,6 @@
     {
         $pswd = $uuid . $pswd;
         return password_verify($pswd, $testPswd);
-    }
-
-    /**
-     * Hashes the role to store it in the database
-     */
-    function hashRole( $r )
-    {
-        return password_hash(  $r ,  PASSWORD_DEFAULT, ['cost' => 4]);
-    }
-
-    /**
-     * Checks the hashed role got from the database and returns the plain text role
-     */
-    function checkRole ( $r )
-    {
-        if ($r == 'admin') return 'admin';
-        if ($r == 'project') return 'project';
-        if ($r == 'lead') return 'lead';
-        if ($r == 'standard') return 'standard';
-        if ( checkPassword( 'admin', '', $r ) ) return 'admin';
-        if ( checkPassword( 'project', '', $r) ) return 'project';
-        if ( checkPassword( 'lead', '', $r) ) return 'lead';
-        return 'standard';
     }
 
     /**

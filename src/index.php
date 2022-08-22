@@ -83,33 +83,7 @@
 
 					if (!$reply['accepted'])
 					{
-						if (hasArg("init"))
-						{
-							$reply["accepted"] = true;
-							$reply["query"] = "init";
 
-							// The reply is completed in corresponding categories
-
-							$reply["message"] = "Initial data retrieved.";
-							$reply["success"] = true;
-						}
-
-						include ("users.php");
-						include ("projects.php");
-						include ("steps.php");
-						include ("templatesteps.php");
-						include ("states.php");
-						include ("templateassetgroups.php");
-						include ("assetgroups.php");
-						include ("assets.php");
-						include ("sequences.php");
-						include ("filetypes.php");
-						include ("applications.php");
-						include ("pipefiles.php");
-						include ("pipes.php");
-						include ("shots.php");
-						include ("status.php");
-						include ("schedule.php");
 					}
 				}			
 			}			

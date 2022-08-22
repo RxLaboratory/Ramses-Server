@@ -31,7 +31,7 @@
 	// ==== SQL SETTINGS ====
 
 	// either 'mysql' (works for MariaDB too) or 'sqlite'
-	$sqlMode = 'mysql';
+	$sqlMode = 'sqlite';
 
 	// ==== MySQL/MariaDB SETTINGS ====
 
@@ -45,8 +45,10 @@
 	// Password
 	$sqlpassword = "a89pppuD";
 	// Table prefix
-	// DO NOT CHANGE THIS, not working yet
-	$tablePrefix = "ram";
+	// should be a random character string
+	// you can setup multiple instances on the same DB
+	// if each use a different prefix
+	$tablePrefix = "jaom7Jdr";
 
 	// ==== SESSION SETTINGS ====
 

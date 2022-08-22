@@ -1,5 +1,5 @@
 <?php
-    $ramsesVersion = "0.3.0-alpha";
+    $ramsesVersion = "0.5.0-alpha";
 	$installed = file_exists("config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db
@@ -25,12 +25,8 @@
 	session_start();
 	
 	// Init session variables
-	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
+	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
 	if (!isset($_SESSION["expired"])) $_SESSION["expired"] = false;
-	if (!isset($_SESSION["userRole"])) $_SESSION["userRole"] = "standard";
-	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "";
-	if (!isset($_SESSION["userId"])) $_SESSION["userId"] = "";
-	if (!isset($_SESSION["userName"])) $_SESSION["userName"] = "";
 	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
 	if (!isset($_SESSION["clientVersion"])) $_SESSION["clientVersion"] = "unknown";
 	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
@@ -42,7 +38,7 @@
 	$log = new Logger();
 
 	// Parse body content to make it quickly available later
-	// Check the content type, accept either application/json or application/x-www-form-urlencoded
+	// Check the content type, accept application/json or application/x-www-form-urlencoded
 	$allHeaders = getallheaders();
 	if (isset($allHeaders['Content-Type']))
 	{

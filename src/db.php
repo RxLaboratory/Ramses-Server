@@ -41,6 +41,17 @@
 		private $query;
 		private $ok = false;
 		private $closed = true;
+		private $errorInfo = "";
+
+		public function isOK()
+		{
+			return $this->ok;
+		}
+
+		public function errorInfo()
+		{
+			return $this->errorInfo;
+		}
 
 		// Insert/Replace a new row in a table
 		public function insert( $table, $keys )
@@ -66,54 +77,6 @@
 			$this->prepare($q);
 			$this->bindStr('udpateTime', dateTimeStr() );
 			$this->bindInt('removed', '0' );
-		}
-
-		// Get an id from a uuid
-		public function id( $table, $uuid )
-		{
-			global $tablePrefix, $db;
-
-			$q = "SELECT {$tablePrefix}{$table}.`id`
-				FROM {$tablePrefix}{$table}
-				WHERE `uuid` = :uuid;";
-
-			$this->prepare($q);
-
-			$this->bindStr( "uuid", $uuid, true);
-			$this->execute();
-			if ($i = $this->fetch())
-			{
-				$this->close();
-				return $i['id'];
-			}
-			$this->close();
-			return "";
-		}
-
-		public function uuid( $table, $id, $includeRemoved = false )
-		{
-			global $tablePrefix, $db;
-
-			if ($id == "") return "";
-
-			$q = "SELECT {$tablePrefix}{$table}.`uuid`
-				FROM {$tablePrefix}{$table}
-				WHERE `id` = :id";
-
-			if (!$includeRemoved) $q = $q . " AND `removed`= 0";
-			$q = $q . ";";
-
-			$this->prepare($q);
-
-			$this->bindInt( "id", $id, true);
-			$this->execute();
-			if ($i = $this->fetch())
-			{
-				$this->close();
-				return $i['uuid'];
-			}
-			$this->close();
-			return "";
 		}
 
 		// Removes a row from a table
@@ -209,76 +172,6 @@
 			return $result;
 		}
 
-		public function getAll( $table, $keys, $orderkeys = array(), $includeRemoved = false )
-		{
-			global $tablePrefix;
-
-			array_push($keys, 'removed');
-			array_push($keys, 'latestUpdate');
-
-			$qKeys = array();
-			foreach( $keys as $key )
-			{
-				array_push( $qKeys, '`' . $key . '`');
-			}
-
-			$q = "SELECT " . join(',',$qKeys) . " FROM {$tablePrefix}{$table}";
-			if(!$includeRemoved) $q = $q . " WHERE `removed`= 0";
-			if (count($orderkeys) > 0)
-			{
-				$q = $q . " ORDER BY ";
-				$qOrderKeys = array();
-				foreach( $orderkeys as $key )
-				{
-					array_push( $qOrderKeys, '`' . $key . '`');
-				}
-				$q = $q . join(",",$qOrderKeys);
-			}
-			$q = $q . ";";
-
-			$this->prepare($q);
-
-			$result = Array();
-			$this->execute();
-			while($r = $this->fetch())
-			{
-				$i = Array();
-				foreach( $keys as $key )
-				{
-					if ($key == 'removed') $i[$key] = (int)$r[$key];
-					$i[$key] = $r[$key];
-				}
-				$result[] = $i;
-			}
-			$this->close();
-			return $result;
-		}
-
-		// Bind a Ramses name
-		public function bindName( $name )
-		{
-			if ( $this->validateName( $name ) && $this->ok ) $this->query->bindValue(':name', $name, PDO::PARAM_STR );
-			else $this->ok = false;
-		}
-
-		// Bind a Ramses short name (ID)
-		public function bindShortName( $shortName )
-		{
-			if ( $this->validateShortName( $shortName ) && $this->ok ) $this->query->bindValue(':shortName', $shortName, PDO::PARAM_STR );
-			else $this->ok = false;
-		}
-
-		// Bind an email
-		public function bindEmail( $email )
-		{
-			//DISABLE CHECK FOR NOW
-			$this->query->bindValue(':email', $email, PDO::PARAM_STR );
-			return;
-
-			if ( $this->validateEmail( $email ) && $this->ok ) $this->query->bindValue(':email', $email, PDO::PARAM_STR );
-			else $this->ok = false;
-		}
-
 		// Bind a string
 		public function bindStr( $key, $str, $mandatory = false )
 		{
@@ -370,6 +263,7 @@
 			// update reply
 			if (!$this->ok)
 			{
+				$this->errorInfo = $this->query->errorInfo();
 				$reply["message"] = "Database query failed. Here's the error\n\n" . $rep->errorInfo()[2];
 				$reply["success"] = false;
 			}
@@ -395,7 +289,7 @@
 			return $this->query->fetch();
 		}
 
-		public function prepare( $qstr )
+		public function prepare( $qstr, $debug = false )
 		{
 			global $db;
 
@@ -407,44 +301,8 @@
 				$reply["message"] = "Could not prepare the Database query.";
         		$reply["success"] = false;
 				$this->ok = false;
+				if ($debug) echo( "Could not prepare the Database query." );
 			}
-		}
-
-		private function validateName( $name )
-		{
-			global $reply;
-	
-			if (preg_match( "/^[ a-zA-Z0-9+-]{1,256}$/i", $name ))
-				return true;
-	
-			$reply["message"] = "Wrong name, sorry: names must have less than 256 characters and contain only one of these characters: [ A-Z, 0-9, +, - ] (and spaces).
-				The name was: \"{$name}\"";
-			$reply["success"] = false;
-		}
-	
-		private function validateEmail( $email )
-		{
-			global $reply;
-	
-			// accept empty emails
-			if ( $email == '' ) return true;
-	
-			if ( preg_match( "/^[a-z0-9!#$%&'*+\/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i", $email ) )
-				return true;
-	
-			$reply["message"] = "Wrong email, sorry.";
-			$reply["success"] = false;
-		}
-	
-		private function validateShortName( $shortName )
-		{
-			global $reply;
-			
-			if ( preg_match( "/^[a-zA-Z0-9+-]{1,10}$/i", $shortName ) )
-				return true;
-	
-			$reply["message"] = "Wrong ID, sorry: IDs must have less than 10 characters and contain only one of these characters: [ A-Z, 0-9, +, - ].";
-			$reply["success"] = false;
 		}
 	}
 ?>

@@ -24,7 +24,7 @@
 	// Edit this configuration file to adjust server logging
 
 	// === GLOBALLY ENABLE LOGS ===
-	$enableLogs = false;
+	$enableLogs = true;
 
     // Connexion logs
     $connexionLogs = true;
