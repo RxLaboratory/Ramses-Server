@@ -54,31 +54,11 @@
         flush();
 
         // Create the RamUser Table
-        $q = new DBQuery();
-        $q->prepare("
-                        DROP TABLE IF EXISTS `{$tablePrefix}RamUser`;
-                        CREATE TABLE `{$tablePrefix}RamUser` (
-                            `id` int(11) NOT NULL,
-                            `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
-                            `userName` varchar(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT 'NEW',
-                            `data` text NOT NULL,
-                            `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-                            `removed` tinyint(4) NOT NULL DEFAULT 0
-                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-                        ALTER TABLE `{$tablePrefix}RamUser`
-                            ADD PRIMARY KEY (`id`),
-                            ADD UNIQUE KEY `uuid` (`uuid`);
-                        ALTER TABLE `{$tablePrefix}RamUser`
-                            MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-                    ");
+        $ok = createTable("RamUser");
 
-        $q->execute();
-        $q->close();
-        
-        if ( !$q->isOK() )
+        if ( !$ok )
         {
-            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-            die( print_r($q->errorInfo(), true) );
+            die( "Sorry, something went wrong while writing the database." );
         }
 
         echo ( "Database tables are ready!<br />" );
@@ -89,7 +69,6 @@
     
     //Setup admin user
     $uuid = uuid();
-    $username = "Admin";
     //Prepare password
     $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
@@ -97,13 +76,12 @@
     $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"password\":\"{$pswd}\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
-    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `data` )
-		VALUES ( :uuid, :userName, :data );
+    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `data` )
+		VALUES ( :uuid, :data );
 		COMMIT;";
     $q->prepare( $qStr );
 
     $q->bindStr('uuid', $uuid);
-    $q->bindStr('userName', $username);
     $q->bindStr('data', $data);
     
     $q->execute("");

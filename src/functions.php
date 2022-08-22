@@ -386,4 +386,30 @@
 
         return strcmp($version,$other ) > 0;
     }
+
+    function createTable( $name )
+    {
+        global $tablePrefix;
+        
+        $q = new DBQuery();
+        $q->prepare("
+                        DROP TABLE IF EXISTS `{$tablePrefix}{$name}`;
+                        CREATE TABLE `{$tablePrefix}{$name}` (
+                            `id` int(11) NOT NULL,
+                            `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+                            `data` text NOT NULL,
+                            `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+                            `removed` tinyint(4) NOT NULL DEFAULT 0
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                        ALTER TABLE `{$tablePrefix}{$name}`
+                            ADD PRIMARY KEY (`id`),
+                            ADD UNIQUE KEY `uuid` (`uuid`);
+                        ALTER TABLE `{$tablePrefix}{$name}`
+                            MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+                    ");
+
+        $q->execute();
+        $q->close();
+        return $q->isOK();
+    }
 ?>
