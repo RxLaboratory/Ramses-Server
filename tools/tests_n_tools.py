@@ -27,16 +27,17 @@ def ping():
     print( html2text.html2text( r.text ) )
 
 def login(username, password):
+    global token
     data = {
         "version": version,
         "username": username,
         "password": password
     }
     r = session.post(url + "/dev/?login", headers=headers, data=json.dumps(data))
-    token = html2text.html2text( r.text )
-    print( token )
+    token = html2text.html2text( r.text ).strip()
 
 def sync( tables, date ):
+    global token
     data = {
         "version": version,
         "token": token,
@@ -49,7 +50,7 @@ def sync( tables, date ):
 # TESTS Here
 
 #ping()
-installServer()
-#ping()
+#installServer()
+ping()
 login("Admin", "password")
-#sync( (), "2022-07-15 00:00:00")
+sync( (), "2022-07-15 00:00:00")
