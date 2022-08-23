@@ -1,14 +1,20 @@
 <?php
+	require_once($__ROOT__."/config/config.php");
+	require_once($__ROOT__."/functions.php");
+	require_once($__ROOT__."/logger.php");
+	require_once($__ROOT__."/session_manager.php");
+
     $ramsesVersion = "0.5.0-alpha";
-	$installed = file_exists("config_security.php");
+	$installed = file_exists($__ROOT__."/config/config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db
 	date_default_timezone_set('UTC');
 
 	// The encryption key
-	if( $installed ) include( 'config_security.php' );
+	if( $installed ) include( $__ROOT__."/config/config_security.php" );
 	else $encrypt_key = '';
 
+	// Enable dev mode
 	if ($devMode)
 	{
 		ini_set('display_errors', '1');
@@ -16,21 +22,24 @@
 		error_reporting(E_ALL);
 	}
 
+	// Start session
+
 	// server should keep session data for AT LEAST  sessionTimeout
 	ini_set('session.gc_maxlifetime', $sessionTimeout);
 
-	// each client should remember their session id for EXACTLY sessionTimeout
-	session_set_cookie_params($cookieTimeout);
-
-	session_start();
+	// Get domain and path
+	$addressArray = explode("/", $serverAddress);
+	$domain = array_shift($addressArray);
+	$path = "/" . join("/",$addressArray) . "/";
+	// Init session
+	SessionManager::sessionStart("Ramses_Server", $cookieTimeout, $path, $domain, $forceSSL );
 	
 	// Init session variables
-	if (!isset($_SESSION["sessionToken"])) $_SESSION["sessionToken"] = "";
-	if (!isset($_SESSION["expired"])) $_SESSION["expired"] = false;
-	if (!isset($_SESSION["login"])) $_SESSION["login"] = false;
+	if (!isset($_SESSION["token"])) $_SESSION["token"] = "";
 	if (!isset($_SESSION["clientVersion"])) $_SESSION["clientVersion"] = "unknown";
 	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
-
+	if (!isset($_SESSION["uuid"])) $_SESSION["uuid"] = "unknown";
+	
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
 
@@ -81,6 +90,4 @@
 			die(json_encode($reply));
 		}
 	}
-	
-	
 ?>

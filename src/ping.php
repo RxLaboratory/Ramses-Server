@@ -1,4 +1,6 @@
 <?php
+    require_once($__ROOT__."/functions.php");
+    require_once($__ROOT__."/reply.php");
     
     /*
 		Ramses: Rx Asset Management System

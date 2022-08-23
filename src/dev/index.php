@@ -1,12 +1,13 @@
 <?php
-	//configuration and init
-	include ("../config.php");
-	include ("../config_security.php");
-    include ("../functions.php");
-    include ("../logger.php");
-	include ("../init.php");
-	// Reinclude because of paths issues
-	include ("../config_security.php");
+    $__ROOT__ = dirname(dirname(__FILE__)); 
+
+    //configuration and init
+    require_once ($__ROOT__."/config/config.php");
+    require_once ($__ROOT__."/config/config_security.php");
+    require_once ($__ROOT__."/functions.php");
+    require_once ($__ROOT__."/logger.php");
+    require_once ($__ROOT__."/session_manager.php");
+    require_once ($__ROOT__."/init.php");
 
     //connect to database
     include('../db.php');
@@ -42,48 +43,49 @@
     }
     else if (hasArg("login"))
     {
-        	$username = "";
-		$password = "";
-		
-		$username = getArg("username");
-		$password = getArg("password", "truc");
+            $username = "";
+        $password = "";
+        
+        $username = getArg("username");
+        $password = getArg("password", "truc");
 
-		if (strlen($username) > 0 AND strlen($password) > 0)
-		{
-			//query the database
-			$rep = $db->prepare("SELECT `uuid`,`userName`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username ;");
-			$rep->execute(array('username' => $username));
-			$testPass = $rep->fetch();
-			$rep->closeCursor();
-			
+        if (strlen($username) > 0 AND strlen($password) > 0)
+        {
+            //query the database
+            $rep = $db->prepare("SELECT `uuid`,`userName`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username ;");
+            $rep->execute(array('username' => $username));
+            $row = $rep->fetch();
+            $rep->closeCursor();
+            
 
-			//check password
+            //check password
             //hash password (official ramses client side)
             $password = str_replace("/", "", $serverAddress) .  $password . $clientKey;
             $password = hash("sha3-512", $password );
-			$uuid = $testPass["uuid"];
-            
-            $data = $testPass["data"];
-            // decrypt data
-			$data = decrypt( $data );
-			$data = json_decode( $data, true);
-			
-			// Get password
-			$testPass = "";
-			if ( isset($data["password"]) ) $testPass = $data["password"];
 
-			if ( checkPassword($password, $uuid, $testPass) )
-			{
-				$token = login($uuid, "test", "test", "test");
-				echo "token:<br />" . $token;
+            $uuid = $row["uuid"];
+            $data = $row["data"];
+            
+            // decrypt data
+            $data = decrypt( $data );
+            $data = json_decode( $data, true);
+            
+            // Get password
+            $testPass = "";
+            if ( isset($data["password"]) ) $testPass = $data["password"];
+
+            if ( checkPassword($password, $uuid, $testPass) )
+            {
+                $token = login($uuid, "test", "test", "test");
+                echo $token;
                 die();
-			}
-			else
-			{
-				echo "Invalid username or password";
+            }
+            else
+            {
+                echo "Invalid username or password";
                 die();
-			}
-		}
+            }
+        }
     }
     else
     {

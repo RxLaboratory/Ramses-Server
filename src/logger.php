@@ -1,4 +1,6 @@
 <?php
+    require_once($__ROOT__."/config/config_logs.php");
+
     class Logger
     {
         private $logsPath = "";
@@ -38,7 +40,7 @@
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},login");
         }
 
-        public function logout($userName, $reason)
+        public function logout($uuid, $reason)
         {
             // Check if we're logging
             global $enableLogs; 
@@ -46,7 +48,7 @@
             if (!$enableLogs) return;
             if (!$connexionLogs) return;
 
-            $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},{$reason}");
+            $this->appendConnexionLog("{$uuid},,,,{$reason}");
         }
 
         private function appendConnexionLog($text, $appendDateAndVersion = true)

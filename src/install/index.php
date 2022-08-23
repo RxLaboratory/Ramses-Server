@@ -5,7 +5,9 @@
 		Installs the SQL Database
 	*/
 
-    include('../config.php');
+    $__ROOT__ = dirname(dirname(__FILE__)); 
+
+    require_once($__ROOT__."/config/config.php");
 
     //connect to database
 
@@ -28,8 +30,8 @@
     echo ( "Connecting to the database...<br />" );
     flush();
 
-    include('../functions.php');
-    include('../db.php');
+    require_once($__ROOT__."/functions.php");
+    require_once($__ROOT__."/db.php");
 
     echo ( "Database found and working!<br />" );
     flush();
@@ -42,10 +44,10 @@
     $encrypt_key = createEncryptionKey();
     $encrypt_key_txt = base64_encode($encrypt_key);
     echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
-    echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
+    echo( "It's been saved in <code>config/config_security.php</code>. You may backup this file now.<br />" );
     flush();
 
-    include('../config_security.php');
+    include($__ROOT__."/config/config_security.php");
 
     // Set the DB if MySQL (if SQLite, the file is already available)
     if ($sqlMode != "sqlite")

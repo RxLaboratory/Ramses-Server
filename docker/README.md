@@ -2,7 +2,7 @@
 
 Put your ramses server files into the folder **docker/www/ramses**.
 
-Check your **config.php** and set it to MySQL.
+Check your **config/config.php** and set it to MySQL.
 
 Go inside the **docker folder** and use the command **docker-compose up**.
 

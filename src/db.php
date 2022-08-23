@@ -1,4 +1,5 @@
 <?php
+	require_once($__ROOT__."/config/config.php");
 	
 	/*
 		Rainbox Asset Manager

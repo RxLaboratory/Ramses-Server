@@ -24,6 +24,7 @@
 	// Edit this configuration file before running the install script at /install/index.php
 
 	// === DEV MODE ===
+
 	// Activates printing the SQL & PHP errors.
 	// For security reasons, it is important to set this to false in production mode
 	$devMode = true;
@@ -50,7 +51,11 @@
 	// if each use a different prefix
 	$tablePrefix = "jaom7Jdr";
 
-	// ==== SESSION SETTINGS ====
+	// ==== SESSION & SECURITY SETTINGS ====
+
+	// Whether to accept only SSL connections
+	// This should always be true, except maybe on dev environments.
+	$forceSSL = true;
 
 	// Session timeout (seconds)
 	// The client will be disconnected after being idle for this time
@@ -59,14 +64,15 @@
 	$sessionTimeout = 1800;
 	// Max Session timeout (seconds)
 	// The client will be disconnected no matter what after this time
-	// 5 hours by default( 18000 )
-	$cookieTimeout = 18000;
+	// 12 hours by default( 43200 )
+	$cookieTimeout = 43200;
 
 	// This must be the server public adress, exactly as used in the clients
 	$serverAddress = "localhost/ramses";
 
 	// This should never be changed, unless you change the key before building the official client or implementing your own client.
+	// It is used to break compatibility between some updates of the client/server framework
 	// It can be used to make sure only your own client, built by yourself, can connect to your own server. In this case, keep it secret!
 	// It is used to hash passwords.
-	$clientKey = "H6BuYLsW";
+	$clientKey = "drHSV2XQ";
 ?>

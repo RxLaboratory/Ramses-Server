@@ -1,4 +1,8 @@
 <?php
+    require_once($__ROOT__."/config/config.php");
+    require_once($__ROOT__."/logger.php");
+    require_once($__ROOT__."/session_manager.php");
+    require_once($__ROOT__."/reply.php");
 
     if (!function_exists('getallheaders')) {
         function getallheaders() {
@@ -14,6 +18,7 @@
 
     function createEncryptionKey ()
     {
+        global $__ROOT__;
         // Compute appropriate cost for passwords
         $timeTarget = 0.1; // 100 milliseconds 
         $cost = 7;
@@ -29,20 +34,20 @@
         $key_size = 32; // 256 bits
         $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
 
-        $configSecFile = fopen("../config_security.php", "w");
+        $configSecFile = fopen($__ROOT__."/config/config_security.php", "w");
         $encryption_key_txt = base64_encode($encryption_key);
         $ok = fwrite($configSecFile, "<?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?>");
         fclose($configSecFile);
 
-        if (!$ok || !file_exists("../config_security.php"))
+        if (!$ok || !file_exists($__ROOT__."/config/config_security.php"))
         {
             echo( "    ▫ Failed. Could not write the key file. We need write permissions in the ramses folder." );
-            echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config_security.php</strong> file,");
+            echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config/config_security.php</strong> file,");
             echo("<br />upload this new file to the server, and refresh this page.</p>");
             die("<strong><code>&lt;?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?&gt;</strong></code>");
         }
 
-        chmod( "../config_security.php", 0600 );
+        chmod( $__ROOT__."/config/config_security.php", 0600 );
 
         return $encryption_key;
     }
@@ -118,30 +123,39 @@
     function login($uuid, $role, $id, $name)
     {
         global $log;
+
         //Keep session info
-        $_SESSION["login"] = true;
+        $_SESSION["uuid"] = $uuid;
         // Generate a new token
-        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
+        $_SESSION["token"] = bin2hex(random_bytes(20));
         //Log
         $log->login($uuid, $role, $id, $name);
 
-        return $_SESSION["sessionToken"];
+        SessionManager::regenerateSession();
+
+        return $_SESSION["token"];
     }
 
     /**
      * Logs out and reset the session token
      */
-    function logout($reason="logout")
+    function logout($reason="logout", $message = "Logged out.")
     {
-        global $log;
-        //Log
-        $log->logout($reason);
+        global $log, $reply;
 
-        $_SESSION["userRole"] = "standard";
-        $_SESSION["userUuid"] = "";
-        $_SESSION["login"] = false;
-        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
-        session_destroy();
+        $uuid = "unknown";
+        if (isset($_SESSION["uuid"])) $uuid = $_SESSION["uuid"];
+        //Log
+        $log->logout($uuid, $reason);
+
+        $reply["message"] = $message;
+        $reply["query"] = "loggedout";
+        $reply["success"] = false;
+        $reply["accepted"] = false;
+
+        SessionManager::sessionEnd();
+        
+        printAndDie();
     }
 
     /**
@@ -397,6 +411,6 @@
         // Set time out
         $_SESSION['discard_after'] = time() + $sessionTimeout;
 
-        echo json_encode($reply);
+        die( json_encode($reply) );
     }
 ?>
