@@ -55,7 +55,7 @@
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed`";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
-            $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` > :modified ;";
+            $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE DATE(`modified`) >= :modified ;";
 
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
@@ -65,11 +65,20 @@
             $qStr = "";
             while ($row = $q->fetch())
             {
+            echo("<br/><br/>row: ".$row["data"]."<br/>");
                 // Check UUID
                 $found = false;
                 for ($i = count($incomingRows) -1; $i >= 0; $i--)
                 {
                     $inRow = $incomingRows[$i];
+
+                    // If the row is older than previous sync, ignore it
+                    $inRowDate = strtotime( $inRow["modified"] );
+                    if ($inRowDate < strtotime($prevSync)) {
+                        array_splice($incomingRows, $i, 1);
+                        continue;
+                    }
+
                     if ($inRow["uuid"] != $row["uuid"]) continue;
 
                     // Found it!
@@ -77,19 +86,18 @@
                     array_splice($incomingRows, $i, 1);
 
                     $rowDate = strtotime( $row["modified"] );
-                    $inRowDate = strtotime( $inRow["modified"] );
                     // If in row is newer, update our side
                     if ($inRowDate > $rowDate)
                     {
                         $qStr = "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
                         if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
-                        $qStr = $qStr . "WHERE `uuid` = :uuid";
+                        $qStr = $qStr . " WHERE `uuid` = :uuid";
                         
                         $qr = new DBQuery();
                         $qr->prepare($qStr);
                         $qr->bindStr("data", $inRow["data"]);
                         $qr->bindStr("modified", $inRow["modified"]);
-                        $qr->bindInt("removed", (int)$inRow["removed"]);
+                        $qr->bindInt("removed", $inRow["removed"]);
                         $qr->bindStr("uuid", $inRow["uuid"]);
                         if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
                         $qr->execute();
@@ -130,7 +138,13 @@
                 if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
                 $qStr = $qStr . ") VALUES ( :uuid, :data, :modified, :removed";
                 if ($tableName == "RamUser") $qStr = $qStr . ", :userName";
-                $qStr = $qStr . ");";
+                $qStr = $qStr . ") ON DUPLICATE KEY UPDATE
+                        `uuid` = :uuid,
+                        `data` = :data,
+                        `modified` = :modified,
+                        `removed` = :removed";
+                if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
+                $qStr = $qStr . " ;";
                 
                 $qr = new DBQuery();
                 $qr->prepare($qStr);
