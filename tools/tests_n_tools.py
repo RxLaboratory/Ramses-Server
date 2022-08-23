@@ -1,5 +1,6 @@
 import requests
 import json
+import uuid
 
 import html2text
 
@@ -51,6 +52,48 @@ def sync( tables, date ):
 
 #ping()
 #installServer()
+
+# Always start a session with a ping
 ping()
+# We need to login before everything else
 login("Admin", "password")
-sync( (), "2022-07-15 00:00:00")
+# Test empty sync
+# sync( (), "2022-07-15 00:00:00")
+# Let's send some data
+sync( (
+    {
+        "name": "RamApplication",
+        "modifiedRows": (
+            {
+                "uuid": str(uuid.uuid4()),
+                "data": '\{"name":"After Effects", "shortName":"Ae" \}',
+                "modified": "2022-07-16 00:00:00",
+                "removed": 0
+            },
+            {
+                "uuid":  str(uuid.uuid4()),
+                "data": '\{"name":"Photoshop", "shortName":"Ps" \}',
+                "modified": "2022-07-16 00:00:00",
+                "removed": 0
+            }
+        )
+    },
+    {
+        "name": "RamFileType",
+        "modifiedRows": (
+            {
+                "uuid": str(uuid.uuid4()),
+                "data": '\{"name":"After Effects Project", "shortName":"aep" \}',
+                "modified": "2022-07-16 00:00:00",
+                "removed": 0
+            },
+            {
+                "uuid":  str(uuid.uuid4()),
+                "data": '\{"name":"Photoshop Document", "shortName":"psd" \}',
+                "modified": "2022-07-16 00:00:00",
+                "removed": 0
+            }
+        )
+    }
+
+), "2022-07-15 00:00:00")

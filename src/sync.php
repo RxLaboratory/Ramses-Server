@@ -39,14 +39,14 @@
                 printAndDie();
             }
 
-            $outTable = array();
-            $outTable["name"] = $table;
-            $outTable["modifiedRows"] = array();
-
             $tableName = $table["name"];
             $incomingRows = array();
             if (isset($table["modifiedRows"])) $incomingRows = $table["modifiedRows"];
 
+            $outTable = array();
+            $outTable["name"] = $tableName;
+            $outTable["modifiedRows"] = array();
+  
             // Create the table if it doesn't exists
             createTable( $tableName );
 
@@ -54,8 +54,8 @@
             $q = new DBQuery();
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed`";
-            if ($tableName == "RamUser") $qStr = $qStr + ", `userName`";
-            $qStr = " FROM {$tablePrefix}{$tableName} WHERE `modified` > :modified ;";
+            if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
+            $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` > :modified ;";
 
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
@@ -67,23 +67,28 @@
             {
                 // Check UUID
                 $found = false;
-                foreach($incomingRows as $inRow)
+                for ($i = count($incomingRows) -1; $i >= 0; $i--)
                 {
-                    if (!$inRow["uuid"] == $row["uuid"]) continue;
+                    $inRow = $incomingRows[$i];
+                    if ($inRow["uuid"] != $row["uuid"]) continue;
+
+                    // Found it!
                     $found = true;
+                    array_splice($incomingRows, $i, 1);
+
                     $rowDate = strtotime( $row["modified"] );
                     $inRowDate = strtotime( $inRow["modified"] );
                     // If in row is newer, update our side
                     if ($inRowDate > $rowDate)
                     {
-                        $qStr += "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
-                        if ($tableName == "RamUser") $qStr = $qStr + ", `userName` = :userName";
-                        $qStr = $qStr + "WHERE `uuid` = :uuid";
+                        $qStr = "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
+                        if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
+                        $qStr = $qStr . "WHERE `uuid` = :uuid";
                         
                         $qr = new DBQuery();
                         $qr->prepare($qStr);
                         $qr->bindStr("data", $inRow["data"]);
-                        $qr->bindStr("modified", $inRow["data"]);
+                        $qr->bindStr("modified", $inRow["modified"]);
                         $qr->bindInt("removed", (int)$inRow["removed"]);
                         $qr->bindStr("uuid", $inRow["uuid"]);
                         if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
@@ -93,7 +98,7 @@
                     // If it's strictly older, send new data
                     else if ($inRowDate < $rowDate)
                     {
-                        $outRow = arrayt();
+                        $outRow = array();
                         $outRow["uuid"] = $row["uuid"];
                         $outRow["data"] = $row["data"];
                         $outRow["modified"] = $row["modified"];
@@ -105,10 +110,10 @@
                     break;
                 }
 
-                // Not found, it's a new row, add it
+                // Not found, it's a new row, send it
                 if (!$found)
                 {
-                    $outRow = arrayt();
+                    $outRow = array();
                     $outRow["uuid"] = $row["uuid"];
                     $outRow["data"] = $row["data"];
                     $outRow["modified"] = $row["modified"];
@@ -116,6 +121,26 @@
                     if ($tableName == "RamUser") $outRow["userName"] = $row["userName"];
                     $outTable["modifiedRows"][] = $outRow;
                 }
+            }
+
+            // Add remaining rows to table
+            foreach( $incomingRows as $inRow)
+            {
+                $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`";
+                if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
+                $qStr = $qStr . ") VALUES ( :uuid, :data, :modified, :removed";
+                if ($tableName == "RamUser") $qStr = $qStr . ", :userName";
+                $qStr = $qStr . ");";
+                
+                $qr = new DBQuery();
+                $qr->prepare($qStr);
+                $qr->bindStr("data", $inRow["data"]);
+                $qr->bindStr("modified", $inRow["modified"]);
+                $qr->bindInt("removed", (int)$inRow["removed"]);
+                $qr->bindStr("uuid", $inRow["uuid"]);
+                if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
+                $qr->execute();
+                $qr->close();
             }
 
             // Add table to complete list
