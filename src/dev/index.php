@@ -43,7 +43,7 @@
     }
     else if (hasArg("login"))
     {
-            $username = "";
+        $username = "";
         $password = "";
         
         $username = getArg("username");
@@ -57,6 +57,11 @@
             $row = $rep->fetch();
             $rep->closeCursor();
             
+            if (!$row)
+            {
+            	echo "Invalid username!";
+            	die();
+            }
 
             //check password
             //hash password (official ramses client side)
@@ -82,7 +87,7 @@
             }
             else
             {
-                echo "Invalid username or password";
+                echo "Invalid password";
                 die();
             }
         }

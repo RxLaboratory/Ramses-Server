@@ -36,6 +36,7 @@ def login(username, password):
     }
     r = session.post(url + "/dev/?login", headers=headers, data=json.dumps(data))
     token = html2text.html2text( r.text ).strip()
+    print(token)
 
 def sync( tables, date ):
     global token
@@ -207,7 +208,6 @@ def testSyncUser():
     ), "2022-07-16 00:00:00")
 
 
-#ping()
 #installServer()
 
 # Always start a session with a ping
@@ -217,8 +217,8 @@ login("Admin", "password")
 # Test empty sync
 # sync( (), "2022-07-15 00:00:00")
 # Let's test sync
-#testSync()
-testSyncUser()
+testSync()
+#testSyncUser()
 
 """sync( (
         {

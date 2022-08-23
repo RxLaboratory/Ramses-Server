@@ -380,12 +380,19 @@
 
     function createTable( $name, $drop = false )
     {
-        global $tablePrefix;
+        global $tablePrefix, $sqlMode;
         
         $q = new DBQuery();
         $qStr = "";
         if ($drop) $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}{$name}`; ";
-        $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+        if ($sqlMode == 'sqlite') $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+                    `id`	INTEGER NOT NULL UNIQUE,
+                    `uuid`	TEXT NOT NULL UNIQUE,
+                    `data`	TEXT NOT NULL DEFAULT '{}',
+                    `modified`	timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    `removed`	INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY(`id` AUTOINCREMENT) );";
+        else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
                     `id` int(11) NOT NULL,
                     `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
                     `data` text NOT NULL,

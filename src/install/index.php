@@ -16,7 +16,8 @@
         echo ( "Writing the new database scheme (using SQLite)...<br />" );
         flush();
 
-        $ok = copy("ramses.sqlite", "../ramses_data");
+        if (!is_dir($__ROOT__."/data")) mkdir($__ROOT__."/data");
+        $ok = copy($__ROOT__."/install/ramses.sqlite", $__ROOT__."/data/ramses_data");
 
         if (!$ok)
         {
@@ -74,6 +75,16 @@
         }
 
         echo ( "Database tables are ready!<br />" );
+    }
+    // Rename the user table to use the prefix
+    else
+    {
+        $q = new DBQuery();
+        $q->prepare("ALTER TABLE RamUser
+            RENAME TO {$tablePrefix}RamUser;");
+
+        $q->execute();
+        $q->close();
     }
 
     echo( "Setuping the administrator user...<br />" );

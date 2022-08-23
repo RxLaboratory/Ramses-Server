@@ -55,7 +55,8 @@
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed`";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
-            $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE DATE(`modified`) >= :modified ;";
+            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified ;";
+            else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE DATE(`modified`) >= :modified ;";
 
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
@@ -65,7 +66,6 @@
             $qStr = "";
             while ($row = $q->fetch())
             {
-            echo("<br/><br/>row: ".$row["data"]."<br/>");
                 // Check UUID
                 $found = false;
                 for ($i = count($incomingRows) -1; $i >= 0; $i--)
@@ -138,11 +138,9 @@
                 if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
                 $qStr = $qStr . ") VALUES ( :uuid, :data, :modified, :removed";
                 if ($tableName == "RamUser") $qStr = $qStr . ", :userName";
-                $qStr = $qStr . ") ON DUPLICATE KEY UPDATE
-                        `uuid` = :uuid,
-                        `data` = :data,
-                        `modified` = :modified,
-                        `removed` = :removed";
+                if ($sqlMode == 'sqlite') $qStr = $qStr . ") ON CONFLICT(uuid) DO UPDATE SET ";
+                else $qStr = $qStr . ") ON DUPLICATE KEY UPDATE ";
+                $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed";
                 if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
                 $qStr = $qStr . " ;";
                 

@@ -10,7 +10,7 @@
 	if (!isset($sqlMode)) $sqlMode = 'mysql';
 
 	// Security, chmod the data file
-	if (is_file(__DIR__ . '/ramses_data')) chmod(__DIR__ . '/ramses_data', 0600);
+	if (is_file($__ROOT__."/data/ramses_data")) chmod($__ROOT__."/data/ramses_data", 0600);
 
 	try
 	{
@@ -22,7 +22,7 @@
 			
 		else if ( $sqlMode == 'sqlite' )
 		{
-			$db = new PDO( 'sqlite:' . __DIR__ . '/ramses_data' );
+			$db = new PDO( 'sqlite:' .$__ROOT__."/data/ramses_data" );
 			$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 		}
 		else
