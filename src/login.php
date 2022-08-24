@@ -1,9 +1,9 @@
 <?php
-	require_once($__ROOT__."/functions.php");
-	require_once($__ROOT__."/reply.php");
+    require_once($__ROOT__."/functions.php");
+    require_once($__ROOT__."/reply.php");
 
     /*
-		Ramses: Rx Asset Management System
+        Ramses: Rx Asset Management System
         
         This program is licensed under the GNU General Public License.
 
@@ -22,68 +22,78 @@
 
         You should have received a copy of the *GNU General Public License* along with this program.
         If not, see http://www.gnu.org/licenses/.
-	*/
+    */
 
-	if ( acceptReply( "login" ) )
-	{
-		$username = getArg( "username" );
-		$password = getArg( "password" );
+    if ( acceptReply( "login" ) )
+    {
+        $username = getArg( "username" );
+        $password = getArg( "password" );
 
-		$q = new DBQuery();
-		$q->prepare( "SELECT `userName`,`uuid`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username AND removed = 0;" );
-		$q->bindStr( ":username", $username );
-		$q->execute();
+        if (strlen($username) == 0)
+        {
+            $reply["message"] = "Missing user name";
+            $reply["success"] = false;
+            logout($username, "Connexion refused (invalid password)");
+        }
 
-		$testPass = $q->fetch();
-		$q->close();
+        if (strlen($password) == 0)
+        {
+            $reply["message"] = "Missing password";
+            $reply["success"] = false;
+            logout($username, "Connexion refused (invalid password)");
+        }
 
-		if ( $testPass )
-		{
-			$found = true;
-			$uuid = $testPass["uuid"];
-			$data = $testPass["data"];
-			// decrypt data
-			$data = decrypt( $data );
-			$data = json_decode( $data, true);
-			// Get password
-			$tPassword = "";
-			if ( isset($data["password"]) ) $tPassword = $data["password"];
+        $q = new DBQuery();
+        $q->prepare( "SELECT `uuid`,`userName`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username AND removed = 0;" );
+        $q->bindStr( "username", $username );
+        $q->execute();
+		$row = $q->fetch();
+        $q->close();
 
-			//check password
-			if ( checkPassword($password, $uuid, $tPassword ) )
-			{
-				// Get other data for the log
-				$name = "unknown";
-				if ( isset($data["name"]) ) $name = $data["name"];
-				$role = "unknown";
-				if ( isset($data["role"]) ) $role = $data["role"];
+		if (!$row)
+        {
+            $reply["message"] = "Invalid password or username";
+            $reply["success"] = false;
+            logout($username, "Connexion refused (invalid username)");
+        }
 
-				// Login
-				$token = login($uuid, $role, $username, $name);
 
-				//reply content
-				$content = array();
-				$content["username"] = $username;
-				$content["uuid"] = $uuid;
-				$content["token"] = $token;
-				$reply["content"] = $content;
-				$reply["message"] = "Successful login. Welcome " . $content["name"] . "!";
-				$reply["success"] = true;
-			}
-			else
-			{
-				$reply["message"] = "Invalid password or username";
-				$reply["success"] = false;
-				logout($username, "Connexion refused (invalid password)");
-			}
-		}
-		else
-		{
-			$reply["message"] = "Invalid password or username";
-			$reply["success"] = false;
-			logout($username, "Connexion refused (invalid username)");
-		}
+        $found = true;
+        $uuid = $row["uuid"];
+        $data = $row["data"];
+        // decrypt data
+        $data = decrypt( $data );
+        $data = json_decode( $data, true);
+        // Get password
+        $tPassword = "";
+        if ( isset($data["password"]) ) $tPassword = $data["password"];
 
-		printAndDie();
-	}
+        //check password
+        if ( !checkPassword($password, $uuid, $tPassword ) )
+        {
+            $reply["message"] = "Invalid password or username";
+            $reply["success"] = false;
+            logout($username, "Connexion refused (invalid password)");
+        }
+
+        // Get other data for the log
+        $name = "unknown";
+        if ( isset($data["name"]) ) $name = $data["name"];
+        $role = "unknown";
+        if ( isset($data["role"]) ) $role = $data["role"];
+
+        // Login
+        $token = login($uuid, $role, $username, $name);
+
+        //reply content
+        $content = array();
+        $content["username"] = $username;
+        $content["uuid"] = $uuid;
+        $content["token"] = $token;
+        $reply["content"] = $content;
+        $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
+        $reply["success"] = true;
+
+        printAndDie();
+    }
 ?>

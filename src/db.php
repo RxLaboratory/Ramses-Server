@@ -303,6 +303,7 @@
         		$reply["success"] = false;
 				$this->ok = false;
 				if ($debug) echo( "Could not prepare the Database query." );
+				printAndDie();
 			}
 		}
 	}
