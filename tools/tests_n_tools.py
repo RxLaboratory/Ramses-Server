@@ -69,13 +69,13 @@ def testSync():
             "modifiedRows": (
                 {
                     "uuid": uuid1,
-                    "data": '\{"name":"After Effects", "shortName":"WRONG" \}',
+                    "data": '{"name":"After Effects", "shortName":"WRONG" }',
                     "modified": "2022-07-15 01:00:00",
                     "removed": 0
                 },
                 {
                     "uuid":  uuid2,
-                    "data": '\{"name":"Photoshop", "shortName":"Ps" \}',
+                    "data": '{"name":"Photoshop", "shortName":"Ps" }',
                     "modified": "2022-07-15 02:00:00",
                     "removed": 0
                 }
@@ -86,13 +86,13 @@ def testSync():
             "modifiedRows": (
                 {
                     "uuid": uuid3,
-                    "data": '\{"name":"After Effects Project", "shortName":"aep" \}',
+                    "data": '{"name":"After Effects Project", "shortName":"aep" }',
                     "modified": "2022-07-15 03:00:00",
                     "removed": 0
                 },
                 {
                     "uuid":  uuid4,
-                    "data": '\{"name":"Photoshop Document", "shortName":"wrong" \}',
+                    "data": '{"name":"Photoshop Document", "shortName":"wrong" }',
                     "modified": "2022-07-15 04:00:00",
                     "removed": 0
                 }
@@ -108,13 +108,13 @@ def testSync():
             "modifiedRows": (
                 {
                     "uuid": uuid1,
-                    "data": '\{"name":"After Effects", "shortName":"Ae" \}',
+                    "data": '{"name":"After Effects", "shortName":"Ae" }',
                     "modified": "2022-07-16 05:00:00",
                     "removed": 0
                 },
                 {
                     "uuid": uuid5,
-                    "data": '\{"name":"Krita", "shortName":"Krita" \}',
+                    "data": '{"name":"Krita", "shortName":"Krita" }',
                     "modified": "2022-07-16 06:00:00",
                     "removed": 0
                 },
@@ -125,13 +125,13 @@ def testSync():
             "modifiedRows": (
                 {
                     "uuid":  uuid4,
-                    "data": '\{"name":"Photoshop Document", "shortName":"psd" \}',
+                    "data": '{"name":"Photoshop Document", "shortName":"psd" }',
                     "modified": "2022-07-16 07:00:00",
                     "removed": 0
                 },
                 {
                     "uuid":  uuid6,
-                    "data": '\{"name":"Krita Document", "shortName":"kra" \}',
+                    "data": '{"name":"Krita Document", "shortName":"kra" }',
                     "modified": "2022-07-16 08:00:00",
                     "removed": 0
                 },
@@ -147,19 +147,19 @@ def testSync():
             "modifiedRows": (
                 {
                     "uuid": uuid1,
-                    "data": '\{"name":"After Effects", "shortName":"wrong" \}',
+                    "data": '{"name":"After Effects", "shortName":"wrong" }',
                     "modified": "2022-07-16 03:00:00",
                     "removed": 0
                 },
                 {
                     "uuid": uuid2,
-                    "data": '\{"name":"Photoshop", "shortName":"Ps", "color":"#232323" \}',
+                    "data": '{"name":"Photoshop", "shortName":"Ps", "color":"#232323" }',
                     "modified": "2022-07-16 12:00:00",
                     "removed": 0
                 },
                 {
                     "uuid": uuid7,
-                    "data": '\{"name":"Blender", "shortName":"Blender" \}',
+                    "data": '{"name":"Blender", "shortName":"Blender" }',
                     "modified": "2022-07-16 13:00:00",
                     "removed": 0
                 },
@@ -180,7 +180,7 @@ def testSyncUser():
         "modifiedRows": (
             {
                 "uuid": uuid1,
-                "data": '\{"name":"Nicolas Dufresne", "shortName":"Duf" \}',
+                "data": '{"name":"Nicolas Dufresne", "shortName":"Duf" }',
                 "modified": "2022-07-15 01:00:00",
                 "removed": 0,
                 "userName": "Duf"
@@ -198,7 +198,7 @@ def testSyncUser():
             (
                 {
                     "uuid": uuid1,
-                    "data": '\{"name":"Nicolas Dufresne", "shortName":"Duduf" \}',
+                    "data": '{"name":"Nicolas Dufresne", "shortName":"Duduf" }',
                     "modified": "2022-07-16 06:00:00",
                     "removed": 0,
                     "userName": "Duduf"
@@ -208,7 +208,7 @@ def testSyncUser():
     ), "2022-07-16 00:00:00")
 
 
-#installServer()
+installServer()
 
 # Always start a session with a ping
 ping()
@@ -226,13 +226,13 @@ testSync()
             "modifiedRows": (
                 {
                     "uuid": "b1287769-7645-4702-b593-000a2d1e3771",
-                    "data": '\{"name":"After Effects", "shortName":"WRONG" \}',
+                    "data": '{"name":"After Effects", "shortName":"WRONG" }',
                     "modified": "2022-07-16 00:00:00",
                     "removed": 0
                 },
                 {
                     "uuid":  "92316258-67f5-4f18-a8a6-46d284577f66",
-                    "data": '\{"name":"Photoshop", "shortName":"Ps" \}',
+                    "data": '{"name":"Photoshop", "shortName":"Ps" }',
                     "modified": "2022-07-16 00:00:00",
                     "removed": 0
                 }
