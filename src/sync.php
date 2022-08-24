@@ -24,6 +24,33 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+    function parseRow( $row, $tableName )
+    {
+        $outRow = array();
+        $outRow["uuid"] = $row["uuid"];
+        
+        $outRow["modified"] = $row["modified"];
+        $outRow["removed"] = (int)$row["removed"];
+        if ($tableName == "RamUser")
+        {
+            $outRow["userName"] = $row["userName"];
+            // We need to decrypt the user data
+            $data = $row["data"];
+            $data = decrypt( $data );
+            $data = json_decode( $data, true);
+            // And strip passwords
+            $data["password"] = "";
+            // Now we can send the data
+            $outRow["data"] = json_encode( $data );
+        }
+        else
+        {
+            $outRow["data"] = $row["data"];
+        }
+
+        return $outRow;
+    }
+
 	if ( acceptReply( "sync" ) )
 	{
         $tables = getArg("tables", array());
@@ -104,31 +131,13 @@
                         $qr->close();
                     }
                     // If it's strictly older, send new data
-                    else if ($inRowDate < $rowDate)
-                    {
-                        $outRow = array();
-                        $outRow["uuid"] = $row["uuid"];
-                        $outRow["data"] = $row["data"];
-                        $outRow["modified"] = $row["modified"];
-                        $outRow["removed"] = (int)$row["removed"];
-                        if ($tableName == "RamUser") $outRow["userName"] = $row["userName"];
-                        $outTable["modifiedRows"][] = $outRow;
-                    }
+                    else if ($inRowDate < $rowDate) $outTable["modifiedRows"][] = parseRow($row, $tableName);
                     // Done!
                     break;
                 }
 
                 // Not found, it's a new row, send it
-                if (!$found)
-                {
-                    $outRow = array();
-                    $outRow["uuid"] = $row["uuid"];
-                    $outRow["data"] = $row["data"];
-                    $outRow["modified"] = $row["modified"];
-                    $outRow["removed"] = (int)$row["removed"];
-                    if ($tableName == "RamUser") $outRow["userName"] = $row["userName"];
-                    $outTable["modifiedRows"][] = $outRow;
-                }
+                if (!$found) $outTable["modifiedRows"][] = parseRow($row, $tableName);
             }
 
             // Add remaining rows to table
