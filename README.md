@@ -1,3 +1,5 @@
+[![Services Health](https://rxlab.montastic.io/badge)](https://rxlab.montastic.io)
+
 # Ramses-Server
 
 The server part of Ramses - Rx Asset Management System
