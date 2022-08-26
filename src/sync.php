@@ -116,13 +116,25 @@
                     // If in row is newer, update our side
                     if ($inRowDate > $rowDate)
                     {
+                        // Hash passwords
+                        $data = $inRow["data"];
+                        $data = json_decode($data, true);
+                        if (isset($data["password"]))
+                        {
+                            $pwd = hashPassword($data["password"], $inRow["uuid"]);
+                            $data["password"] = $pwd;
+                        }
+
+                        // Encrypt user data
+                        if ($tableName == "RamUser") $data = encrypt($data);
+
                         $qStr = "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
                         if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
                         $qStr = $qStr . " WHERE `uuid` = :uuid";
                         
                         $qr = new DBQuery();
                         $qr->prepare($qStr);
-                        $qr->bindStr("data", $inRow["data"]);
+                        $qr->bindStr("data", $data);
                         $qr->bindStr("modified", $inRow["modified"]);
                         $qr->bindInt("removed", $inRow["removed"]);
                         $qr->bindStr("uuid", $inRow["uuid"]);
