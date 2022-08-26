@@ -126,7 +126,9 @@
                         }
 
                         // Encrypt user data
-                        if ($tableName == "RamUser") $data = encrypt($data);
+                        //if ($tableName == "RamUser") $data = encrypt($data);
+
+                        $data = json_encode($data);
 
                         $qStr = "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
                         if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
@@ -155,6 +157,20 @@
             // Add remaining rows to table
             foreach( $incomingRows as $inRow)
             {
+                // Hash passwords
+                $data = $inRow["data"];
+                $data = json_decode($data, true);
+                if (isset($data["password"]))
+                {
+                    $pwd = hashPassword($data["password"], $inRow["uuid"]);
+                    $data["password"] = $pwd;
+                }
+
+                // Encrypt user data
+                //if ($tableName == "RamUser") $data = encrypt($data);
+
+                $data = json_encode($data);
+
                 $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`";
                 if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
                 $qStr = $qStr . ") VALUES ( :uuid, :data, :modified, :removed";
