@@ -1,12 +1,14 @@
 import requests
 import json
 import uuid
+import hashlib
 
 import html2text
 
 token = "8d4b57014169bdc2c3db1ba555b7e1444f25de08"
 version = "0.5.0-alpha"
 url = "https://ramses.rxlab.io/tests"
+clientKey = "drHSV2XQ"
 
 session = requests.Session()
 
@@ -17,7 +19,7 @@ headers = {
 }
 
 def installServer():
-    r = session.get(url + "/install", headers=headers)
+    r = session.get(url + "/install/index.php", headers=headers)
     print( html2text.html2text( r.text ) )
 
 def ping():
@@ -48,6 +50,38 @@ def sync( tables, date ):
     }
     r = session.post(url + "/?sync", headers=headers, data=json.dumps(data))
     print( html2text.html2text( r.text ) )
+
+def setPassword( uuid, pswd ):
+    global token, clientKey, url
+    # Client hash
+    pswd = url.replace('https://', '').replace('/','') + pswd + clientKey
+    pswd = hashlib.sha512(pswd.encode()).hexdigest()
+    
+    data = {
+        "version": version,
+        "token": token,
+        "uuid": uuid,
+        "password": pswd
+    }
+    r = session.post(url + "/?setPassword", headers=headers, data=json.dumps(data))
+    print( html2text.html2text( r.text ) )
+
+def setUserName( uuid, username, name ):
+    sync( (
+        {
+            "name": "RamUser",
+            "modifiedRows": (
+                {
+                    "uuid": uuid,
+                    "userName": username,
+                    "data": '{"name":"' + name + '", "userName":"' + username + '"}',
+                    "modified": "2022-08-29 15:00:00",
+                    "removed": 0
+                },
+            )
+        },
+        ), "1970-01-01 00:00:00"
+    )
 
 # TESTS Here
 
@@ -208,7 +242,7 @@ def testSyncUser():
     ), "2022-07-16 00:00:00")
 
 
-installServer()
+#installServer()
 
 # Always start a session with a ping
 ping()
@@ -217,8 +251,11 @@ login("Admin", "password")
 # Test empty sync
 # sync( (), "2022-07-15 00:00:00")
 # Let's test sync
-testSync()
+#testSync()
 #testSyncUser()
+#setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
+#setPassword( "dda85817-34a4-4a97-a1ae-43e9b04da031", "pass" )
+login("Duf", "pass")
 
 """sync( (
         {

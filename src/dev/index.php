@@ -52,7 +52,7 @@
         if (strlen($username) > 0 AND strlen($password) > 0)
         {
             //query the database
-            $rep = $db->prepare("SELECT `uuid`,`userName`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username ;");
+            $rep = $db->prepare("SELECT `uuid`,`userName`,`password` FROM {$tablePrefix}RamUser WHERE `userName` = :username ;");
             $rep->execute(array('username' => $username));
             $row = $rep->fetch();
             $rep->closeCursor();
@@ -69,16 +69,8 @@
             $password = hash("sha3-512", $password );
 
             $uuid = $row["uuid"];
-            $data = $row["data"];
-            
-            // decrypt data
-            $data = decrypt( $data );
-            $data = json_decode( $data, true);
-            
-            // Get password
-            $testPass = "";
-            if ( isset($data["password"]) ) $testPass = $data["password"];
-
+            $testPass = $row["password"];
+                       
             if ( checkPassword($password, $uuid, $testPass) )
             {
                 $token = login($uuid, "test", "test", "test");

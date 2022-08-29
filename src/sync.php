@@ -37,10 +37,6 @@
             // We need to decrypt the user data
             $data = $row["data"];
             $data = decrypt( $data );
-            $data = json_decode( $data, true);
-            // And strip passwords
-            $data["password"] = "";
-            // Now we can send the data
             $outRow["data"] = json_encode( $data );
         }
         else
@@ -116,19 +112,9 @@
                     // If in row is newer, update our side
                     if ($inRowDate > $rowDate)
                     {
-                        // Hash passwords
-                        $data = $inRow["data"];
-                        $data = json_decode($data, true);
-                        if (isset($data["password"]))
-                        {
-                            $pwd = hashPassword($data["password"], $inRow["uuid"]);
-                            $data["password"] = $pwd;
-                        }
-
                         // Encrypt user data
-                        //if ($tableName == "RamUser") $data = encrypt($data);
-
-                        $data = json_encode($data);
+                        $data = $inRow["data"];
+                        if ($tableName == "RamUser") $data = encrypt($data);
 
                         $qStr = "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
                         if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
@@ -157,19 +143,9 @@
             // Add remaining rows to table
             foreach( $incomingRows as $inRow)
             {
-                // Hash passwords
-                $data = $inRow["data"];
-                $data = json_decode($data, true);
-                if (isset($data["password"]))
-                {
-                    $pwd = hashPassword($data["password"], $inRow["uuid"]);
-                    $data["password"] = $pwd;
-                }
-
                 // Encrypt user data
-                //if ($tableName == "RamUser") $data = encrypt($data);
-
-                $data = json_encode($data);
+                $data = $inRow["data"];
+                if ($tableName == "RamUser") $data = encrypt($data);
 
                 $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`";
                 if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";

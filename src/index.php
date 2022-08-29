@@ -67,5 +67,6 @@
 
 	//sync
 	include("sync.php");
+	include("set_password.php");
 
 ?>

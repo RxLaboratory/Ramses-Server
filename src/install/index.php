@@ -44,8 +44,7 @@
 
     $encrypt_key = createEncryptionKey();
     $encrypt_key_txt = base64_encode($encrypt_key);
-    echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
-    echo( "It's been saved in <code>config/config_security.php</code>. You may backup this file now.<br />" );
+    echo( "The encryption key has been saved in <code>config/config_security.php</code>. You should backup this file now.<br />" );
     flush();
 
     include($__ROOT__."/config/config_security.php");
@@ -59,10 +58,11 @@
         // Create the RamUser Table
         createTable("RamUser", true);
 
-        // Add username row
+        // Add username and password rows
         $q = new DBQuery();
         $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
             ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
+            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`,
             ADD UNIQUE KEY `userName` (`userName`);
             ");
 
@@ -96,16 +96,17 @@
     $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
     $pswd = hashPassword($pswd, $uuid);
-    $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"password\":\"{$pswd}\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
+    $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
-    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `data` )
-		VALUES ( :uuid, 'Admin', :data );
+    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `password`, `data` )
+		VALUES ( :uuid, 'Admin', :password, :data );
 		COMMIT;";
     $q->prepare( $qStr );
 
     $q->bindStr('uuid', $uuid);
     $q->bindStr('data', $data);
+    $q->bindStr('password', $pswd);
     
     $q->execute();
     $q->close();

@@ -44,7 +44,7 @@
         }
 
         $q = new DBQuery();
-        $q->prepare( "SELECT `uuid`,`userName`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username AND removed = 0;" );
+        $q->prepare( "SELECT `uuid`,`userName`,`password`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username AND removed = 0;" );
         $q->bindStr( "username", $username );
         $q->execute();
 		$row = $q->fetch();
@@ -61,12 +61,10 @@
         $found = true;
         $uuid = $row["uuid"];
         $data = $row["data"];
+        $tPassword = $row["password"];
         // decrypt data
         $data = decrypt( $data );
         $data = json_decode( $data, true);
-        // Get password
-        $tPassword = "";
-        if ( isset($data["password"]) ) $tPassword = $data["password"];
 
         //check password
         if ( !checkPassword($password, $uuid, $tPassword ) )
