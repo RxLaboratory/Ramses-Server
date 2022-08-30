@@ -36,8 +36,7 @@
             $outRow["userName"] = $row["userName"];
             // We need to decrypt the user data
             $data = $row["data"];
-            $data = decrypt( $data );
-            $outRow["data"] = json_encode( $data );
+            $outRow["data"] = decrypt( $data );
         }
         else
         {

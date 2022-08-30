@@ -241,8 +241,17 @@ def testSyncUser():
         },
     ), "2022-07-16 00:00:00")
 
+def downloadTables(tableNames):
+    tables = []
+    for tableName in tableNames:
+        table = {
+            "name": tableName,
+            "modifiedRows": ()
+        }
+        tables.append(table)
+    sync(tables, "1970-01-01 00:00:00")
 
-#installServer()
+installServer()
 
 # Always start a session with a ping
 ping()
@@ -255,7 +264,10 @@ login("Admin", "password")
 #testSyncUser()
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #setPassword( "dda85817-34a4-4a97-a1ae-43e9b04da031", "pass" )
-login("Duf", "pass")
+#login("Duf", "pass")
+downloadTables((
+    "RamUser",
+    ))
 
 """sync( (
         {
