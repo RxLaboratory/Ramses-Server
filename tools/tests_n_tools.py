@@ -51,17 +51,23 @@ def sync( tables, date ):
     r = session.post(url + "/?sync", headers=headers, data=json.dumps(data))
     print( html2text.html2text( r.text ) )
 
-def setPassword( uuid, pswd ):
+def setPassword( uuid, pswd, current = "" ):
     global token, clientKey, url
     # Client hash
     pswd = url.replace('https://', '').replace('/','') + pswd + clientKey
-    pswd = hashlib.sha512(pswd.encode()).hexdigest()
-    
+    pswd = hashlib.sha3_512(pswd.encode()).hexdigest()
+
+    if (current != ""):
+        # Client hash
+        current = url.replace('https://', '').replace('/','') + current + clientKey
+        current = hashlib.sha3_512(current.encode()).hexdigest()
+ 
     data = {
         "version": version,
         "token": token,
         "uuid": uuid,
-        "password": pswd
+        "newPassword": pswd,
+        "currentPassword": current
     }
     r = session.post(url + "/?setPassword", headers=headers, data=json.dumps(data))
     print( html2text.html2text( r.text ) )
@@ -251,7 +257,7 @@ def downloadTables(tableNames):
         tables.append(table)
     sync(tables, "1970-01-01 00:00:00")
 
-installServer()
+#installServer()
 
 # Always start a session with a ping
 ping()
@@ -263,8 +269,11 @@ login("Admin", "password")
 #testSync()
 #testSyncUser()
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
-#setPassword( "dda85817-34a4-4a97-a1ae-43e9b04da031", "pass" )
-#login("Duf", "pass")
+login("Admin", "pass")
+setPassword( "cac400e4-dfe1-4005-949e-a085f9aa43bd", "password", "pass" )
+
+
+
 """downloadTables((
     "RamUser",
     ))"""
