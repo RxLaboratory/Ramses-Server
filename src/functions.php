@@ -122,9 +122,9 @@
      */
     function login($uuid, $role, $id, $name)
     {
-        global $log;
+        global $log, $_SESSION;
 
-        //Keep session info
+        // Keep session info
         $_SESSION["uuid"] = $uuid;
         // Generate a new token
         $_SESSION["token"] = bin2hex(random_bytes(20));
@@ -141,7 +141,7 @@
      */
     function logout($reason="logout", $message = "Logged out.")
     {
-        global $log, $reply;
+        global $log, $reply, $_SESSION;
 
         $uuid = "unknown";
         if (isset($_SESSION["uuid"])) $uuid = $_SESSION["uuid"];
@@ -156,6 +156,23 @@
         SessionManager::sessionEnd();
         
         printAndDie();
+    }
+
+    function isAdmin()
+    {
+        global $_SESSION, $tablePrefix;
+        $q = new DBQuery();
+        $q->prepare("SELECT `data` FROM {$tablePrefix}RamUser WHERE `uuid` = :uuid ;");
+        $q->bindStr("uuid", $_SESSION['uuid']);
+        $q->execute();
+        $row = $q->fetch();
+        $q->close();
+        
+        $data = decrypt( $row['data'] );
+        $data = json_decode($data, true);
+
+        if (!isset($data['role'])) return false;
+        return strtolower($data['role']) == 'admin';
     }
 
     /**
@@ -368,8 +385,8 @@
         if ( strcmp( $c[3],$v[3] ) < 0 ) return false;
 
         if ($cn < 5 && $vn < 5) return strcmp($version,$other ) > 0;
-		if ($vn < 5) return false;
-		if ($cn < 5) return true;
+        if ($vn < 5) return false;
+        if ($cn < 5) return true;
 
         //build 
         if ( strcmp( $c[4],$v[4] ) > 0 ) return true;
@@ -386,11 +403,11 @@
         $qStr = "";
         if ($drop) $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}{$name}`; ";
         if ($sqlMode == 'sqlite') $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
-                    `id`	INTEGER NOT NULL UNIQUE,
-                    `uuid`	TEXT NOT NULL UNIQUE,
-                    `data`	TEXT NOT NULL DEFAULT '{}',
-                    `modified`	timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    `removed`	INTEGER NOT NULL DEFAULT 0,
+                    `id`    INTEGER NOT NULL UNIQUE,
+                    `uuid`    TEXT NOT NULL UNIQUE,
+                    `data`    TEXT NOT NULL DEFAULT '{}',
+                    `modified`    timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    `removed`    INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
         else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
                     `id` int(11) NOT NULL,
@@ -414,7 +431,7 @@
 
     function printAndDie()
     {
-        global $reply, $sessionTimeout;
+        global $reply, $sessionTimeout, $_SESSION;
         // Set time out
         $_SESSION['discard_after'] = time() + $sessionTimeout;
 

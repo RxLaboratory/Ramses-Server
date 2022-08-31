@@ -4,7 +4,7 @@
     require_once($__ROOT__."/reply.php");
 
     /*
-		Ramses: Rx Asset Management System
+        Ramses: Rx Asset Management System
         
         This program is licensed under the GNU General Public License.
 
@@ -23,14 +23,15 @@
 
         You should have received a copy of the *GNU General Public License* along with this program.
         If not, see http://www.gnu.org/licenses/.
-	*/
+    */
 
     if ( acceptReply( "setPassword" ) )
-	{
-        $password = getArg("password");
+    {
+        $newPassword = getArg("newPassword");
+        $currentPassword = getArg("currentPassword");
         $uuid = getArg("uuid");
 
-        if ($password == "")
+        if ($newPassword == "")
         {
             $reply["message"] = "The password can't be empty, sorry!";
             $reply["success"] = false;
@@ -44,14 +45,51 @@
             printAndDie();
         }
 
+        // We need to check the role: only admins can set passwords without specifying the current one
+        // if and only if they're not changing their own password
+        if ($_SESSION["uuid"] == $uuid || !isAdmin())
+        {
+            if ($currentPassword == "")
+            {
+                $reply["message"] = "You need to specify your current password too.";
+                $reply["success"] = false;
+                printAndDie();
+            }
+        }
+        
+        // Check the current password first
+        if ($currentPassword != "")
+        {
+            $q = new DBQuery();
+            $q->prepare("SELECT `password` FROM {$tablePrefix}RamUser WHERE `uuid` = :uuid ");
+            $q->bindStr("uuid", $uuid );
+            $q->execute("");
+            $row = $q->fetch();
+            $q->close();
+            if (!$row)
+            {
+                $reply["message"] = "I can't find this user in the database...";
+                $reply["success"] = false;
+                printAndDie();
+            }
+            $testPassword = $row['password'];
+
+            if ( !checkPassword($currentPassword, $uuid, $testPassword ) )
+            {
+                $reply["message"] = "Wrong current password, sorry!";
+                $reply["success"] = false;
+                printAndDie();
+            }
+        }
+
         // Hash
-        $password = hashPassword($password, $uuid);
+        $newPassword = hashPassword($newPassword, $uuid);
 
         $q = new DBQuery();
         $qStr = "UPDATE {$tablePrefix}RamUser SET `password` = :password WHERE `uuid` = :uuid ;";
         $q->prepare($qStr);
         $q->bindStr("uuid", $uuid);
-        $q->bindStr("password", $password);
+        $q->bindStr("password", $newPassword);
         $q->execute();
         $q->close();
 

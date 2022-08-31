@@ -142,19 +142,16 @@
             // Add remaining rows to table
             foreach( $incomingRows as $inRow)
             {
-                // Encrypt user data
-                $data = $inRow["data"];
-                if ($tableName == "RamUser") $data = encrypt($data);
+            	// Users can't be added through a sync: must be added online with addUser
+            	if ($tableName == "RamUser") continue;
+            	
+                $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`) 
+                            VALUES ( :uuid, :data, :modified, :removed ) ";
+                
+                if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
+                else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
 
-                $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`";
-                if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
-                $qStr = $qStr . ") VALUES ( :uuid, :data, :modified, :removed";
-                if ($tableName == "RamUser") $qStr = $qStr . ", :userName";
-                if ($sqlMode == 'sqlite') $qStr = $qStr . ") ON CONFLICT(uuid) DO UPDATE SET ";
-                else $qStr = $qStr . ") ON DUPLICATE KEY UPDATE ";
-                $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed";
-                if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
-                $qStr = $qStr . " ;";
+                $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed ;";
                 
                 $qr = new DBQuery();
                 $qr->prepare($qStr);

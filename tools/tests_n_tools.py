@@ -265,9 +265,11 @@ login("Admin", "password")
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #setPassword( "dda85817-34a4-4a97-a1ae-43e9b04da031", "pass" )
 #login("Duf", "pass")
-downloadTables((
+"""downloadTables((
     "RamUser",
-    ))
+    ))"""
+
+
 
 """sync( (
         {
