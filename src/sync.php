@@ -3,7 +3,7 @@
     require_once($__ROOT__."/reply.php");
 
     /*
-		Ramses: Rx Asset Management System
+        Ramses: Rx Asset Management System
         
         This program is licensed under the GNU General Public License.
 
@@ -22,7 +22,7 @@
 
         You should have received a copy of the *GNU General Public License* along with this program.
         If not, see http://www.gnu.org/licenses/.
-	*/
+    */
 
     function parseRow( $row, $tableName )
     {
@@ -46,8 +46,8 @@
         return $outRow;
     }
 
-	if ( acceptReply( "sync" ) )
-	{
+    if ( acceptReply( "sync" ) )
+    {
         $tables = getArg("tables", array());
         $prevSync = getArg("previousSyncDate", "1970-01-01 00:00:00");
 
@@ -75,11 +75,11 @@
             // Get all rows more recent than prevSync
             $q = new DBQuery();
 
-            $qStr = "SELECT `uuid`, `data`, `modified`, `removed`";
-            if ($tableName == "RamUser") $qStr = $qStr . ", `userName`";
+            $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
+            if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
             if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified ;";
             else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE DATE(`modified`) >= :modified ;";
-
+            
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
             $q->execute();
@@ -90,10 +90,11 @@
             {
                 // Check UUID
                 $found = false;
+                               
                 for ($i = count($incomingRows) -1; $i >= 0; $i--)
                 {
                     $inRow = $incomingRows[$i];
-
+                    
                     // If the row is older than previous sync, ignore it
                     $inRowDate = strtotime( $inRow["modified"] );
                     if ($inRowDate < strtotime($prevSync)) {
@@ -138,20 +139,26 @@
                 // Not found, it's a new row, send it
                 if (!$found) $outTable["modifiedRows"][] = parseRow($row, $tableName);
             }
+                       
+            $q->close();
 
             // Add remaining rows to table
             foreach( $incomingRows as $inRow)
             {
-            	// Users can't be added through a sync: must be added online with addUser
-            	if ($tableName == "RamUser") continue;
-            	
-                $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`) 
+                if ($tableName == "RamUser")
+                    $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) 
+                            VALUES ( :uuid, :data, :modified, :removed, '-', :userName ) ";
+                else                
+                    $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`) 
                             VALUES ( :uuid, :data, :modified, :removed ) ";
                 
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
 
-                $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed ;";
+                if ($tableName == "RamUser")
+                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed, `userName` = :userName ;";
+                else
+                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed ;";
                 
                 $qr = new DBQuery();
                 $qr->prepare($qStr);

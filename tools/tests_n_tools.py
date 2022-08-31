@@ -257,7 +257,7 @@ def downloadTables(tableNames):
         tables.append(table)
     sync(tables, "1970-01-01 00:00:00")
 
-#installServer()
+installServer()
 
 # Always start a session with a ping
 ping()
@@ -269,8 +269,8 @@ login("Admin", "password")
 #testSync()
 #testSyncUser()
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
-login("Admin", "pass")
-setPassword( "cac400e4-dfe1-4005-949e-a085f9aa43bd", "password", "pass" )
+#login("Admin", "pass")
+#setPassword( "cac400e4-dfe1-4005-949e-a085f9aa43bd", "password", "pass" )
 
 
 
