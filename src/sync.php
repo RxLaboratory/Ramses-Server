@@ -159,10 +159,14 @@
                     $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed, `userName` = :userName ;";
                 else
                     $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed ;";
+
+                // Encrypt user data
+                $data = $inRow["data"];
+                if ($tableName == "RamUser") $data = encrypt($data);
                 
                 $qr = new DBQuery();
                 $qr->prepare($qStr);
-                $qr->bindStr("data", $inRow["data"]);
+                $qr->bindStr("data", $data);
                 $qr->bindStr("modified", $inRow["modified"]);
                 $qr->bindInt("removed", (int)$inRow["removed"]);
                 $qr->bindStr("uuid", $inRow["uuid"]);
