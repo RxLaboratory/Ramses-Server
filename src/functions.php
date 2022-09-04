@@ -385,8 +385,8 @@
         if ( strcmp( $c[3],$v[3] ) < 0 ) return false;
 
         if ($cn < 5 && $vn < 5) return strcmp($version,$other ) > 0;
-        if ($vn < 5) return false;
-        if ($cn < 5) return true;
+		if ($vn < 5) return false;
+		if ($cn < 5) return true;
 
         //build 
         if ( strcmp( $c[4],$v[4] ) > 0 ) return true;
@@ -403,17 +403,17 @@
         $qStr = "";
         if ($drop) $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}{$name}`; ";
         if ($sqlMode == 'sqlite') $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
-                    `id`    INTEGER NOT NULL UNIQUE,
-                    `uuid`    TEXT NOT NULL UNIQUE,
-                    `data`    TEXT NOT NULL DEFAULT '{}',
-                    `modified`    timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    `removed`    INTEGER NOT NULL DEFAULT 0,
+                    `id`	INTEGER NOT NULL UNIQUE,
+                    `uuid`	TEXT NOT NULL UNIQUE,
+                    `data`	TEXT NOT NULL DEFAULT '{}',
+                    `modified`	timestamp NOT NULL,
+                    `removed`	INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
         else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
                     `id` int(11) NOT NULL,
                     `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
-                    `data` text NOT NULL,
-                    `modified` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+                    `data` mediumtext NOT NULL,
+                    `modified` timestamp NOT NULL,
                     `removed` tinyint(4) NOT NULL DEFAULT 0
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
                 ALTER TABLE `{$tablePrefix}{$name}`

@@ -77,8 +77,8 @@
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
-            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified ;";
-            else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE DATE(`modified`) >= :modified ;";
+            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} ;"; // WHERE `modified` >= :modified 
+            else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} ;"; // WHERE `modified` >= :modified
             
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
@@ -97,10 +97,10 @@
                     
                     // If the row is older than previous sync, ignore it
                     $inRowDate = strtotime( $inRow["modified"] );
-                    if ($inRowDate < strtotime($prevSync)) {
+                    /*if ($inRowDate < strtotime($prevSync)) {
                         array_splice($incomingRows, $i, 1);
                         continue;
-                    }
+                    }*/
 
                     if ($inRow["uuid"] != $row["uuid"]) continue;
 
@@ -131,7 +131,7 @@
                         $qr->close();
                     }
                     // If it's strictly older, send new data
-                    else if ($inRowDate < $rowDate) $outTable["modifiedRows"][] = parseRow($row, $tableName);
+                    else if ($inRowDate <= $rowDate) $outTable["modifiedRows"][] = parseRow($row, $tableName);
                     // Done!
                     break;
                 }

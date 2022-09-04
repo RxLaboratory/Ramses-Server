@@ -262,9 +262,9 @@ installServer()
 # Always start a session with a ping
 ping()
 # We need to login before everything else
-login("Admin", "password")
+#login("Admin", "password")
 # Test empty sync
-# sync( (), "2022-07-15 00:00:00")
+#sync( (), "2022-07-15 00:00:00")
 # Let's test sync
 #testSync()
 #testSyncUser()

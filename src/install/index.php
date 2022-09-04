@@ -99,8 +99,8 @@
     $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
-    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `password`, `data` )
-		VALUES ( :uuid, 'Admin', :password, :data );
+    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `password`, `data`, `modified` )
+		VALUES ( :uuid, 'Admin', :password, :data, '1970-01-01 12:00:00' );
 		COMMIT;";
     $q->prepare( $qStr );
 
