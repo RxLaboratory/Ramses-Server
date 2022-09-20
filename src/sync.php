@@ -72,7 +72,11 @@
             // Create the table if it doesn't exists
             createTable( $tableName );
 
-            // Get all rows more recent than prevSync
+            // Get all rows (more recent than prevSync)
+            // TODO ? find a way to limit the amount of data which needs to be sent
+            // the problem is that there may be data older than prevSync which needs to be sent
+            // if something went wrong with previous syncs
+            // CHECK if it's really necessary to limit the amount of data
             $q = new DBQuery();
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";

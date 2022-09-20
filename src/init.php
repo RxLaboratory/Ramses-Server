@@ -1,4 +1,12 @@
 <?php
+	// Enable compression if the client supports it
+	if(substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip'))
+		ob_start("ob_gzhandler");
+	else
+		ob_start();
+
+
+
 	require_once($__ROOT__."/config/config.php");
 	require_once($__ROOT__."/functions.php");
 	require_once($__ROOT__."/logger.php");
