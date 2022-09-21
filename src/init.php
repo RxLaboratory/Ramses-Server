@@ -12,7 +12,7 @@
 	require_once($__ROOT__."/logger.php");
 	require_once($__ROOT__."/session_manager.php");
 
-    $ramsesVersion = "0.5.0-alpha";
+    $ramsesVersion = "0.5.0-Rubika_3";
 	$installed = file_exists($__ROOT__."/config/config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db
