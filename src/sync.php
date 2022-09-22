@@ -73,16 +73,12 @@
             createTable( $tableName );
 
             // Get all rows (more recent than prevSync)
-            // TODO ? find a way to limit the amount of data which needs to be sent
-            // the problem is that there may be data older than prevSync which needs to be sent
-            // if something went wrong with previous syncs
-            // CHECK if it's really necessary to limit the amount of data
             $q = new DBQuery();
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
-            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} ;"; // WHERE `modified` >= :modified 
-            else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} ;"; // WHERE `modified` >= :modified
+            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified;"; //  
+            else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified;"; // 
             
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
