@@ -134,8 +134,8 @@
                         $qr->execute();
                         $qr->close();
                     }
-                    // If it's strictly older, send new data
-                    else if ($inRowDate <= $rowDate) $outTable["modifiedRows"][] = parseRow($row, $tableName);
+                    // If it's older, send new data
+                    else if ($inRowDate < $rowDate) $outTable["modifiedRows"][] = parseRow($row, $tableName);
                     // Done!
                     break;
                 }
