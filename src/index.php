@@ -65,8 +65,9 @@
 	$token = getArg("token");
 	if ($token != $_SESSION["token"]) logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
 
-	//sync
+	
 	include("sync.php");
 	include("set_password.php");
+	include("clean.php");
 
 ?>

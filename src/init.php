@@ -5,14 +5,12 @@
 	else
 		ob_start();
 
-
-
 	require_once($__ROOT__."/config/config.php");
 	require_once($__ROOT__."/functions.php");
 	require_once($__ROOT__."/logger.php");
 	require_once($__ROOT__."/session_manager.php");
 
-    $ramsesVersion = "0.5.0-Rubika_3";
+    $ramsesVersion = "0.5.0-Beta1";
 	$installed = file_exists($__ROOT__."/config/config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db

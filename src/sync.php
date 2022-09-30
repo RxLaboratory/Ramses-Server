@@ -52,6 +52,7 @@
         $prevSync = getArg("previousSyncDate", "1970-01-01 00:00:00");
 
         $outTables = array();
+        $rowsToDelete = array();
         foreach( $tables as $table )
         {
             if (!isset($table["name"]))
@@ -142,13 +143,30 @@
                        
             $q->close();
 
-            // Add remaining rows to table
+            // Add remaining rows to table (if it's not been deleted)
+            $tableRowsToDelete = array();
+            $tableRowsToDelete["name"] = $tableName;
+            $tableRowsToDelete["rows"] = array();
             foreach( $incomingRows as $inRow)
             {
+                $qr = new DBQuery();
+
+                // Check if the row has been deleted
+                $qStr = "SELECT `uuid` FROM {$tablePrefix}deletedData WHERE `uuid` = :uuid ;";
+                $qr->prepare($qStr);
+                $qr->bindStr("uuid", $inRow["uuid"]);
+                $qr->execute();
+                
+                if ($qr->fetch()) {
+                    $tableRowsToDelete["rows"][] = $inRow["uuid"];
+                    $qr->close();
+                    continue;
+                }
+
                 if ($tableName == "RamUser")
                     $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) 
                             VALUES ( :uuid, :data, :modified, :removed, '-', :userName ) ";
-                else                
+                else
                     $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`) 
                             VALUES ( :uuid, :data, :modified, :removed ) ";
                 
@@ -164,7 +182,6 @@
                 $data = $inRow["data"];
                 if ($tableName == "RamUser") $data = encrypt($data);
                 
-                $qr = new DBQuery();
                 $qr->prepare($qStr);
                 $qr->bindStr("data", $data);
                 $qr->bindStr("modified", $inRow["modified"]);
@@ -177,9 +194,11 @@
 
             // Add table to complete list
             $outTables[] = $outTable;
+            $rowsToDelete[] = $tableRowsToDelete;
         }
 
         $reply["content"]["tables"] = $outTables;
+        $reply["content"]["deletedData"] = $rowsToDelete;
         $reply["success"] = true;
         $reply["message"] = "Data Sync: OK!";
         printAndDie();

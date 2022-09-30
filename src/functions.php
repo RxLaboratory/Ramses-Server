@@ -314,7 +314,7 @@
         rmdir($dirPath);
     }
 
-    function acceptReply($queryName, $role = "")
+    function acceptReply($queryName)
     {
         global $reply;
 
@@ -422,6 +422,36 @@
                 ALTER TABLE `{$tablePrefix}{$name}`
                     MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
                 ";
+        $q->prepare($qStr);
+
+        $q->execute();
+        $q->close();
+        return $q->isOK();
+    }
+
+    function createDeletedDataTable()
+    {
+        global $tablePrefix, $sqlMode;
+
+        $q = new DBQuery();
+        $qStr = "";
+
+        if ($sqlMode == 'sqlite') $qStr = "CREATE TABLE `{$tablePrefix}deletedData` (
+                    `id`	INTEGER NOT NULL UNIQUE,
+                    `uuid`	TEXT NOT NULL UNIQUE,
+                    PRIMARY KEY(`id` AUTOINCREMENT) );";
+
+        else $qStr = "CREATE TABLE IF NOT EXISTS `{$tablePrefix}deletedData` (
+                    `id` int(11) NOT NULL,
+                    `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                ALTER TABLE `{$tablePrefix}deletedData`
+                    ADD PRIMARY KEY (`id`),
+                    ADD UNIQUE KEY `uuid` (`uuid`);
+                ALTER TABLE `{$tablePrefix}deletedData`
+                    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+                ";
+
         $q->prepare($qStr);
 
         $q->execute();

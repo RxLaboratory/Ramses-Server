@@ -89,6 +89,16 @@ def setUserName( uuid, username, name ):
         ), "1970-01-01 00:00:00"
     )
 
+def clean( tables ):
+    global token
+    data = {
+        "version": version,
+        "token": token,
+        "tables": tables
+    }
+    r = session.post(url + "/?clean", headers=headers, data=json.dumps(data))
+    print( html2text.html2text( r.text ) )
+
 # TESTS Here
 
 def testSync():
@@ -257,12 +267,20 @@ def downloadTables(tableNames):
         tables.append(table)
     sync(tables, "1970-01-01 00:00:00")
 
+def testClean():
+    clean( ( 
+            {
+                "name": "RamAsset",
+                "rows": [ "9f9abb25-c404-53a1-bd1f-d38ad16a668b", ]
+            },
+        ))
+
 installServer()
 
 # Always start a session with a ping
 ping()
 # We need to login before everything else
-#login("Admin", "password")
+login("Admin", "password")
 # Test empty sync
 #sync( (), "2022-07-15 00:00:00")
 # Let's test sync
@@ -271,7 +289,7 @@ ping()
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #login("Admin", "pass")
 #setPassword( "cac400e4-dfe1-4005-949e-a085f9aa43bd", "password", "pass" )
-
+#testClean()
 
 
 """downloadTables((
