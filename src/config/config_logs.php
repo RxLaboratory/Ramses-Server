@@ -24,10 +24,10 @@
 	// Edit this configuration file to adjust server logging
 
 	// === GLOBALLY ENABLE LOGS ===
-	$enableLogs = true;
+	$enableLogs = false;
 
     // Connexion logs
-    $connexionLogs = true;
+    $connexionLogs = false;
 
     // How long do we keep logs? (days)
     $logsExpiration = 30;

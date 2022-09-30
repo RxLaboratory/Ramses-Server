@@ -27,7 +27,7 @@
 
 	// Activates printing the SQL & PHP errors.
 	// For security reasons, it is important to set this to false in production mode
-	$devMode = true;
+	$devMode = false;
 
 	// ==== SQL SETTINGS ====
 
@@ -44,12 +44,12 @@
 	// User
 	$sqlUser = "ramses";
 	// Password
-	$sqlpassword = "a89pppuD";
+	$sqlpassword = "password";
 	// Table prefix
-	// should be a random character string
+	// should be a random character string (use https://duckduckgo.com/?q=generate+password)
 	// you can setup multiple instances on the same DB
 	// if each use a different prefix
-	$tablePrefix = "jaom7Jdr";
+	$tablePrefix = "5H3VBzSY";
 
 	// ==== SESSION & SECURITY SETTINGS ====
 
