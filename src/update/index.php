@@ -77,6 +77,7 @@
 
     include('0.1.3.php');
     include('0.2.11.php');
+    include('0.2.13.php');
 
     // ==== Set new metadata ====
 

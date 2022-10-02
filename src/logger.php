@@ -1,4 +1,6 @@
 <?php
+    require_once($__ROOT__."/config/config_logs.php");
+
     class Logger
     {
         private $logsPath = "";
@@ -27,7 +29,7 @@
             $this->cleanLogs();
         }
 
-        public function login()
+        public function login($uuid, $role, $id, $name)
         {
             // Check if we're logging
             global $enableLogs; 
@@ -35,14 +37,10 @@
             if (!$enableLogs) return;
             if (!$connexionLogs) return;
 
-            $uuid = $_SESSION["userUuid"];
-            $id = $_SESSION["userId"];
-            $name = $_SESSION["userRole"];
-            $role = $_SESSION["userName"];
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},login");
         }
 
-        public function logout($reason)
+        public function logout($uuid, $reason)
         {
             // Check if we're logging
             global $enableLogs; 
@@ -50,15 +48,7 @@
             if (!$enableLogs) return;
             if (!$connexionLogs) return;
 
-            if (isset($_SESSION["userUuid"])) $uuid = $_SESSION["userUuid"];
-            else $uuid = "";
-            if (isset($_SESSION["userId"])) $id = $_SESSION["userId"];
-            else $id = "";
-            if (isset($_SESSION["userRole"])) $role = $_SESSION["userRole"];
-            else $role = "";
-            if (isset($_SESSION["userName"])) $name = $_SESSION["userName"];
-            else $name = "";
-            $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},{$reason}");
+            $this->appendConnexionLog("{$uuid},,,,{$reason}");
         }
 
         private function appendConnexionLog($text, $appendDateAndVersion = true)

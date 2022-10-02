@@ -27,7 +27,7 @@
 	$enableLogs = false;
 
     // Connexion logs
-    $connexionLogs = true;
+    $connexionLogs = false;
 
     // How long do we keep logs? (days)
     $logsExpiration = 30;

@@ -5,15 +5,19 @@
 		Installs the SQL Database
 	*/
 
-    include('../config.php');
+    $__ROOT__ = dirname(dirname(__FILE__)); 
+
+    require_once($__ROOT__."/config/config.php");
 
     //connect to database
 
     if ($sqlMode == "sqlite") // Copy the default db first
     {
         echo ( "Writing the new database scheme (using SQLite)...<br />" );
+        flush();
 
-        $ok = copy("ramses.sqlite", "../ramses_data");
+        if (!is_dir($__ROOT__."/data")) mkdir($__ROOT__."/data");
+        $ok = copy($__ROOT__."/install/ramses.sqlite", $__ROOT__."/data/ramses_data");
 
         if (!$ok)
         {
@@ -21,105 +25,97 @@
         }
 
         echo ( "The new database is ready!<br />" );
+        flush();
     }
 
     echo ( "Connecting to the database...<br />" );
+    flush();
 
-    include('../functions.php');
-    include('../db.php');
+    require_once($__ROOT__."/functions.php");
+    require_once($__ROOT__."/db.php");
 
     echo ( "Database found and working!<br />" );
+    flush();
 
     setupTablePrefix();
 
     echo ( "Generating encryption keys...<br />" );
+    flush();
 
     $encrypt_key = createEncryptionKey();
     $encrypt_key_txt = base64_encode($encrypt_key);
-    echo( "This will be the encryption key for this server:<br /><strong>{$encrypt_key_txt}</strong><br />" );
-    echo( "It's been saved in <code>config_security.php</code>. You may backup this file now.<br />" );
+    echo( "The encryption key has been saved in <code>config/config_security.php</code>. You should backup this file now.<br />" );
+    flush();
 
-    include('../config_security.php');
+    include($__ROOT__."/config/config_security.php");
 
     // Set the DB if MySQL (if SQLite, the file is already available)
     if ($sqlMode != "sqlite")
     {
         echo ( "Writing the new database scheme (using MySQL)...<br />" );
+        flush();
 
-        $sql = file_get_contents('ramses_scheme.sql');
-        // Run the installer SQL Script
-        $qr = $db->exec($sql);
-        
-        if ( $qr === false )
+        // Create the RamUser Table
+        createTable("RamUser", true);
+
+        // Add username and password rows
+        $q = new DBQuery();
+        $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
+            ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
+            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`,
+            ADD UNIQUE KEY `userName` (`userName`);
+            ");
+
+        $q->execute();
+        $q->close();
+
+        if ( !$q->isOK() )
         {
-            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-            die( print_r($db->errorInfo(), true) );
+            die( "Sorry, something went wrong while writing the database." );
         }
 
         echo ( "Database tables are ready!<br />" );
+    }
+    // Rename the user table to use the prefix
+    else
+    {
+        $q = new DBQuery();
+        $q->prepare("ALTER TABLE RamUser
+            RENAME TO {$tablePrefix}RamUser;");
 
-        echo ( "Inserting default data...<br />" );
-
-        $sql = file_get_contents('ramses_data.sql');
-        // Run the data SQL Script
-        $qr = $db->exec($sql);
-        
-        if ( $qr === false )
-        {
-            echo( "Sorry, something went wrong while writing the database. Here's the error:<br />" );
-            die( print_r($db->errorInfo(), true) );
-        }
-
-        echo ( "The new data is ready!<br />" );
+        $q->execute();
+        $q->close();
     }
 
     echo( "Setuping the administrator user...<br />" );
-
+    flush();
+    
     //Setup admin user
     $uuid = uuid();
-    $shortName = "Admin";
-    $name = encrypt("Administrator");
-    $email = encrypt("");
-    $pswd = hashPassword("0b17bfa7938d75031d1754ab56c27062d967e92ca04f2ba5b4ebf920528936b95f9a9fc96a2ef8fb921463cd97aa94026079891f6f4c6e273ce5956c9da72c92", $uuid);   
-    $comment = "The default Administrator user. Don't forget to rename it and change its password!";
-    $role = hashRole('admin');
-   
-    $qString = "REPLACE INTO
-        {$tablePrefix}users (
-            `name`,
-            `shortName`,
-            `uuid`,
-            `password`,
-            `role`,
-            `comment`,
-            `email` )
-        VALUES (
-            :name ,
-            :shortName ,
-            :uuid,
-            :password,
-            :role,
-            :comment,
-            :email );
-        COMMIT;";
+    //Prepare password
+    $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
+    $pswd = hash("sha3-512", $pswd);
+    $pswd = hashPassword($pswd, $uuid);
+    $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
+    
+    $q = new DBQuery();
+    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `password`, `data`, `modified` )
+		VALUES ( :uuid, 'Admin', :password, :data, '1970-01-01 12:00:00' );
+		COMMIT;";
+    $q->prepare( $qStr );
 
-    $rep = $db->prepare($qString);
-    $rep->bindValue(':uuid', $uuid, PDO::PARAM_STR);
-    $rep->bindValue(':name', $name, PDO::PARAM_STR);
-    $rep->bindValue(':shortName', $shortName, PDO::PARAM_STR);
-    $rep->bindValue(':password', $pswd, PDO::PARAM_STR);
-    $rep->bindValue(':comment', $comment, PDO::PARAM_STR);
-    $rep->bindValue(':role', $role, PDO::PARAM_STR);
-    $rep->bindValue(':email', $email, PDO::PARAM_STR);
+    $q->bindStr('uuid', $uuid);
+    $q->bindStr('data', $data);
+    $q->bindStr('password', $pswd);
+    
+    $q->execute();
+    $q->close();
 
-    $ok = $rep->execute();
-    $rep->closeCursor();
-
-    if (!$ok)
+    if ( !$q->isOK() )
     {
         echo( "Could not create the administrator, here's the error:<br />" );
-        die( print_r($db->errorInfo(), true) );
+        die( print_r($q->errorInfo(), true) );
     }
     
-    echo ( "<p>Ramses has been correctly installed, you can now <strong>remove the <code>install</code> directory</strong>.</p><p>The default user is <strong>\"Admin\" with password \"password\"</strong>.<br />Do not forget to change this name and password!</p>" );
+    echo ( "<p>Ramses has been correctly installed, you can now <strong>remove the <code>install</code> directory</strong>.</p><p>The default user is <strong>\"Admin\" with password <code>password</code></strong>.<br />Do not forget to change this name and password!</p>" );
 ?>

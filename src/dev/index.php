@@ -1,8 +1,13 @@
 <?php
-	//configuration and init
-	include ("../config.php");
-    include ("../functions.php");
-	include ("../init.php");
+    $__ROOT__ = dirname(dirname(__FILE__)); 
+
+    //configuration and init
+    require_once ($__ROOT__."/config/config.php");
+    require_once ($__ROOT__."/config/config_security.php");
+    require_once ($__ROOT__."/functions.php");
+    require_once ($__ROOT__."/logger.php");
+    require_once ($__ROOT__."/session_manager.php");
+    require_once ($__ROOT__."/init.php");
 
     //connect to database
     include('../db.php');
@@ -39,36 +44,45 @@
     else if (hasArg("login"))
     {
         $username = "";
-		$password = "";
+        $password = "";
+        
+        $username = getArg("username");
+        $password = getArg("password", "truc");
 
-		$username = getArg("username");
-		$password = getArg("password");
+        if (strlen($username) > 0 AND strlen($password) > 0)
+        {
+            //query the database
+            $rep = $db->prepare("SELECT `uuid`,`userName`,`password` FROM {$tablePrefix}RamUser WHERE `userName` = :username ;");
+            $rep->execute(array('username' => $username));
+            $row = $rep->fetch();
+            $rep->closeCursor();
+            
+            if (!$row)
+            {
+            	echo "Invalid username!";
+            	die();
+            }
 
-		if (strlen($username) > 0 AND strlen($password) > 0)
-		{
-			//query the database
-			$rep = $db->prepare("SELECT password,name,shortName,folderPath,uuid,role FROM {$tablePrefix}users WHERE shortName = :username ;");
-			$rep->execute(array('username' => $username));
-			$testPass = $rep->fetch();
-			$rep->closeCursor();
-
-			//check password
+            //check password
             //hash password (official ramses client side)
-            $password = hash("sha3-512", $password . "H6BuYLsW" );
-            //hash (server side)
-			$uuid = $testPass["uuid"];
-            $password = hashPassword( $password, $uuid );
+            $password = str_replace("/", "", $serverAddress) .  $password . $clientKey;
+            $password = hash("sha3-512", $password );
 
-			if ($testPass["password"] == $password)
-			{
-				$token = login($uuid, $testPass["role"]);
-				echo "token:<br />" . $token;
-			}
-			else
-			{
-				echo "Invalid username or password";
-			}
-		}
+            $uuid = $row["uuid"];
+            $testPass = $row["password"];
+                       
+            if ( checkPassword($password, $uuid, $testPass) )
+            {
+                $token = login($uuid, "test", "test", "test");
+                echo $token;
+                die();
+            }
+            else
+            {
+                echo "Invalid password";
+                die();
+            }
+        }
     }
     else
     {

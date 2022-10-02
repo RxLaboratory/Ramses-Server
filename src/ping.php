@@ -1,4 +1,6 @@
 <?php
+    require_once($__ROOT__."/functions.php");
+    require_once($__ROOT__."/reply.php");
     
     /*
 		Ramses: Rx Asset Management System
@@ -31,7 +33,10 @@
         $ramVersion = strtolower($ramsesVersion);
         $clientVersion = $_SESSION["clientVersion"];
 
-        if ($_SESSION["clientVersion"] != $ramVersion)
+        $testRamVersion = explode(".", $ramVersion);
+        $clientVersion = explode(".", $clientVersion);
+
+        if (count($clientVersion) < 2 || $clientVersion[0] != $testRamVersion[0] || $clientVersion[1] != $testRamVersion[1])
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;
@@ -49,5 +54,7 @@
             $reply["success"] = false;
             $reply["message"] = "The server is not installed!";
         }
+
+        printAndDie();
     }
 ?>

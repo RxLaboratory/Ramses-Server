@@ -22,95 +22,52 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+	$__ROOT__ = dirname(__FILE__); 
+
 	//configuration and init 
-	include ("config.php");
-	include ("config_logs.php");
-	include ("functions.php");
-	include ("logger.php");
-	include ("init.php");
+	require_once("config/config.php");
+	require_once("config/config_logs.php");
+	require_once("functions.php");
+	require_once("logger.php");
+	require_once("session_manager.php");
+
+	// INIT
+	include("init.php");
 
 	//prepare reply
-	include ("reply.php");
+	require_once("reply.php");
 
 	//get request metadata
-	include ("clientmetadata.php");
+	include("clientmetadata.php");
 
 	//ping
-	include ("ping.php");
+	include("ping.php");
 
-	if (!$reply['accepted'])
+	//if the server is not installed, can't do anything more
+	if (!$installed)
 	{
-		//queries
-		if ($installed)
-		{
-			//connect to database
-			include('db.php');
-
-			//login first
-			include ("login.php");
-
-			if (!$reply['accepted'])
-			{
-				//secured operations, check token first
-				$token = getArg("token");
-				if ( $_SESSION["sessionToken"] != "")
-				{
-					if ($token == $_SESSION["sessionToken"])
-					{
-						if (hasArg("init"))
-						{
-							$reply["accepted"] = true;
-							$reply["query"] = "init";
-
-							// The reply is completed in corresponding categories
-
-							$reply["message"] = "Initial data retrieved.";
-							$reply["success"] = true;
-						}
-
-						include ("users.php");
-						include ("projects.php");
-						include ("steps.php");
-						include ("templatesteps.php");
-						include ("states.php");
-						include ("templateassetgroups.php");
-						include ("assetgroups.php");
-						include ("assets.php");
-						include ("sequences.php");
-						include ("filetypes.php");
-						include ("applications.php");
-						include ("pipefiles.php");
-						include ("pipes.php");
-						include ("shots.php");
-						include ("status.php");
-						include ("schedule.php");
-					}
-					else 
-					{
-						$reply["message"] = "Invalid token! How did you arrive here?";
-						$reply["query"] = "loggedout";
-						$reply["success"] = false;
-						$reply["accepted"] = false;
-						logout("Disconnected (Invalid token)");
-					}
-				}
-				else
-				{
-					$reply["message"] = "Your session has expired, you need to log-in.";
-					$reply["query"] = "loggedout";
-					$reply["success"] = false;
-					$reply["accepted"] = false;
-					logout("Disconnected (Session expired)");
-				}
-			}
-		}
-		else
-		{
-			$reply["message"] = "This Ramses server is not installed yet.";
-		}
+		$reply["success"] = false;
+		$reply["accepted"] = false;
+		$reply["message"] = "This Ramses server is not installed yet.";
+		printAndDie();
 	}
 
-	
+	// this session has worn out its welcome; kill it and start a brand new one
+	if (time() > $_SESSION['discard_after']) logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
 
-	echo json_encode($reply);
+	//connect to database
+	require_once('db.php');
+
+	//login
+	include("login.php");
+
+	//secured operations, check token first
+	$token = getArg("token");
+	if ($token != $_SESSION["token"]) logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
+
+	
+	include("sync.php");
+	include("set_password.php");
+	include("clean.php");
+
 ?>

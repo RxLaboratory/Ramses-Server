@@ -1,8 +1,10 @@
+[![Services Health](https://rxlab.montastic.io/badge)](https://rxlab.montastic.io)
+
 # Ramses-Server
 
 The server part of Ramses - Rx Asset Management System
 
-This server stores all shared data of Ramses and is meant to be used with the *Ramses Client*.
+This server is used to sync data across *Ramses Clients*.
 
 - The [Ramses documentation](http://ramses.rxlab.guide) along with installation instructions for the server are available on [ramses.rxlab.guide](http://ramses.rxlab.guide).
 - The main [Git repository](https://github.com/RxLaboratory/Ramses) for all *Ramses* components, [releases](https://github.com/RxLaboratory/Ramses/releases) and [issues](https://github.com/RxLaboratory/Ramses/issues) is [here](https://github.com/RxLaboratory/Ramses).

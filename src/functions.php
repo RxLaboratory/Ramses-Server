@@ -1,7 +1,24 @@
 <?php
+    require_once($__ROOT__."/config/config.php");
+    require_once($__ROOT__."/logger.php");
+    require_once($__ROOT__."/session_manager.php");
+    require_once($__ROOT__."/reply.php");
+
+    if (!function_exists('getallheaders')) {
+        function getallheaders() {
+            $headers = [];
+            foreach ($_SERVER as $name => $value) {
+                if (substr($name, 0, 5) == 'HTTP_') {
+                    $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                }
+            }
+            return $headers;
+        }
+    }
 
     function createEncryptionKey ()
     {
+        global $__ROOT__;
         // Compute appropriate cost for passwords
         $timeTarget = 0.1; // 100 milliseconds 
         $cost = 7;
@@ -17,20 +34,20 @@
         $key_size = 32; // 256 bits
         $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
 
-        $configSecFile = fopen("../config_security.php", "w");
+        $configSecFile = fopen($__ROOT__."/config/config_security.php", "w");
         $encryption_key_txt = base64_encode($encryption_key);
         $ok = fwrite($configSecFile, "<?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?>");
         fclose($configSecFile);
 
-        if (!$ok || !file_exists("../config_security.php"))
+        if (!$ok || !file_exists($__ROOT__."/config/config_security.php"))
         {
             echo( "    ▫ Failed. Could not write the key file. We need write permissions in the ramses folder." );
-            echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config_security.php</strong> file,");
+            echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config/config_security.php</strong> file,");
             echo("<br />upload this new file to the server, and refresh this page.</p>");
             die("<strong><code>&lt;?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?&gt;</strong></code>");
         }
 
-        chmod( "../config_security.php", 0600 );
+        chmod( $__ROOT__."/config/config_security.php", 0600 );
 
         return $encryption_key;
     }
@@ -105,98 +122,57 @@
      */
     function login($uuid, $role, $id, $name)
     {
-        global $log;
-        //Keep session info
-        $_SESSION["userRole"] = $role;
-        $_SESSION["userUuid"] = $uuid;
-        $_SESSION["userId"] = $id;
-        $_SESSION["userName"] = $name;
-        $_SESSION["login"] = true;
+        global $log, $_SESSION;
+
+        // Keep session info
+        $_SESSION["uuid"] = $uuid;
+        // Generate a new token
+        $_SESSION["token"] = bin2hex(random_bytes(20));
         //Log
-        $log->login();
-        //Generate token
-        $_SESSION["sessionToken"] = bin2hex(random_bytes(20));
-        return $_SESSION["sessionToken"];
+        $log->login($uuid, $role, $id, $name);
+
+        SessionManager::regenerateSession();
+
+        return $_SESSION["token"];
     }
 
     /**
      * Logs out and reset the session token
      */
-    function logout($reason="logout")
+    function logout($reason="logout", $message = "Logged out.")
     {
-        global $log;
-        //Log
-        $log->logout($reason);
+        global $log, $reply, $_SESSION;
 
-        $_SESSION["userRole"] = "standard";
-        $_SESSION["userUuid"] = "";
-        $_SESSION["login"] = false;
-        $_SESSION["sessionToken"] = "";
-        session_destroy();
+        $uuid = "unknown";
+        if (isset($_SESSION["uuid"])) $uuid = $_SESSION["uuid"];
+        //Log
+        $log->logout($uuid, $reason);
+
+        $reply["message"] = $message;
+        $reply["query"] = "loggedout";
+        $reply["success"] = false;
+        $reply["accepted"] = false;
+
+        SessionManager::sessionEnd();
+        
+        printAndDie();
     }
 
-    /**
-     * Checks if the current user has admin rights
-     */
     function isAdmin()
     {
-        global $reply;
+        global $_SESSION, $tablePrefix;
+        $q = new DBQuery();
+        $q->prepare("SELECT `data` FROM {$tablePrefix}RamUser WHERE `uuid` = :uuid ;");
+        $q->bindStr("uuid", $_SESSION['uuid']);
+        $q->execute();
+        $row = $q->fetch();
+        $q->close();
+        
+        $data = decrypt( $row['data'] );
+        $data = json_decode($data, true);
 
-        $ok = $_SESSION["userRole"] == "admin";
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights, you need to be Admin.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
-     * Checks if the current user has project admin rights
-     */
-    function isProjectAdmin()
-    {
-        global $reply;
-
-        $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "project";
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights, you need to be Project Admin.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
-     * Checks if the current user has lead rights
-     */
-    function isLead()
-    {
-        global $reply;
-
-        $ok = $_SESSION["userRole"] == "admin" || $_SESSION["userRole"] == "lead" || $_SESSION["userRole"] == "project";
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights, you need to be Lead.";
-            $reply["success"] = false;
-        }
-        return $ok;
-    }
-
-    /**
-     * Checks if this uuid is the current logged in user
-     */
-    function isSelf($uuid)
-    {
-        global $reply;
-
-        $ok = $uuid == $_SESSION["userUuid"];
-        if (!$ok)
-        {
-            $reply["message"] = "Insufficient rights.";
-            $reply["success"] = false;
-        }
-        return $ok;
+        if (!isset($data['role'])) return false;
+        return strtolower($data['role']) == 'admin';
     }
 
     /**
@@ -212,29 +188,6 @@
     {
         $pswd = $uuid . $pswd;
         return password_verify($pswd, $testPswd);
-    }
-
-    /**
-     * Hashes the role to store it in the database
-     */
-    function hashRole( $r )
-    {
-        return password_hash(  $r ,  PASSWORD_DEFAULT, ['cost' => 4]);
-    }
-
-    /**
-     * Checks the hashed role got from the database and returns the plain text role
-     */
-    function checkRole ( $r )
-    {
-        if ($r == 'admin') return 'admin';
-        if ($r == 'project') return 'project';
-        if ($r == 'lead') return 'lead';
-        if ($r == 'standard') return 'standard';
-        if ( checkPassword( 'admin', '', $r ) ) return 'admin';
-        if ( checkPassword( 'project', '', $r) ) return 'project';
-        if ( checkPassword( 'lead', '', $r) ) return 'lead';
-        return 'standard';
     }
 
     /**
@@ -283,29 +236,12 @@
         */
     function getArg($name, $defaultValue = "")
     {
-        global $contentInPost, $contentAsJson, $bodyContent;
+        global $bodyContent;
 
         $decordedArg = "";
 
-        // First, try from URL
-        if ( hasArg( $name ) )
-        {
-            $decordedArg = rawurldecode ( $_GET[$name] );
-        }
-        // Not found, get from body
-        else if ($contentInPost)
-        {
-            if ($contentAsJson)
-            {
-                if (isset($bodyContent[$name]))
-                    $decordedArg = $bodyContent[$name];
-            }
-            else 
-            {
-                if (isset($_POST[$name]))
-                    $decordedArg = rawurldecode ( $_POST[$name] );
-            }
-        }
+        if (isset($bodyContent[$name]))
+            $decordedArg = $bodyContent[$name];
 
         if ($decordedArg == "") return $defaultValue;       
 
@@ -378,7 +314,7 @@
         rmdir($dirPath);
     }
 
-    function acceptReply($queryName, $role = "")
+    function acceptReply($queryName)
     {
         global $reply;
 
@@ -390,11 +326,6 @@
         // Got the right one!
         $reply["query"] = $queryName;
         $reply["accepted"] = true;
-
-        // Check privileges
-        if ($role == 'admin') if (!isAdmin()) return false;
-        if ($role == 'projectAdmin') if (!isProjectAdmin()) return false;
-        if ($role == 'lead') if (!isLead()) return false;
 
         return true;
     }
@@ -462,5 +393,78 @@
         if ( strcmp( $c[4],$v[4] ) < 0 ) return false;
 
         return strcmp($version,$other ) > 0;
+    }
+
+    function createTable( $name, $drop = false )
+    {
+        global $tablePrefix, $sqlMode;
+        
+        $q = new DBQuery();
+        $qStr = "";
+        if ($drop) $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}{$name}`; ";
+        if ($sqlMode == 'sqlite') $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+                    `id`	INTEGER NOT NULL UNIQUE,
+                    `uuid`	TEXT NOT NULL UNIQUE,
+                    `data`	TEXT NOT NULL DEFAULT '{}',
+                    `modified`	timestamp NOT NULL,
+                    `removed`	INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY(`id` AUTOINCREMENT) );";
+        else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+                    `id` int(11) NOT NULL,
+                    `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
+                    `data` mediumtext NOT NULL,
+                    `modified` timestamp NOT NULL,
+                    `removed` tinyint(4) NOT NULL DEFAULT 0
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                ALTER TABLE `{$tablePrefix}{$name}`
+                    ADD PRIMARY KEY (`id`),
+                    ADD UNIQUE KEY `uuid` (`uuid`);
+                ALTER TABLE `{$tablePrefix}{$name}`
+                    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+                ";
+        $q->prepare($qStr);
+
+        $q->execute();
+        $q->close();
+        return $q->isOK();
+    }
+
+    function createDeletedDataTable()
+    {
+        global $tablePrefix, $sqlMode;
+
+        $q = new DBQuery();
+        $qStr = "";
+
+        if ($sqlMode == 'sqlite') $qStr = "CREATE TABLE `{$tablePrefix}deletedData` (
+                    `id`	INTEGER NOT NULL UNIQUE,
+                    `uuid`	TEXT NOT NULL UNIQUE,
+                    PRIMARY KEY(`id` AUTOINCREMENT) );";
+
+        else $qStr = "CREATE TABLE IF NOT EXISTS `{$tablePrefix}deletedData` (
+                    `id` int(11) NOT NULL,
+                    `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                ALTER TABLE `{$tablePrefix}deletedData`
+                    ADD PRIMARY KEY (`id`),
+                    ADD UNIQUE KEY `uuid` (`uuid`);
+                ALTER TABLE `{$tablePrefix}deletedData`
+                    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+                ";
+
+        $q->prepare($qStr);
+
+        $q->execute();
+        $q->close();
+        return $q->isOK();
+    }
+
+    function printAndDie()
+    {
+        global $reply, $sessionTimeout, $_SESSION;
+        // Set time out
+        $_SESSION['discard_after'] = time() + $sessionTimeout;
+
+        die( json_encode($reply) );
     }
 ?>
