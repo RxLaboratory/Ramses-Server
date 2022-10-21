@@ -73,7 +73,7 @@
 			array_push( $qVals, ':udpateTime');
 			array_push( $qVals, ':removed');
 
-			$q = "REPLACE INTO {$tablePrefix}{$table} (" . join(",",$qKeys) . ") VALUES (" . join(",",$qVals) . ");";
+			$q = "REPLACE INTO `{$tablePrefix}{$table}` (" . join(",",$qKeys) . ") VALUES (" . join(",",$qVals) . ");";
 
 			$this->prepare($q);
 			$this->bindStr('udpateTime', dateTimeStr() );
@@ -89,7 +89,7 @@
 
 			if ($deleteNEW)
 			{
-				$q = "SELECT `shortName` FROM {$tablePrefix}{$table} WHERE `uuid`= :uuid ;";
+				$q = "SELECT `shortName` FROM `{$tablePrefix}{$table}` WHERE `uuid`= :uuid ;";
 
 				$this->prepare($q);
 				$this->bindStr( "uuid", $uuid, true);
@@ -104,7 +104,7 @@
 			// DELETE
 			if ($sName == "NEW")
 			{
-				$q = "DELETE FROM {$tablePrefix}{$table} WHERE uuid= :uuid ;";
+				$q = "DELETE FROM `{$tablePrefix}{$table}` WHERE uuid= :uuid ;";
 				
 				$this->prepare($q);
 				$this->bindStr('uuid', $uuid, true );
@@ -114,7 +114,7 @@
 			// SET REMOVED
 			else
 			{
-				$q = "UPDATE {$tablePrefix}{$table} SET removed = 1, latestUpdate = :udpateTime WHERE uuid= :uuid ;";
+				$q = "UPDATE `{$tablePrefix}{$table}` SET removed = 1, latestUpdate = :udpateTime WHERE uuid= :uuid ;";
 				
 				$this->prepare($q);
 				$this->bindStr('uuid', $uuid, true );
@@ -137,7 +137,7 @@
 			}
 			array_push($qKeys, '`latestUpdate`= :updateTime');
 
-			$q = "UPDATE {$tablePrefix}{$table} SET " . join(",",$qKeys) . " WHERE `uuid`= :uuid;";
+			$q = "UPDATE `{$tablePrefix}{$table}` SET " . join(",",$qKeys) . " WHERE `uuid`= :uuid;";
 
 			$this->prepare($q);
 			$this->bindStr('uuid',  $uuid );
@@ -155,7 +155,7 @@
 				array_push( $qKeys, '`' . $key . '`');
 			}
 
-			$q = "SELECT " . join(',',$qKeys) . " FROM {$tablePrefix}{$table} WHERE `uuid`= :uuid;";
+			$q = "SELECT " . join(',',$qKeys) . " FROM `{$tablePrefix}{$table}` WHERE `uuid`= :uuid;";
 
 			$this->prepare($q);
 			$this->bindStr('uuid',  $uuid );
@@ -265,7 +265,7 @@
 			if (!$this->ok)
 			{
 				$this->errorInfo = $this->query->errorInfo();
-				$reply["message"] = "Database query failed. Here's the error\n\n" . $rep->errorInfo()[2];
+				$reply["message"] = "Database query failed. Here's the error\n\n" . $this->query->errorInfo()[2];
 				$reply["success"] = false;
 			}
 			else if ($successMessage != "")

@@ -34,9 +34,9 @@
         $clientVersion = $_SESSION["clientVersion"];
 
         $testRamVersion = explode(".", $ramVersion);
-        $clientVersion = explode(".", $clientVersion);
+        $clientVersionArray = explode(".", $clientVersion);
 
-        if (count($clientVersion) < 2 || $clientVersion[0] != $testRamVersion[0] || $clientVersion[1] != $testRamVersion[1])
+        if (count($clientVersionArray) < 2 || $clientVersionArray[0] != $testRamVersion[0] || $clientVersionArray[1] != $testRamVersion[1])
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;

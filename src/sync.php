@@ -78,8 +78,8 @@
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
-            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified;"; //  
-            else $qStr = $qStr . " FROM {$tablePrefix}{$tableName} WHERE `modified` >= :modified;"; // 
+            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified;"; //  
+            else $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified;"; // 
             
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
@@ -117,7 +117,7 @@
                         $data = $inRow["data"];
                         if ($tableName == "RamUser") $data = encrypt($data);
 
-                        $qStr = "UPDATE {$tablePrefix}{$tableName} SET `data` = :data, `modified` = :modified, `removed` = :removed";
+                        $qStr = "UPDATE `{$tablePrefix}{$tableName}` SET `data` = :data, `modified` = :modified, `removed` = :removed";
                         if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
                         $qStr = $qStr . " WHERE `uuid` = :uuid";
                         
@@ -152,7 +152,7 @@
                 $qr = new DBQuery();
 
                 // Check if the row has been deleted
-                $qStr = "SELECT `uuid` FROM {$tablePrefix}deletedData WHERE `uuid` = :uuid ;";
+                $qStr = "SELECT `uuid` FROM `{$tablePrefix}deletedData` WHERE `uuid` = :uuid ;";
                 $qr->prepare($qStr);
                 $qr->bindStr("uuid", $inRow["uuid"]);
                 $qr->execute();
@@ -164,10 +164,10 @@
                 }
 
                 if ($tableName == "RamUser")
-                    $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) 
+                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) 
                             VALUES ( :uuid, :data, :modified, :removed, '-', :userName ) ";
                 else
-                    $qStr = "INSERT INTO {$tablePrefix}{$tableName} (`uuid`, `data`, `modified`, `removed`) 
+                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) 
                             VALUES ( :uuid, :data, :modified, :removed ) ";
                 
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";

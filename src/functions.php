@@ -16,6 +16,20 @@
         }
     }
 
+    function debugLog( $msg ) {
+        global $reply, $devMode;
+        if (!$devMode) return;
+        $reply["debug"][] = $msg;
+    }
+
+    function debugSessionVar() {
+        $jsonSession = $_SESSION;
+        if (isset($jsonSession["token"]))
+            $jsonSession["token"] = "Hidden-Token";
+        $jsonSession = json_encode($jsonSession);
+        debugLog($jsonSession);
+    }
+
     function createEncryptionKey ()
     {
         global $__ROOT__;
@@ -162,7 +176,7 @@
     {
         global $_SESSION, $tablePrefix;
         $q = new DBQuery();
-        $q->prepare("SELECT `data` FROM {$tablePrefix}RamUser WHERE `uuid` = :uuid ;");
+        $q->prepare("SELECT `data` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :uuid ;");
         $q->bindStr("uuid", $_SESSION['uuid']);
         $q->execute();
         $row = $q->fetch();
@@ -464,6 +478,9 @@
         global $reply, $sessionTimeout, $_SESSION;
         // Set time out
         $_SESSION['discard_after'] = time() + $sessionTimeout;
+
+        debugLog("This is the session data when we're ready to send the data:");
+        debugSessionVar();
 
         die( json_encode($reply) );
     }

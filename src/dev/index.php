@@ -9,6 +9,13 @@
     require_once ($__ROOT__."/session_manager.php");
     require_once ($__ROOT__."/init.php");
 
+    /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+	$currentURL = explode("?", $currentURL)[0];
+	$currentURL = explode("dev/", $currentURL)[0];
+	$currentURL = explode("dev", $currentURL)[0];
+	$serverAddress = $currentURL;
+	debugLog("This is the current server address: " . $serverAddress);*/
+
     //connect to database
     include('../db.php');
 
@@ -19,7 +26,7 @@
         $password = getArg("password");
 
         //query the database for the user uuid
-        $rep = $db->prepare("SELECT uuid FROM {$tablePrefix}users WHERE shortName = :username ;");
+        $rep = $db->prepare("SELECT uuid FROM `{$tablePrefix}users` WHERE shortName = :username ;");
         $rep->execute(array('username' => $username));
         $testPass = $rep->fetch();
         $rep->closeCursor();
@@ -31,7 +38,7 @@
         $password = hashPassword( $clientPassword, $uuid );
 
         //set in the database
-        $rep = $db->prepare("UPDATE {$tablePrefix}users SET password = :password WHERE uuid= :uuid ;" );
+        $rep = $db->prepare("UPDATE `{$tablePrefix}users` SET password = :password WHERE uuid= :uuid ;" );
         $ok = $rep->execute(array('uuid' => $uuid, 'password' => $password));
         //$rep->debugDumpParams();
         $rep->closeCursor();
@@ -52,7 +59,7 @@
         if (strlen($username) > 0 AND strlen($password) > 0)
         {
             //query the database
-            $rep = $db->prepare("SELECT `uuid`,`userName`,`password` FROM {$tablePrefix}RamUser WHERE `userName` = :username ;");
+            $rep = $db->prepare("SELECT `uuid`,`userName`,`password` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username ;");
             $rep->execute(array('username' => $username));
             $row = $rep->fetch();
             $rep->closeCursor();
@@ -74,8 +81,16 @@
             if ( checkPassword($password, $uuid, $testPass) )
             {
                 $token = login($uuid, "test", "test", "test");
-                echo $token;
-                die();
+                //reply content
+                $content = array();
+                $content["username"] = $username;
+                $content["uuid"] = $uuid;
+                $content["token"] = $token;
+                $reply["content"] = $content;
+                $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
+                $reply["success"] = true;
+
+                printAndDie();
             }
             else
             {

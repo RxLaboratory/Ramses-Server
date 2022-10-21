@@ -30,7 +30,7 @@
         static function sessionStart($name, $limit = 0, $path = '/', $domain = null, $secure = null)
         {
             // If we've decided to force SSL, redirect
-            if($_SERVER["HTTPS"] != "on" && $secure) {
+            if((!isset($_SERVER["HTTPS"]) || $_SERVER["HTTPS"] != "on") && $secure) {
                 header("Location: https://" . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"]);
                 exit();
             }
@@ -45,8 +45,18 @@
             $https = isset($secure) ? $secure : isset($_SERVER['HTTPS']);
 
             // Set the cookie settings and start the session
-            session_set_cookie_params($limit, $path, $domain, $secure, true);
-            session_start();
+            session_set_cookie_params($limit, $path, $domain, $https, true);
+            $ok = session_start();
+            if (!$ok) debugLog("The server session can't be started!");
+            else {
+                debugLog("Session started.");
+                debugLog("Current domain: " . $domain);
+                debugLog("Current path: " . $path);
+                debugLog("This is the session data when starting the session:");
+                debugSessionVar();
+            }
+
+            debugLog("This is the session id: " . session_id());
 
             // Make sure the session hasn't expired, and destroy it if it has
             if( self::validateSession() )

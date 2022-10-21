@@ -61,7 +61,7 @@
         if ($currentPassword != "")
         {
             $q = new DBQuery();
-            $q->prepare("SELECT `password` FROM {$tablePrefix}RamUser WHERE `uuid` = :uuid ");
+            $q->prepare("SELECT `password` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :uuid ");
             $q->bindStr("uuid", $uuid );
             $q->execute("");
             $row = $q->fetch();
@@ -86,7 +86,7 @@
         $newPassword = hashPassword($newPassword, $uuid);
 
         $q = new DBQuery();
-        $qStr = "UPDATE {$tablePrefix}RamUser SET `password` = :password WHERE `uuid` = :uuid ;";
+        $qStr = "UPDATE `{$tablePrefix}RamUser` SET `password` = :password WHERE `uuid` = :uuid ;";
         $q->prepare($qStr);
         $q->bindStr("uuid", $uuid);
         $q->bindStr("password", $newPassword);

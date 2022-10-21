@@ -6,4 +6,5 @@
     $reply["message"] = "";
     $reply["query"] = "unknown";
     $reply["content"] = Array();
+    $reply["debug"] = Array();
 ?>

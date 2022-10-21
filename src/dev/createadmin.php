@@ -14,6 +14,13 @@
     include('../functions.php');
     include('../db.php');
 
+    $currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+	$currentURL = explode("?", $currentURL)[0];
+	$currentURL = explode("dev/", $currentURL)[0];
+	$currentURL = explode("dev", $currentURL)[0];
+	$serverAddress = $currentURL;
+	debugLog("This is the current server address: " . $serverAddress);
+
     echo ( "Database found and working!<br />" );
 
     setupTablePrefix();
@@ -32,7 +39,7 @@
     $role = hashRole('admin');
    
     $qString = "REPLACE INTO
-        {$tablePrefix}users (
+        `{$tablePrefix}users` (
             `name`,
             `shortName`,
             `uuid`,

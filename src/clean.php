@@ -57,7 +57,7 @@
             $q = new DBQuery();
             foreach( $rows as $row )
             {
-                $qStr = "INSERT INTO {$tablePrefix}deletedData (`uuid`) VALUES ( :uuid ) ";
+                $qStr = "INSERT INTO `{$tablePrefix}deletedData` (`uuid`) VALUES ( :uuid ) ";
 
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
@@ -70,7 +70,7 @@
 
                 if ($q->isOK()) {
                     $count++;
-                    $qStr = "DELETE FROM {$tablePrefix}{$tableName} WHERE `uuid` = :uuid AND `removed` = 1;";
+                    $qStr = "DELETE FROM `{$tablePrefix}{$tableName}` WHERE `uuid` = :uuid AND `removed` = 1;";
                     $q->prepare($qStr);
                     $q->bindStr("uuid", $row);
                     $q->execute();

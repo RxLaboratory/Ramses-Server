@@ -44,7 +44,7 @@
         }
 
         $q = new DBQuery();
-        $q->prepare( "SELECT `uuid`,`userName`,`password`,`data` FROM {$tablePrefix}RamUser WHERE `userName` = :username AND removed = 0;" );
+        $q->prepare( "SELECT `uuid`,`userName`,`password`,`data` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
         $q->bindStr( "username", $username );
         $q->execute();
 		$row = $q->fetch();

@@ -7,7 +7,7 @@ import html2text
 
 token = ""
 version = "0.5.1-Beta"
-url = "https://ramses.icvr.io/"
+url = "http://127.0.0.1/ramses"
 clientKey = "drHSV2XQ"
 
 session = requests.Session()
@@ -37,7 +37,9 @@ def login(username, password):
         "password": password
     }
     r = session.post(url + "/dev/?login", headers=headers, data=json.dumps(data))
-    token = html2text.html2text( r.text ).strip()
+    print( html2text.html2text( r.text ) )
+    data = json.loads( r.text )
+    token = data["content"]["token"]
     print(token)
 
 def sync( tables, date ):
@@ -275,14 +277,14 @@ def testClean():
             },
         ))
 
-# installServer()
+#installServer()
 
 # Always start a session with a ping
 ping()
 # We need to login before everything else
 login("Admin", "password")
 # Test empty sync
-#sync( (), "2022-07-15 00:00:00")
+sync( (), "2022-07-15 00:00:00")
 # Let's test sync
 #testSync()
 #testSyncUser()

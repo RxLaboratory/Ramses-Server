@@ -1,14 +1,26 @@
 <?php
 	// Enable compression if the client supports it
 	if(substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip'))
+	{
+		debugLog("GZip compression is enabled");
 		ob_start("ob_gzhandler");
+	}
 	else
+	{
+		debugLog("GZip compression is disabled");
 		ob_start();
+	}
 
 	require_once($__ROOT__."/config/config.php");
 	require_once($__ROOT__."/functions.php");
 	require_once($__ROOT__."/logger.php");
 	require_once($__ROOT__."/session_manager.php");
+
+	// Get the server address
+	/*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+	$currentURL = explode("?", $currentURL)[0];
+	$serverAddress = $currentURL;
+	debugLog("This is the current server address: " . $serverAddress);*/
 
     $ramsesVersion = "0.5.1-Beta";
 	$installed = file_exists($__ROOT__."/config/config_security.php");
@@ -36,7 +48,8 @@
 	// Get domain and path
 	$addressArray = explode("/", $serverAddress);
 	$domain = array_shift($addressArray);
-	$path = "/" . join("/",$addressArray) . "/";
+	$path = "/" . join("/",$addressArray);
+	if (!endsWith($path, "/")) $path = $path . "/";
 	// Init session
 	SessionManager::sessionStart("Ramses_Server", $cookieTimeout, $path, $domain, $forceSSL );
 	

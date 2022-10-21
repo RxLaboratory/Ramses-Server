@@ -9,6 +9,13 @@
 
     require_once($__ROOT__."/config/config.php");
 
+    // Get current address
+    /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+	$currentURL = explode("?", $currentURL)[0];
+	$currentURL = explode("install/", $currentURL)[0];
+	$currentURL = explode("install", $currentURL)[0];
+	$serverAddress = $currentURL;*/
+
     //connect to database
 
     if ($sqlMode == "sqlite") // Copy the default db first
@@ -79,12 +86,13 @@
     // Rename the user table to use the prefix
     else
     {
+        echo( "Preparing the database...<br />");
         $q = new DBQuery();
-        $q->prepare("ALTER TABLE RamUser
-            RENAME TO {$tablePrefix}RamUser;");
-
+        $q->prepare("ALTER TABLE `RamUser` RENAME TO `{$tablePrefix}RamUser`;");
         $q->execute();
         $q->close();
+        if (!$q->isOK()) echo( "Something went wrong: Can't rename the users table.<br />");
+        else echo( "Successfully prepared the database.<br />");
     }
 
     echo( "Setuping the administrator user...<br />" );
@@ -99,7 +107,7 @@
     $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
-    $qStr = "REPLACE INTO {$tablePrefix}RamUser ( `uuid`, `userName`, `password`, `data`, `modified` )
+    $qStr = "REPLACE INTO `{$tablePrefix}RamUser` ( `uuid`, `userName`, `password`, `data`, `modified` )
 		VALUES ( :uuid, 'Admin', :password, :data, '1970-01-01 12:00:00' );
 		COMMIT;";
     $q->prepare( $qStr );
