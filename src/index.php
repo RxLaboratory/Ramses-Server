@@ -53,7 +53,7 @@
 	}
 
 	// this session has worn out its welcome; kill it and start a brand new one
-	if (time() > $_SESSION['discard_after']) logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
+	if ($sessionTimeout >= 0 && time() > $_SESSION['discard_after']) logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
 
 	//connect to database
 	require_once('db.php');
@@ -64,7 +64,6 @@
 	//secured operations, check token first
 	$token = getArg("token");
 	if ($token != $_SESSION["token"]) logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
-
 	
 	include("sync.php");
 	include("set_password.php");

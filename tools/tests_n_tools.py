@@ -5,9 +5,9 @@ import hashlib
 
 import html2text
 
-token = "8d4b57014169bdc2c3db1ba555b7e1444f25de08"
-version = "0.5.0-Rubika_3"
-url = "https://ramses.rxlab.io/tests"
+token = ""
+version = "0.5.1-Beta"
+url = "https://ramses.icvr.io/"
 clientKey = "drHSV2XQ"
 
 session = requests.Session()
@@ -275,7 +275,7 @@ def testClean():
             },
         ))
 
-installServer()
+# installServer()
 
 # Always start a session with a ping
 ping()

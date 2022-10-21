@@ -61,6 +61,7 @@
 	// The client will be disconnected after being idle for this time
 	// 30 minutes by default (1800) are more than enough:
 	// The official client makes a call at least every 2 minutes by default.
+	// A negative value completely deactivates the timeout check.
 	$sessionTimeout = 1800;
 	// Max Session timeout (seconds)
 	// The client will be disconnected no matter what after this time
