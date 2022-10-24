@@ -57,9 +57,16 @@
         {
             if (!isset($table["name"]))
             {
-                $reply["success"] = false;
-                $reply["message"] = "Malformed request, sorry. I've found a table without name.";
-                printAndDie();
+                if ($devMode)
+                {
+                    $reply["success"] = false;
+                    $reply["message"] = "Malformed request, sorry. I've found a table without name.";
+                    printAndDie();
+                }
+                else
+                {
+                    continue;
+                }
             }
 
             $tableName = $table["name"];
