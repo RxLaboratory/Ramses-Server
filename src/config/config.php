@@ -56,6 +56,9 @@
 
 	// ==== SESSION & SECURITY SETTINGS ====
 
+	// This must be the server public adress, exactly as used in the clients
+	$serverAddress = "localhost/ramses";
+
 	// Whether to accept only SSL connections
 	// This should always be true, except maybe on dev environments.
 	$forceSSL = true;
@@ -70,9 +73,6 @@
 	// The client will be disconnected no matter what after this time
 	// 12 hours by default( 43200 )
 	$cookieTimeout = 43200;
-
-	// This must be the server public adress, exactly as used in the clients
-	$serverAddress = "localhost/ramses";
 
 	// This should never be changed, unless you change the key before building the official client or implementing your own client.
 	// It is used to break compatibility between some updates of the client/server framework
