@@ -46,17 +46,7 @@
 
             // Set the cookie settings and start the session
             session_set_cookie_params($limit, $path, $domain, $https, true);
-            $ok = session_start();
-            if (!$ok) debugLog("The server session can't be started!");
-            else {
-                debugLog("Session started.");
-                debugLog("Current domain: " . $domain);
-                debugLog("Current path: " . $path);
-                debugLog("This is the session data when starting the session:");
-                debugSessionVar();
-            }
-
-            debugLog("This is the session id: " . session_id());
+            session_start();
 
             // Make sure the session hasn't expired, and destroy it if it has
             if( self::validateSession() )

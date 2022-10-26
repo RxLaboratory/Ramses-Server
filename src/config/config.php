@@ -23,16 +23,24 @@
 
 	// Edit this configuration file before running the install script at /install/index.php
 
-	// === DEV MODE ===
+	// === DEV MODE & DEBUG Info ===
 
 	// Activates printing the SQL & PHP errors.
 	// For security reasons, it is important to set this to false in production mode
 	$devMode = false;
+	// Sets the minimum level of the logs in the server replies sent to the clients
+	// One of: 'DATA', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'FATAL'
+	$logLevel = 'INFO';
 
 	// ==== SQL SETTINGS ====
 
 	// either 'mysql' (works for MariaDB too) or 'sqlite'
 	$sqlMode = 'sqlite';
+	// Table prefix
+	// should be a random character string (use https://duckduckgo.com/?q=generate+password)
+	// you can setup multiple instances on the same DB
+	// if each use a different prefix
+	$tablePrefix = "5H3VBzSY";
 
 	// ==== MySQL/MariaDB SETTINGS ====
 
@@ -45,11 +53,6 @@
 	$sqlUser = "ramses";
 	// Password
 	$sqlpassword = "password";
-	// Table prefix
-	// should be a random character string (use https://duckduckgo.com/?q=generate+password)
-	// you can setup multiple instances on the same DB
-	// if each use a different prefix
-	$tablePrefix = "5H3VBzSY";
 
 	// ==== SESSION & SECURITY SETTINGS ====
 

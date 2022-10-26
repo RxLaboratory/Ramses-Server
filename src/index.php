@@ -49,12 +49,16 @@
 		$reply["success"] = false;
 		$reply["accepted"] = false;
 		$reply["message"] = "This Ramses server is not installed yet.";
+		$log->debugLog("The server is not installed yet.", "FATAL");
 		printAndDie();
 	}
 
 	// this session has worn out its welcome; kill it and start a brand new one
-	if ($sessionTimeout >= 0 && time() > $_SESSION['discard_after']) logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
-
+	if ($sessionTimeout >= 0 && time() > $_SESSION['discard_after'])
+	{
+		$log->debugLog("Session has expired.", "WARNING");
+		logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
+	}
 	//connect to database
 	require_once('db.php');
 
@@ -63,7 +67,10 @@
 
 	//secured operations, check token first
 	$token = getArg("token");
-	if ($token != $_SESSION["token"]) logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
+	if ($token != $_SESSION["token"]){
+		$log->debugLog("Disconnected (Invalid token).", "WARNING");
+		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
+	}
 	
 	include("sync.php");
 	include("set_password.php");

@@ -28,7 +28,11 @@
 
     // Connexion logs
     $connexionLogs = false;
+    // Requests logs
+    $requestLogs = false;
+    // Debug logs
+    $debugLogs = false;
 
     // How long do we keep logs? (days)
-    $logsExpiration = 30;
+    $logsExpiration = 2;
 ?>

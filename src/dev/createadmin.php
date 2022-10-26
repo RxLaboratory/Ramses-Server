@@ -14,12 +14,12 @@
     include('../functions.php');
     include('../db.php');
 
-    $currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
+    /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
 	$currentURL = explode("?", $currentURL)[0];
 	$currentURL = explode("dev/", $currentURL)[0];
 	$currentURL = explode("dev", $currentURL)[0];
 	$serverAddress = $currentURL;
-	debugLog("This is the current server address: " . $serverAddress);
+	debugLog("This is the current server address: " . $serverAddress);*/
 
     echo ( "Database found and working!<br />" );
 

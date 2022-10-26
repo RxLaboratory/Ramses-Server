@@ -31,10 +31,13 @@
         $currentPassword = getArg("currentPassword");
         $uuid = getArg("uuid");
 
+        $log->debugLog("Changing password for {$uuid}.", "INFO");
+
         if ($newPassword == "")
         {
             $reply["message"] = "The password can't be empty, sorry!";
             $reply["success"] = false;
+            $log->debugLog("Refused: empty password.", "WARNING");
             printAndDie();
         }
 
@@ -42,6 +45,7 @@
         {
             $reply["message"] = "The uuid can't be empty, sorry!";
             $reply["success"] = false;
+            $log->debugLog("Refused: empty uuid.", "WARNING");
             printAndDie();
         }
 
@@ -53,6 +57,7 @@
             {
                 $reply["message"] = "You need to specify your current password too.";
                 $reply["success"] = false;
+                $log->debugLog("Refused: empty current password.", "WARNING");
                 printAndDie();
             }
         }
@@ -70,6 +75,7 @@
             {
                 $reply["message"] = "I can't find this user in the database...";
                 $reply["success"] = false;
+                $log->debugLog("Refused: invalid user.", "WARNING");
                 printAndDie();
             }
             $testPassword = $row['password'];
@@ -78,6 +84,7 @@
             {
                 $reply["message"] = "Wrong current password, sorry!";
                 $reply["success"] = false;
+                $log->debugLog("Refused: invalid current password.", "WARNING");
                 printAndDie();
             }
         }
@@ -103,6 +110,7 @@
         $reply["content"] = array();
         $reply["success"] = true;
         $reply["message"] = "Password changed!";
+        $log->debugLog("Password changed.", "INFO");
         printAndDie();
     }
 

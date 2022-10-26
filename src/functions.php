@@ -16,18 +16,13 @@
         }
     }
 
-    function debugLog( $msg ) {
-        global $reply, $devMode;
-        if (!$devMode) return;
-        $reply["debug"][] = $msg;
-    }
-
     function debugSessionVar() {
+        global $log;
         $jsonSession = $_SESSION;
         if (isset($jsonSession["token"]))
             $jsonSession["token"] = "Hidden-Token";
         $jsonSession = json_encode($jsonSession);
-        debugLog($jsonSession);
+        $log->debugLog("These are the session variables:\n" . $jsonSession, "DATA");
     }
 
     function createEncryptionKey ()
@@ -475,11 +470,11 @@
 
     function printAndDie()
     {
-        global $reply, $sessionTimeout, $_SESSION;
+        global $reply, $sessionTimeout, $log, $_SESSION;
         // Set time out
         $_SESSION['discard_after'] = time() + $sessionTimeout;
 
-        debugLog("This is the session data when we're ready to send the data:");
+        $log->debugLog("Sending the reply.");
         debugSessionVar();
 
         die( json_encode($reply) );

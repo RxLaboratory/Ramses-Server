@@ -26,10 +26,13 @@
 
     if ( acceptReply( "clean" ) )
     {
+        $log->debugLog("Database clean.", "INFO");
+
         if (!isAdmin())
         {
             $reply["success"] = false;
             $reply["message"] = "Warning! Missing privileges. You must be an administrator to clean the database.";
+            $log->debugLog("Refused: not admin.", "WARNING");
             printAndDie();
         }
 
@@ -46,6 +49,7 @@
             {
                 $reply["success"] = false;
                 $reply["message"] = "Malformed request, sorry. I've found a table without name.";
+                $log->debugLog("Malformed request: found a table with no name.", "CRITICAL");
                 printAndDie();
             }
 
@@ -82,6 +86,7 @@
         $reply["content"]["count"] = $count;
         $reply["success"] = true;
         $reply["message"] = "Cleaned data, removed {$count} rows.";
+        $log->debugLog("Cleaned data, removed {$count} rows.", "INFO");
         printAndDie();
     }
 ?>

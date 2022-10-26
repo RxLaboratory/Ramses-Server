@@ -1,13 +1,12 @@
 <?php
 	// Enable compression if the client supports it
-	if(substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip'))
+	$useGzip = substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip');
+	if ($useGzip)
 	{
-		debugLog("GZip compression is enabled");
 		ob_start("ob_gzhandler");
 	}
 	else
 	{
-		debugLog("GZip compression is disabled");
 		ob_start();
 	}
 
@@ -45,6 +44,12 @@
 	// server should keep session data for AT LEAST  sessionTimeout
 	ini_set('session.gc_maxlifetime', $sessionTimeout);
 
+	//prepare log
+	$log = new Logger();
+	if ($useGzip) $log->debugLog("GZIP compression enabled", "DEBUG");
+	else $log->debugLog("GZIP compression disabled", "DEBUG");
+	$log->debugLog("Preparing session", "DEBUG");
+
 	// Get domain and path
 	$addressArray = explode("/", $serverAddress);
 	$domain = array_shift($addressArray);
@@ -52,6 +57,8 @@
 	if (!endsWith($path, "/")) $path = $path . "/";
 	// Init session
 	SessionManager::sessionStart("Ramses_Server", $cookieTimeout, $path, $domain, $forceSSL );
+
+	$log->debugLog("Session started", "DEBUG");
 	
 	// Init session variables
 	if (!isset($_SESSION["token"])) $_SESSION["token"] = "";
@@ -62,12 +69,12 @@
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
 
-	//prepare log
-	$log = new Logger();
-
 	// Parse body content to make it quickly available later
 	// Check the content type, accept application/json or application/x-www-form-urlencoded
 	$allHeaders = getallheaders();
+	$rawBody = file_get_contents('php://input');
+	$log->requestLog($allHeaders, $rawBody);
+
 	if (isset($allHeaders['Content-Type']))
 	{
 		$cType = $allHeaders['Content-Type'];
@@ -94,19 +101,26 @@
 				continue;
 			}
 		}
-
+		
 		// If json, parse it right now
 		$bodyContent = array();
 		if ($ok)
 		{
-			$rawBody = file_get_contents('php://input');
 			$bodyContent = json_decode($rawBody, true);
 		}
 		else
 		{
 			$reply["success"] = false;
 			$reply["message"] = "Sorry, malformed request. We accept only application/json POST";
+			$log->debugLog("Malformed request, Content-Type is not application/json.", "WARNING");
 			die(json_encode($reply));
 		}
+	}
+	else
+	{
+		$reply["success"] = false;
+		$reply["message"] = "Sorry, malformed request. Missing content-type header.";
+		$log->debugLog("Malformed request, Missing content-type header.", "WARNING");
+		die(json_encode($reply));
 	}
 ?>

@@ -29,10 +29,13 @@
         $username = getArg( "username" );
         $password = getArg( "password" );
 
+        $log->debugLog("Login...", "INFO");
+
         if (strlen($username) == 0)
         {
             $reply["message"] = "Missing user name";
             $reply["success"] = false;
+            $log->debugLog("Missing user name", "WARNING");
             logout($username, "Connexion refused (invalid password)");
         }
 
@@ -40,6 +43,7 @@
         {
             $reply["message"] = "Missing password";
             $reply["success"] = false;
+            $log->debugLog("Missing password", "WARNING");
             logout($username, "Connexion refused (invalid password)");
         }
 
@@ -54,6 +58,7 @@
         {
             $reply["message"] = "Invalid password or username";
             $reply["success"] = false;
+            $log->debugLog("Invalid username", "WARNING");
             logout($username, "Connexion refused (invalid username)");
         }
 
@@ -71,6 +76,7 @@
         {
             $reply["message"] = "Invalid password or username";
             $reply["success"] = false;
+            $log->debugLog("Invalid password", "WARNING");
             logout($username, "Connexion refused (invalid password)");
         }
 
@@ -79,6 +85,8 @@
         if ( isset($data["name"]) ) $name = $data["name"];
         $role = "unknown";
         if ( isset($data["role"]) ) $role = $data["role"];
+
+        $log->debugLog("{$name} has logged in as {$role}.", "INFO");
 
         // Login
         $token = login($uuid, $role, $username, $name);

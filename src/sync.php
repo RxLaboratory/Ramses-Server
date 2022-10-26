@@ -31,6 +31,7 @@
         
         $outRow["modified"] = $row["modified"];
         $outRow["removed"] = (int)$row["removed"];
+        
         if ($tableName == "RamUser")
         {
             $outRow["userName"] = $row["userName"];
@@ -50,6 +51,8 @@
     {
         $tables = getArg("tables", array());
         $prevSync = getArg("previousSyncDate", "1970-01-01 00:00:00");
+
+        $log->debugLog("Sync accepted.", "INFO");
 
         // Create the deletedData table in case it doesn't exist yet
         createDeletedDataTable();
@@ -73,6 +76,9 @@
             }
 
             $tableName = $table["name"];
+
+            $log->debugLog("Sync table: {$tableName}.", "DEBUG");
+
             $incomingRows = array();
             if (isset($table["modifiedRows"])) $incomingRows = $table["modifiedRows"];
 
