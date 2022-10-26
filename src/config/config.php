@@ -30,7 +30,7 @@
 	$devMode = false;
 	// Sets the minimum level of the logs in the server replies sent to the clients
 	// One of: 'DATA', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'FATAL'
-	$logLevel = 'INFO';
+	$logLevel = 'WARNING';
 
 	// ==== SQL SETTINGS ====
 
