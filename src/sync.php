@@ -51,6 +51,9 @@
         $tables = getArg("tables", array());
         $prevSync = getArg("previousSyncDate", "1970-01-01 00:00:00");
 
+        // Create the deletedData table in case it doesn't exist yet
+        createDeletedDataTable();
+
         $outTables = array();
         $rowsToDelete = array();
         foreach( $tables as $table )

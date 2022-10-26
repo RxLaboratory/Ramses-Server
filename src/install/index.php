@@ -81,6 +81,9 @@
             die( "Sorry, something went wrong while writing the database." );
         }
 
+        // Create the deletedData table
+                
+
         echo ( "Database tables are ready!<br />" );
     }
     // Rename the user table to use the prefix

@@ -450,7 +450,7 @@
         $q = new DBQuery();
         $qStr = "";
 
-        if ($sqlMode == 'sqlite') $qStr = "CREATE TABLE `{$tablePrefix}deletedData` (
+        if ($sqlMode == 'sqlite') $qStr = "CREATE TABLE IF NOT EXISTS `{$tablePrefix}deletedData` (
                     `id`	INTEGER NOT NULL UNIQUE,
                     `uuid`	TEXT NOT NULL UNIQUE,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
