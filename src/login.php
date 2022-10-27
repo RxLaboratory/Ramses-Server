@@ -109,6 +109,7 @@
             $content["data"] = $dataStr;
             $content["modified"] = $modified;
             $reply["content"] = $content;
+            $reply["serverUuid"] = $server_uuid;
             $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
             $reply["success"] = true;
 

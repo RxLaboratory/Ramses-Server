@@ -31,6 +31,9 @@
 	if( $installed ) include( $__ROOT__."/config/config_security.php" );
 	else $encrypt_key = '';
 
+	if (file_exists($__ROOT__."/config/config_server_uuid.php")) include( $__ROOT__."/config/config_server_uuid.php" );
+	else $server_uuid = "";
+
 	// Enable dev mode
 	if ($devMode)
 	{
