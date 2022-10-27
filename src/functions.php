@@ -67,7 +67,7 @@
         // Create this server's UUID
         $configUUIDFile = fopen($__ROOT__."/config/config_server_uuid.php", "w");
         $server_uuid = uuid();
-        $ok = fwrite($configUUIDFile, "<?php\n\$server_uuid = {$server_uuid};?>");
+        $ok = fwrite($configUUIDFile, "<?php\n\$server_uuid = \"{$server_uuid}\";\n?>");
         fclose($configUUIDFile);
         if ($ok) return $server_uuid;
         else return "";
