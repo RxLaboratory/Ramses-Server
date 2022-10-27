@@ -254,7 +254,10 @@
 
         if ($decordedArg == "") return $defaultValue;       
 
-        return checkForbiddenWords( $decordedArg );
+        if ( is_string($decordedArg) )
+            return checkForbiddenWords( $decordedArg );
+        else
+            return $decordedArg;
     }
 
     function getAttr($name, $obj, $defaultValue = "")
