@@ -58,13 +58,19 @@
 
         chmod( $__ROOT__."/config/config_security.php", 0600 );
 
+        return $encryption_key;
+    }
+
+    function createServerUuid()
+    {
+        global $__ROOT__;
         // Create this server's UUID
         $configUUIDFile = fopen($__ROOT__."/config/config_server_uuid.php", "w");
         $server_uuid = uuid();
-        fwrite($configUUIDFile, "<?php\n\$server_uuid = {$server_uuid};?>");
+        $ok = fwrite($configUUIDFile, "<?php\n\$server_uuid = {$server_uuid};?>");
         fclose($configUUIDFile);
-
-        return $encryption_key;
+        if ($ok) return $server_uuid;
+        else return "";
     }
 
     /**

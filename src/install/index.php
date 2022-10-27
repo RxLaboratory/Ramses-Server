@@ -54,7 +54,14 @@
     echo( "The encryption key has been saved in <code>config/config_security.php</code>. You should backup this file now.<br />" );
     flush();
 
+    echo ( "Generating server identifier...<br />" );
+    flush();
+    if (createServerUuid() != "") echo ( "The server universal has been saved.<br />" );
+    else echo( "<strong>Warning</strong>: The server UUID can't be generated.<br />");
+    flush();
+
     include($__ROOT__."/config/config_security.php");
+    include($__ROOT__."/config/config_server_uuid.php");
 
     // Set the DB if MySQL (if SQLite, the file is already available)
     if ($sqlMode != "sqlite")

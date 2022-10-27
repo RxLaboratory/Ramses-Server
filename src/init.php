@@ -32,7 +32,7 @@
 	else $encrypt_key = '';
 
 	if (file_exists($__ROOT__."/config/config_server_uuid.php")) include( $__ROOT__."/config/config_server_uuid.php" );
-	else $server_uuid = "";
+	else $server_uuid = createServerUuid();
 
 	// Enable dev mode
 	if ($devMode)
