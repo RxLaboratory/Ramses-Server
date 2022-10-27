@@ -51,57 +51,88 @@
         $q->prepare( "SELECT `uuid`,`userName`,`password`,`data`, `modified` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
         $q->bindStr( "username", $username );
         $q->execute();
-		$row = $q->fetch();
+
+        // In case there are multiple users with the same name, find the one with the right password
+        // and remove the others
+        $ok = false;
+        $users = [];
+        while ($row = $q->fetch())
+        {
+            $users[] = $row;
+            $ok = true;
+        }
+
         $q->close();
 
-		if (!$row)
+        if (!$ok)
         {
             $reply["message"] = "Invalid password or username";
             $reply["success"] = false;
-            $log->debugLog("Invalid username", "WARNING");
-            logout($username, "Connexion refused (invalid username)");
+            $log->debugLog("Invalid username: {$username}", "WARNING");
+            logout($username, "Connexion refused (invalid username: {$username})");
+        }
+        
+        $ok = false;
+        $uuid = "";
+        foreach($users as $user)
+        {
+            $uuid = $user["uuid"];
+            $dataStr = $user["data"];
+            $tPassword = $user["password"];
+            $modified = $user["modified"];
+            // decrypt data
+            $dataStr = decrypt( $dataStr );
+            $dataArr = json_decode( $dataStr, true);
+
+            //check password
+            if ( !checkPassword($password, $uuid, $tPassword ) )
+            {
+                continue;
+            }
+
+            // Get other data for the log
+            $name = "unknown";
+            if ( isset($dataArr["name"]) ) $name = $dataArr["name"];
+            $role = "unknown";
+            if ( isset($dataArr["role"]) ) $role = $dataArr["role"];
+
+            $log->debugLog("{$name} has logged in as {$role}.", "INFO");
+
+            // Login
+            $token = login($uuid, $role, $username, $name);
+
+            //reply content
+            $content = array();
+            $content["username"] = $username;
+            $content["uuid"] = $uuid;
+            $content["token"] = $token;
+            $content["data"] = $dataStr;
+            $content["modified"] = $modified;
+            $reply["content"] = $content;
+            $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
+            $reply["success"] = true;
+
+            $ok = true;
+            break;
         }
 
-
-        $found = true;
-        $uuid = $row["uuid"];
-        $data = $row["data"];
-        $tPassword = $row["password"];
-        $modified = $row["modified"];
-        // decrypt data
-        $data = decrypt( $data );
-        $data = json_decode( $data, true);
-
-        //check password
-        if ( !checkPassword($password, $uuid, $tPassword ) )
+        if (!$ok)
         {
             $reply["message"] = "Invalid password or username";
             $reply["success"] = false;
             $log->debugLog("Invalid password", "WARNING");
             logout($username, "Connexion refused (invalid password)");
         }
-
-        // Get other data for the log
-        $name = "unknown";
-        if ( isset($data["name"]) ) $name = $data["name"];
-        $role = "unknown";
-        if ( isset($data["role"]) ) $role = $data["role"];
-
-        $log->debugLog("{$name} has logged in as {$role}.", "INFO");
-
-        // Login
-        $token = login($uuid, $role, $username, $name);
-
-        //reply content
-        $content = array();
-        $content["username"] = $username;
-        $content["uuid"] = $uuid;
-        $content["token"] = $token;
-        $content["userdata"] = $data;
-        $content["modified"] = $modified;
-        $reply["content"] = $content;
-        $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
-        $reply["success"] = true;
+        else if ($uuid != "")
+        {
+            // Remove other users with the same username if any
+            $q->prepare( "UPDATE `{$tablePrefix}RamUser` SET `removed` = 1, `modified` = :modified WHERE `userName` = :username AND `uuid` != :uuid;" );
+            $q->bindStr( "username", $username );
+            $q->bindStr( "uuid", $uuid );
+            $q->bindStr( "modified", date("Y-m-d H:i:s") );
+            $q->execute();
+            $q->close();
+        }
 
         printAndDie();
     }

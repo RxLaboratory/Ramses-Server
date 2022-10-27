@@ -69,8 +69,7 @@
         $q = new DBQuery();
         $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
             ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
-            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`,
-            ADD UNIQUE KEY `userName` (`userName`);
+            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`;
             ");
 
         $q->execute();
