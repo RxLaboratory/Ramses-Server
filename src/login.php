@@ -48,7 +48,7 @@
         }
 
         $q = new DBQuery();
-        $q->prepare( "SELECT `uuid`,`userName`,`password`,`data` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
+        $q->prepare( "SELECT `uuid`,`userName`,`password`,`data`, `modified` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
         $q->bindStr( "username", $username );
         $q->execute();
 		$row = $q->fetch();
@@ -67,6 +67,7 @@
         $uuid = $row["uuid"];
         $data = $row["data"];
         $tPassword = $row["password"];
+        $modified = $row["modified"];
         // decrypt data
         $data = decrypt( $data );
         $data = json_decode( $data, true);
@@ -96,6 +97,8 @@
         $content["username"] = $username;
         $content["uuid"] = $uuid;
         $content["token"] = $token;
+        $content["userdata"] = $data;
+        $content["modified"] = $modified;
         $reply["content"] = $content;
         $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
         $reply["success"] = true;
