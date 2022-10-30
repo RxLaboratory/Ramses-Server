@@ -57,6 +57,8 @@ for file in $src_path/config/*; do
 done
 # Set docker to use mysql
 sed -i "s/sqlMode = 'sqlite'/sqlMode = 'mysql'/" $dest_path/docker/www/ramses/config/config.php
+# Set docker to accept non SSL connection
+sed -i "s/forceSSL = false/forceSSL = true" $dest_path/docker/www/ramses/config/config.php
 
 # Zip
 cd $dest_path/www/
