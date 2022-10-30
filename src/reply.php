@@ -6,6 +6,6 @@
     $reply["message"] = "";
     $reply["query"] = "unknown";
     $reply["content"] = Array();
-    $reply["serverUuid"] = $server_uuid;
+    $reply["serverUuid"] = "";
     $reply["debug"] = Array();
 ?>
