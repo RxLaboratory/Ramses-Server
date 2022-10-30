@@ -215,7 +215,6 @@
 
         $reply["content"]["tables"] = $outTables;
         $reply["content"]["deletedData"] = $rowsToDelete;
-        $reply["serverUuid"] = $server_uuid;
         $reply["success"] = true;
         $reply["message"] = "Data Sync: OK!";
         printAndDie();

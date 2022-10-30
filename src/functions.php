@@ -485,7 +485,10 @@
 
     function printAndDie()
     {
-        global $reply, $sessionTimeout, $log, $_SESSION;
+        global $reply, $sessionTimeout, $log, $_SESSION, $server_uuid;
+
+        $reply["serverUuid"] = $server_uuid;
+
         // Set time out
         $_SESSION['discard_after'] = time() + $sessionTimeout;
 

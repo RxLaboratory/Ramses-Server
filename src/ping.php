@@ -29,7 +29,6 @@
         $reply["accepted"] = true;
         $reply["query"] = "ping";
         $reply["content"]["version"] = $ramsesVersion;
-        $reply["serverUuid"] = $server_uuid;
         
         $ramVersion = strtolower($ramsesVersion);
         $clientVersion = $_SESSION["clientVersion"];

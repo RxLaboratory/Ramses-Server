@@ -116,7 +116,7 @@
 			$reply["success"] = false;
 			$reply["message"] = "Sorry, malformed request. We accept only application/json POST";
 			$log->debugLog("Malformed request, Content-Type is not application/json.", "WARNING");
-			die(json_encode($reply));
+			printAndDie();
 		}
 	}
 	else
@@ -124,6 +124,6 @@
 		$reply["success"] = false;
 		$reply["message"] = "Sorry, malformed request. Missing content-type header.";
 		$log->debugLog("Malformed request, Missing content-type header.", "WARNING");
-		die(json_encode($reply));
+		printAndDie();
 	}
 ?>
