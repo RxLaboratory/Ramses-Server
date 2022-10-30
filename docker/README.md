@@ -1,12 +1,10 @@
 # How to build your Ramses Server (MySQL)
 
-Put your ramses server files into the folder **docker/www/ramses**.
+1. Download and unzip the ramses-server_docker_X.x.x.zip archive from the [releases](https://github.com/RxLaboratory/Ramses-Server/releases).
 
-Check your **config/config.php** and set it to MySQL.
+2. Go inside the **docker folder** and use the command **docker-compose up**.
 
-Go inside the **docker folder** and use the command **docker-compose up**.
+3. Go to **localhost:8001/ramses/install** in your browser.
 
-Go to **localhost:8001/ramses/install** (or update) in your browser.
-
-And it's done !
+Done!
 
