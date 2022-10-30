@@ -6,7 +6,14 @@
         private $logsPath = "";
         private $connexionLogFile = "";
         private $debugLogFile = "";
-        private $levels = [];
+        private $levels = Array (
+            'DATA' => 0,
+            'DEBUG' => 1,
+            'INFO' => 2,
+            'WARNING' => 3,
+            'CRITICAL' => 4,
+            'FATAL' => 5
+        );
 
         public function __construct()
         {
@@ -16,15 +23,6 @@
             global $requestLogs;
             global $debugLogs;
             if (!$enableLogs) return;
-
-            $this->levels = Array (
-                'DATA' => 0,
-                'DEBUG' => 1,
-                'INFO' => 2,
-                'WARNING' => 3,
-                'CRITICAL' => 4,
-                'FATAL' => 5
-            );
 
             // Prepare folder
             $this->logsPath = "logs/";
