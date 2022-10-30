@@ -4,7 +4,7 @@
 
 2. Go inside the **docker folder** and use the command **docker-compose up**.
 
-3. Go to **localhost:8001/ramses/install** in your browser.
+3. Go to **localhost:8001/ramses/install/index.php** in your browser.
 
 Done!
 
