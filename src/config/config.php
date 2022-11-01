@@ -45,7 +45,7 @@
 	// ==== MySQL/MariaDB SETTINGS ====
 
 	// Host URL
-	$sqlHost = "localhost";
+	$sqlHost = "db";
 	$sqlPort = 3306;
 	// Database name
 	$sqlDBName = "ramses";
