@@ -65,7 +65,7 @@ done
 # Set docker to use mysql
 sed -i "s/sqlMode = 'sqlite'/sqlMode = 'mysql'/" $dest_path/docker-mysql/www/ramses/config/config.php
 # Set docker to accept non SSL connection
-sed -i "s/forceSSL = true/forceSSL = false" $dest_path/docker-mysql/www/ramses/config/config.php
+sed -i "s/forceSSL = true/forceSSL = false/" $dest_path/docker-mysql/www/ramses/config/config.php
 
 ### DOCKER SQLITE
 
@@ -93,7 +93,7 @@ done
 # Set docker to use sqlite
 sed -i "s/sqlMode = 'mysql'/sqlMode = 'sqlite'/" $dest_path/docker-sqlite/www/ramses/config/config.php
 # Set docker to accept non SSL connection
-sed -i "s/forceSSL = true/forceSSL = false" $dest_path/docker-sqlite/www/ramses/config/config.php
+sed -i "s/forceSSL = true/forceSSL = false/" $dest_path/docker-sqlite/www/ramses/config/config.php
 
 # Zip
 cd $dest_path/www/
