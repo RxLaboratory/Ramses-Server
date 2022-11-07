@@ -45,7 +45,7 @@
 
             if (hasProjectColumn($table)) continue;
 
-            echo "<p>Adding the 'project' column for table: <code>{$table}</code>.</p>";
+            echo "Adding the 'project' column for table: <code>{$table}</code>.<br>";
             flush();
 
             if ($sqlMode == 'sqlite') $qStr = "ALTER TABLE `{$table}` ADD COLUMN 'project' TEXT;";
@@ -56,7 +56,7 @@
             $q2->execute();
             $q2->close();
 
-            echo "<p>Populating...</p>";
+            echo "  • Populating...<br>";
             flush();
 
             $qStr = "SELECT `uuid`, `data` FROM `{$table}`";
@@ -115,6 +115,9 @@
                 $q3->close();
             }
             $q2->close();
+
+            echo "  • OK!<br>";
+            flush();
         }
 
         $q->close();

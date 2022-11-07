@@ -13,11 +13,19 @@
     //connect to database
 	require_once($__ROOT__.'/db.php');
 
-    echo "<p>Updating database using {$sqlMode}...</p>";
+    echo "<strong>Updating database using {$sqlMode}...</strong>";
     flush();
 
     // Tables must have a "project" column
+
+    echo "<p>Updating project data...</p>";
+    flush();
+
     include($__ROOT__."/update/project_columns.php");
     addProjectColumns();
+
+
+    echo "<p><strong>Update finished</strong></p>";
+    flush();
 
 ?>
