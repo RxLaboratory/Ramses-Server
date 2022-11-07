@@ -6,8 +6,8 @@ import hashlib
 import html2text
 
 token = ""
-version = "0.5.1-Beta"
-url = "http://127.0.0.1/ramses"
+version = "0.6.0-Beta"
+url = "https://ramses.rxlab.io:443/sic5"
 clientKey = "drHSV2XQ"
 
 session = requests.Session()
@@ -282,9 +282,9 @@ def testClean():
 # Always start a session with a ping
 ping()
 # We need to login before everything else
-login("Admin", "password")
+# login("n-dufr", "J70456sgq")
 # Test empty sync
-sync( (), "2022-07-15 00:00:00")
+# sync( (), "2022-07-15 00:00:00")
 # Let's test sync
 #testSync()
 #testSyncUser()

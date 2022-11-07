@@ -1,0 +1,23 @@
+<?php
+
+	/*
+		Rainbox Asset Manager
+		Updates the SQL Database
+	*/
+
+    $__ROOT__ = dirname(__FILE__, 2);
+
+    // INIT
+	include($__ROOT__."/init.php");
+
+    //connect to database
+	require_once($__ROOT__.'/db.php');
+
+    echo "<p>Updating database using {$sqlMode}...</p>";
+    flush();
+
+    // Tables must have a "project" column
+    include($__ROOT__."/update/project_columns.php");
+    addProjectColumns();
+
+?>
