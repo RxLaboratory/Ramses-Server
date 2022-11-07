@@ -78,6 +78,7 @@
 	$rawBody = file_get_contents('php://input');
 	$log->requestLog($allHeaders, $rawBody);
 
+	$ok = true;
 	if (isset($allHeaders['Content-Type']))
 	{
 		$cType = $allHeaders['Content-Type'];
@@ -104,26 +105,18 @@
 				continue;
 			}
 		}
-		
-		// If json, parse it right now
-		$bodyContent = array();
-		if ($ok)
-		{
-			$bodyContent = json_decode($rawBody, true);
-		}
-		else
-		{
-			$reply["success"] = false;
-			$reply["message"] = "Sorry, malformed request. We accept only application/json POST";
-			$log->debugLog("Malformed request, Content-Type is not application/json.", "WARNING");
-			printAndDie();
-		}
+	}
+	// If json, parse it right now
+	$bodyContent = array();
+	if ($ok)
+	{
+		$bodyContent = json_decode($rawBody, true);
 	}
 	else
 	{
 		$reply["success"] = false;
-		$reply["message"] = "Sorry, malformed request. Missing content-type header.";
-		$log->debugLog("Malformed request, Missing content-type header.", "WARNING");
+		$reply["message"] = "Sorry, malformed request. We accept only application/json POST";
+		$log->debugLog("Malformed request, Content-Type is not application/json.", "WARNING");
 		printAndDie();
 	}
 ?>
