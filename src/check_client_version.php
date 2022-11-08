@@ -23,25 +23,21 @@
         You should have received a copy of the *GNU General Public License* along with this program.
         If not, see http://www.gnu.org/licenses/.
 	*/
-
-    if (hasArg("ping"))
-    {
-        $reply["accepted"] = true;
-        $reply["query"] = "ping";
-        $reply["content"]["version"] = $ramsesVersion;
         
-        if ($installed)
-        {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Server ready.";
-        }
-        else
-        {
-            $reply["content"]["installed"] = false;
-            $reply["success"] = false;
-            $reply["message"] = "The server is not installed!";
-        }
+    $ramVersion = strtolower($ramsesVersion);
+    $clientVersion = $_SESSION["clientVersion"];
+
+    $testRamVersion = explode(".", $ramVersion);
+    $clientVersionArray = explode(".", $clientVersion);
+
+    if (count($clientVersionArray) < 2 || $clientVersionArray[0] != $testRamVersion[0] || $clientVersionArray[1] != $testRamVersion[1])
+    {
+        $reply["accepted"] = false;
+        $reply["query"] = "unknown";
+        $reply["content"]["version"] = $ramsesVersion;
+        $reply["content"]["installed"] = true;
+        $reply["success"] = false;
+        $reply["message"] = "Warning, the version of Ramses you're using ({$clientVersion}) differs with the one of this server ({$ramVersion}).\nPlease update your application.";
 
         printAndDie();
     }
