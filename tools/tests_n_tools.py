@@ -7,7 +7,7 @@ import html2text
 
 token = ""
 version = "0.7.0-Beta"
-url = "http://127.0.0.1:8001/ramses"
+url = "https://ramses.rxlab.io/tests"
 clientKey = "drHSV2XQ"
 
 session = requests.Session()
@@ -296,11 +296,11 @@ installServer()
 # Always start a session with a ping
 ping()
 # We need to login before everything else
-login("Admin", "password")
+#login("Admin", "password")
 # Test empty sync
-sync( (), "1970-01-01 00:00:00")
+# sync( (), "1970-01-01 00:00:00")
 # Let's test sync
-testSync()
+# testSync()
 #testSyncUser()
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #login("Admin", "pass")
