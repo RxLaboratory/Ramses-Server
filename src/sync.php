@@ -51,6 +51,7 @@
     if ( acceptReply( "sync" ) )
     {
         $tables = getArg("tables", array());
+        $projectFilterUuid = getArg("project");
         $prevSync = getArg("previousSyncDate", "1970-01-01 00:00:00");
 
         $log->debugLog("Sync accepted.", "INFO");
@@ -96,11 +97,13 @@
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed`, `project` ";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
-            if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified;"; //  
-            else $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified;"; // 
+            $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified";
+            // Filter by project
+            if ($projectFilterUuid != "") $qStr = $qStr . " AND `project` = :projectFilterUuid";
             
             $q->prepare($qStr);
             $q->bindStr("modified", $prevSync);
+            if ($projectFilterUuid != "") $q->bindStr("projectFilterUuid", $projectFilterUuid);
             $q->execute();
 
             // For each row, check if it is more recent or equal or older
@@ -164,7 +167,7 @@
                        
             $q->close();
 
-            // Add remaining rows to table (if it's not been deleted)
+            // Add remaining rows to table (if it's not been deleted and it's the right project)
             $tableRowsToDelete = array();
             $tableRowsToDelete["name"] = $tableName;
             $tableRowsToDelete["rows"] = array();
@@ -182,6 +185,15 @@
                     $tableRowsToDelete["rows"][] = $inRow["uuid"];
                     $qr->close();
                     continue;
+                }
+
+                $proj = "";
+                if (isset( $inRow["project"] )) $proj = $inRow["project"];
+                
+                // Check if it's the right project
+                if ($projectFilterUuid != "")
+                {
+                    if ($proj != $projectFilterUuid) continue;
                 }
 
                 if ($tableName == "RamUser")
@@ -207,8 +219,6 @@
                 $qr->bindStr("data", $data);
                 $qr->bindStr("modified", $inRow["modified"]);
                 $qr->bindInt("removed", (int)$inRow["removed"]);
-                $proj = "";
-                if (isset( $inRow["project"] )) $proj = $inRow["project"];
                 $qr->bindStr("project", $proj);
                 $qr->bindStr("uuid", $inRow["uuid"]);
                 if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
