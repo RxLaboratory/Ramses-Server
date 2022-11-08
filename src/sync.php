@@ -80,6 +80,8 @@
 
             $tableName = $table["name"];
 
+            set_time_limit(60);
+
             $log->debugLog("Sync table: {$tableName}.", "DEBUG");
 
             $incomingRows = array();

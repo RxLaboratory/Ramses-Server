@@ -21,19 +21,6 @@
             $qStr = "SHOW TABLES LIKE '{$tablePrefix}Ram%'; ";
         }
 
-        $projectTableNames = [
-            "RamAsset",
-            "RamAssetGroup",
-            "RamPipe",
-            "RamPipeFile",
-            "RamScheduleComment",
-            "RamScheduleEntry",
-            "RamSequence",
-            "RamShot",
-            "RamStatus",
-            "RamStep"
-        ];
-
         $q = new DBQuery();
 
         $q->prepare($qStr);
@@ -42,6 +29,8 @@
         while ($row = $q->fetch())
         {
             $table = $row[0];
+
+            set_time_limit(60);
 
             if (hasProjectColumn($table)) continue;
 
