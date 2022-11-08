@@ -31,6 +31,7 @@
         
         $outRow["modified"] = $row["modified"];
         $outRow["removed"] = (int)$row["removed"];
+        $outRow["project"] = $row["project"];
         
         if ($tableName == "RamUser")
         {
@@ -71,6 +72,7 @@
                 }
                 else
                 {
+                    $log->debugLog("Sync : Malformed request. I've found a table without name.", "WARNING");
                     continue;
                 }
             }
@@ -92,7 +94,7 @@
             // Get all rows (more recent than prevSync)
             $q = new DBQuery();
 
-            $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
+            $qStr = "SELECT `uuid`, `data`, `modified`, `removed`, `project` ";
             if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
             if ($sqlMode == 'sqlite') $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified;"; //  
             else $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified;"; // 
@@ -133,7 +135,7 @@
                         $data = $inRow["data"];
                         if ($tableName == "RamUser") $data = encrypt($data);
 
-                        $qStr = "UPDATE `{$tablePrefix}{$tableName}` SET `data` = :data, `modified` = :modified, `removed` = :removed";
+                        $qStr = "UPDATE `{$tablePrefix}{$tableName}` SET `data` = :data, `project` = :project, `modified` = :modified, `removed` = :removed";
                         if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
                         $qStr = $qStr . " WHERE `uuid` = :uuid";
                         
@@ -142,6 +144,9 @@
                         $qr->bindStr("data", $data);
                         $qr->bindStr("modified", $inRow["modified"]);
                         $qr->bindInt("removed", $inRow["removed"]);
+                        $proj = "";
+                        if (isset( $inRow["project"] )) $proj = $inRow["project"];
+                        $qr->bindStr("project", $proj);
                         $qr->bindStr("uuid", $inRow["uuid"]);
                         if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
                         $qr->execute();
@@ -180,19 +185,19 @@
                 }
 
                 if ($tableName == "RamUser")
-                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) 
-                            VALUES ( :uuid, :data, :modified, :removed, '-', :userName ) ";
+                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `project`, `modified`, `removed`, `password`, `userName` ) 
+                            VALUES ( :uuid, :data, :project, :modified, :removed, '-', :userName ) ";
                 else
-                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) 
-                            VALUES ( :uuid, :data, :modified, :removed ) ";
+                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `project`, `modified`, `removed`) 
+                            VALUES ( :uuid, :data, :project, :modified, :removed ) ";
                 
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
 
                 if ($tableName == "RamUser")
-                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed, `userName` = :userName ;";
+                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `project` = :project, `modified` = :modified, `removed` = :removed, `userName` = :userName ;";
                 else
-                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `modified` = :modified, `removed` = :removed ;";
+                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `project` = :project, `modified` = :modified, `removed` = :removed ;";
 
                 // Encrypt user data
                 $data = $inRow["data"];
@@ -202,6 +207,9 @@
                 $qr->bindStr("data", $data);
                 $qr->bindStr("modified", $inRow["modified"]);
                 $qr->bindInt("removed", (int)$inRow["removed"]);
+                $proj = "";
+                if (isset( $inRow["project"] )) $proj = $inRow["project"];
+                $qr->bindStr("project", $proj);
                 $qr->bindStr("uuid", $inRow["uuid"]);
                 if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
                 $qr->execute();

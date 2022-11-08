@@ -6,8 +6,8 @@ import hashlib
 import html2text
 
 token = ""
-version = "0.6.0-Beta"
-url = "https://ramses.rxlab.io:443/sic5"
+version = "0.7.0-Beta"
+url = "http://127.0.0.1:8001/ramses"
 clientKey = "drHSV2XQ"
 
 session = requests.Session()
@@ -113,6 +113,9 @@ def testSync():
     uuid6 = str(uuid.uuid4())
     uuid7 = str(uuid.uuid4())
 
+    proj1 = str(uuid.uuid4())
+    proj2 = str(uuid.uuid4())
+
     # 1. 
     print("Create a few items in the tables. Should return an empty list")
     sync( (
@@ -123,12 +126,14 @@ def testSync():
                     "uuid": uuid1,
                     "data": '{"name":"After Effects", "shortName":"WRONG" }',
                     "modified": "2022-07-15 01:00:00",
+                    "project": "",
                     "removed": 0
                 },
                 {
                     "uuid":  uuid2,
                     "data": '{"name":"Photoshop", "shortName":"Ps" }',
                     "modified": "2022-07-15 02:00:00",
+                    "project": "",
                     "removed": 0
                 }
             )
@@ -140,12 +145,14 @@ def testSync():
                     "uuid": uuid3,
                     "data": '{"name":"After Effects Project", "shortName":"aep" }',
                     "modified": "2022-07-15 03:00:00",
+                    "project": "",
                     "removed": 0
                 },
                 {
                     "uuid":  uuid4,
                     "data": '{"name":"Photoshop Document", "shortName":"wrong" }',
                     "modified": "2022-07-15 04:00:00",
+                    "project": "",
                     "removed": 0
                 }
             )
@@ -162,12 +169,14 @@ def testSync():
                     "uuid": uuid1,
                     "data": '{"name":"After Effects", "shortName":"Ae" }',
                     "modified": "2022-07-16 05:00:00",
+                    "project": "",
                     "removed": 0
                 },
                 {
                     "uuid": uuid5,
                     "data": '{"name":"Krita", "shortName":"Krita" }',
                     "modified": "2022-07-16 06:00:00",
+                    "project": "",
                     "removed": 0
                 },
             )
@@ -179,12 +188,14 @@ def testSync():
                     "uuid":  uuid4,
                     "data": '{"name":"Photoshop Document", "shortName":"psd" }',
                     "modified": "2022-07-16 07:00:00",
+                    "project": "",
                     "removed": 0
                 },
                 {
                     "uuid":  uuid6,
                     "data": '{"name":"Krita Document", "shortName":"kra" }',
                     "modified": "2022-07-16 08:00:00",
+                    "project": "",
                     "removed": 0
                 },
             )
@@ -201,18 +212,21 @@ def testSync():
                     "uuid": uuid1,
                     "data": '{"name":"After Effects", "shortName":"wrong" }',
                     "modified": "2022-07-16 03:00:00",
+                    "project": "",
                     "removed": 0
                 },
                 {
                     "uuid": uuid2,
                     "data": '{"name":"Photoshop", "shortName":"Ps", "color":"#232323" }',
                     "modified": "2022-07-16 12:00:00",
+                    "project": "",
                     "removed": 0
                 },
                 {
                     "uuid": uuid7,
                     "data": '{"name":"Blender", "shortName":"Blender" }',
                     "modified": "2022-07-16 13:00:00",
+                    "project": "",
                     "removed": 0
                 },
             )
@@ -282,11 +296,11 @@ def testClean():
 # Always start a session with a ping
 ping()
 # We need to login before everything else
-# login("n-dufr", "J70456sgq")
+login("Admin", "password")
 # Test empty sync
-# sync( (), "2022-07-15 00:00:00")
+sync( (), "1970-01-01 00:00:00")
 # Let's test sync
-#testSync()
+testSync()
 #testSyncUser()
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #login("Admin", "pass")
