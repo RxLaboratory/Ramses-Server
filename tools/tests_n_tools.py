@@ -291,7 +291,7 @@ def testClean():
             },
         ))
 
-#installServer()
+installServer()
 
 # Always start a session with a ping
 ping()
