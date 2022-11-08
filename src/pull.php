@@ -43,6 +43,9 @@
             printAndDie();
         }
 
+        // Create the table if it doesn't exists
+        createTable( $table );
+
         $qStr = "SELECT `uuid`, `data`, `modified`, `removed`, `project` ";
         if ($table == "RamUser") $qStr = $qStr . ", `userName` ";
         $qStr = $qStr . " FROM `{$tablePrefix}{$table}` WHERE `uuid` = :uuid ;";
