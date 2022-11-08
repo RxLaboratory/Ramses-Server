@@ -44,7 +44,7 @@
         }
 
         $qStr = "SELECT `uuid`, `data`, `modified`, `removed`, `project` ";
-        if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
+        if ($table == "RamUser") $qStr = $qStr . ", `userName` ";
         $qStr = $qStr . " FROM `{$tablePrefix}{$table}` WHERE `uuid` = :uuid ;";
 
         $q = new DBQuery();
@@ -60,7 +60,7 @@
             $reply["content"]["removed"] = (int)$r["removed"];
             $reply["content"]["project"] = $r["project"];
 
-            if ($tableName == "RamUser")
+            if ($table == "RamUser")
             {
                 $reply["content"]["userName"] = $r["userName"];
                 // We need to decrypt the user data
