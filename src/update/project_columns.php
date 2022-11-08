@@ -75,7 +75,8 @@
                         $objKey = "inputStep";
                     }
 
-                    $otherUuid = $data[$objKey];
+                    $otherUuid = "";
+                    if ( isset($data[$objKey]) ) $otherUuid = $data[$objKey];
                     if ($otherUuid != "")
                     {
                         $qStr = "SELECT `data` FROM `{$tablePrefix}{$otherTable}` WHERE `uuid` = :uuid";
