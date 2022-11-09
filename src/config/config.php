@@ -35,6 +35,7 @@
 	// ==== SQL SETTINGS ====
 
 	// either 'mysql' (works for MariaDB too) or 'sqlite'
+	// Note: with 'mysql', the minimum version of MySQL is 8.0.19
 	$sqlMode = 'sqlite';
 	// Table prefix
 	// should be a random character string (use https://duckduckgo.com/?q=generate+password)
