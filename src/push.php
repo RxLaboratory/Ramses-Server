@@ -217,6 +217,7 @@
 
             // Save
             $_SESSION["syncData"][$tableName] = $inTable;
+            $_SESSION["syncData"]["commited"] = true;
         }
 
         $reply["success"] = true;

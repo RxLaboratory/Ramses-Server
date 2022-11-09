@@ -26,6 +26,40 @@
 
     if ( acceptReply( "fetch" ) )
     {
-        
+        if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
+
+        if ( !$_SESSION["syncData"]["commited"] )
+        {
+            $reply["success"] = false;
+            $reply["message"] = "The push session has not been commited yet, you can't retrieve the data if you don't commit changes.";
+            printAndDie();
+        }
+
+        $numTables = count( $_SESSION["syncData"] );
+
+        if ($numTables == 0)
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Nothing to pull, you need to push something first.";
+            printAndDie();
+        }
+
+        // Count the number of pages
+        $tables = array();
+        foreach( $_SESSION["syncData"] as $tableName => $table )
+        {
+            $tableInfo = array();
+            $tableInfo["name"] = $tableName;
+            $tableInfo["rowCount"] = count($table["out"]);
+            $tableInfo["deleteCount"] = count($table["deleted"]);
+            $tableInfo["pageCount"] = ceil( $tableInfo["rowCount"] / 100 );
+            $tables[] = $tableInfo;
+        }
+
+        $reply["content"]["tables"] = $tables;
+        $reply["content"]["tableCount"] = $numTables;
+        $reply["success"] = true;
+        $reply["message"] = "There are {$numTables} tables to pull from the server.";
+        printAndDie();
     }
 ?>

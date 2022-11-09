@@ -27,6 +27,7 @@
     if ( acceptReply( "sync" ) )
     {
         $_SESSION["syncData"] = array();
+        $_SESSION["syncData"]["commited"] = false;
         $reply["success"] = true;
         $reply["message"] = "Sync session started. You can now push your changes.";
         printAndDie();
