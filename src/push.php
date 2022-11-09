@@ -26,6 +26,16 @@
 
     if ( acceptReply( "push" ) )
     {
+        // Do we start a new sync session
+        $start = getArg("start", false);
+        if ($start)
+        {
+            $_SESSION["syncData"] = array();
+            $reply["success"] = true;
+            $reply["message"] = "Sync session started. You can now push your changes.";
+            printAndDie();
+        }
+
         // The table name
         $table = getArg("table" );
         // The rows
@@ -45,8 +55,6 @@
         }
 
         // Store pagination
-        $_SESSION["pageCount"] = $pageCount;
-        $_SESSION["tableCount"] = $tableCount;
         if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
 
         // If this table does not exist, it has to be created
@@ -57,11 +65,14 @@
         // Get the current rows
         if (!isset($_SESSION["syncData"][$table]))
         {
+            set_time_limit(30);
+
             $_SESSION["syncData"][$table] = array();
             $_SESSION["syncData"][$table]["current"] = array();
             $_SESSION["syncData"][$table]["out"] = array();
             $_SESSION["syncData"][$table]["in"] = array();
             $_SESSION["syncData"][$table]["deleted"] = array();
+            $_SESSION["syncData"][$table]["inUuids"] = array();
 
             // Get this table rows
             $currentRows = array();
@@ -93,11 +104,17 @@
         $out = $_SESSION["syncData"][$table]["out"];
         $in = $_SESSION["syncData"][$table]["in"];
         $deletedUuids = $_SESSION["syncData"][$table]["deleted"];
+        $inUuids = $_SESSION["syncData"][$table]["inUuids"];
+
+        set_time_limit(30);
 
         // Process received rows
         foreach ($inRows as $inRow)
         {
             $uuid = $inRow["uuid"];
+
+            // Store
+            $inUuids[] = $uuid;
 
             // Not set, it's either a new one or it may have been deleted
             if (!isset( $currentRows[$uuid] ) )
@@ -133,6 +150,7 @@
         $_SESSION["syncData"][$table]["out"] = $out;
         $_SESSION["syncData"][$table]["in"] = $in;
         $_SESSION["syncData"][$table]["deleted"] = $deletedUuids;
+        $_SESSION["syncData"][$table]["inUuids"] = $inUuids;
         
         // Finished if we're not commiting
         if (!$commit)
@@ -142,55 +160,73 @@
             printAndDie();
         }
 
-
+        // Commit changes
         foreach( $_SESSION["syncData"] as $tableName => $inTable )
         {
-            // Insert new rows right now
-            if ($inTable == "RamUser") $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
-            else $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
-            
-            $values = array();
-            foreach ($inTable["in"] as $newRow)
+            set_time_limit(30);
+
+            // Insert / Update new rows
+            if (count( $inTable["in"] ) > 0)
             {
-                $uuid = $newRow["uuid"];
-                $data = $newRow["data"];
-                $modified = $newRow["modified"];
-                $removed = $newRow["removed"];
-
-                if ($tableName == "RamUser")
+                if ($inTable == "RamUser") $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
+                else $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
+                
+                $values = array();
+                foreach ($inTable["in"] as $newRow)
                 {
-                    // Encrypt data
-                    $data = encrypt($data);
-                    $userName = $newRow["userName"];
+                    $uuid = $newRow["uuid"];
+                    $data = $newRow["data"];
+                    $modified = $newRow["modified"];
+                    $removed = $newRow["removed"];
 
-                    $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed}, '-', '{$userName}' )";
+                    if ($tableName == "RamUser")
+                    {
+                        // Encrypt data
+                        $data = encrypt($data);
+                        $userName = $newRow["userName"];
+
+                        $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed}, '-', '{$userName}' )";
+                    }
+                    else
+                    {
+                        $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed} )";
+                    }
                 }
-                else
+
+                $qStr = $qStr . join(", ", $values) . " ";
+                if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
+                else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
+                
+                if ($tableName == "RamUser") $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed, `userName` = excluded.userName ;";
+                else $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
+        
+                $q = new DBQuery();
+                $q->prepare($qStr);
+                $q->execute();
+                $q->close();
+
+                // Check if it worked
+                if (!$q->isOK())
                 {
-                    $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed} )";
+                    $reply["success"] = false;
+                    $reply["message"] = "Failed updating objects in {$tableName}, sorry.";
+                    $log->debugLog("Failed when inserting/updating new rows in {$tableName}.\n" . $q->errorInfo(), "WARNING");
+                    printAndDie();
+                }
+            }                
+
+            // Add the new current rows to the out rows
+            foreach ($inTable["current"] as $currentRow)
+            {
+                $currentUuid = $currentRow["uuid"];
+                if (!in_array($currentUuid, $inTable["inUuids"]))
+                {
+                    $inTable["out"][] = $currentRow;
                 }
             }
 
-            $qStr = $qStr . join(", ", $values) . " ";
-            if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
-            else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
-            
-            if ($tableName == "RamUser") $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed, `userName` = excluded.userName ;";
-            else $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
-    
-            $q = new DBQuery();
-            $q->prepare($qStr);
-            $q->execute();
-            $q->close();
-
-            // Check if it worked
-            if (!$q->isOK())
-            {
-                $reply["success"] = false;
-                $reply["message"] = "Failed updating objects in {$tableName}, sorry.";
-                $log->debugLog("Failed when inserting/updating new rows in {$tableName}.\n" . $q->errorInfo(), "WARNING");
-                printAndDie();
-            }
+            // Save
+            $_SESSION["syncData"][$tableName] = $inTable;
         }
 
         $reply["success"] = true;
