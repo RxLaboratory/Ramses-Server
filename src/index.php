@@ -77,6 +77,7 @@
 	
 	include("sync.php");
 	include("push.php");
+	include("fetch.php");
 	include("pull.php");
 	include("set_password.php");
 	include("clean.php");
