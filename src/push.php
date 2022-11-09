@@ -26,16 +26,6 @@
 
     if ( acceptReply( "push" ) )
     {
-        // Do we start a new sync session
-        $start = getArg("start", false);
-        if ($start)
-        {
-            $_SESSION["syncData"] = array();
-            $reply["success"] = true;
-            $reply["message"] = "Sync session started. You can now push your changes.";
-            printAndDie();
-        }
-
         // The table name
         $table = getArg("table" );
         // The rows
