@@ -63,6 +63,10 @@
 	// This should always be true, except maybe on dev environments.
 	$forceSSL = true;
 
+	// Compression may cause issues on some servers,
+	// Set this to true to deactivate it.
+	$disableCompression = false;
+
 	// Session timeout (seconds)
 	// The client will be disconnected after being idle for this time
 	// 30 minutes by default (1800) are more than enough:
@@ -75,7 +79,6 @@
 	$cookieTimeout = 43200;
 
 	// This should never be changed, unless you change the key before building the official client or implementing your own client.
-	// It is used to break compatibility between some updates of the client/server framework
 	// It can be used to make sure only your own client, built by yourself, can connect to your own server. In this case, keep it secret!
 	// It is used to hash passwords.
 	$clientKey = "drHSV2XQ";

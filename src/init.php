@@ -1,6 +1,9 @@
 <?php
+	require_once($__ROOT__."/config/config.php");
+
 	// Enable compression if the client supports it
 	$useGzip = substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip');
+	if ($disableCompression) $useGzip = false;
 	if ($useGzip)
 	{
 		ob_start("ob_gzhandler");
@@ -10,7 +13,6 @@
 		ob_start();
 	}
 
-	require_once($__ROOT__."/config/config.php");
 	require_once($__ROOT__."/functions.php");
 	require_once($__ROOT__."/logger.php");
 	require_once($__ROOT__."/session_manager.php");
@@ -21,7 +23,7 @@
 	$serverAddress = $currentURL;
 	debugLog("This is the current server address: " . $serverAddress);*/
 
-    $ramsesVersion = "0.6.0-Beta";
+    $ramsesVersion = "0.7.0-Beta";
 	$installed = file_exists($__ROOT__."/config/config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db

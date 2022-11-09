@@ -22,7 +22,10 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	$__ROOT__ = dirname(__FILE__); 
+	$__ROOT__ = dirname(__FILE__);
+
+	// Measure time spent by the script
+	$scriptStartTime = time();
 
 	//configuration and init 
 	require_once("config/config.php");
