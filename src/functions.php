@@ -262,9 +262,13 @@
         $decordedArg = "";
 
         if (isset($bodyContent[$name]))
+        {
             $decordedArg = $bodyContent[$name];
+        }
 
-        if ($decordedArg == "") return $defaultValue;       
+        if ($name == "commit") var_dump( $decordedArg );
+
+        if ($decordedArg === "") return $defaultValue;       
 
         if ( is_string($decordedArg) )
             return checkForbiddenWords( $decordedArg );
