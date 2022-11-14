@@ -266,8 +266,6 @@
             $decordedArg = $bodyContent[$name];
         }
 
-        if ($name == "commit") var_dump( $decordedArg );
-
         if ($decordedArg === "") return $defaultValue;       
 
         if ( is_string($decordedArg) )
