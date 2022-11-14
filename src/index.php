@@ -43,6 +43,9 @@
 	//get request metadata
 	include("clientmetadata.php");
 
+	// check version
+	include('check_client_version.php');
+
 	//ping
 	include("ping.php");
 
