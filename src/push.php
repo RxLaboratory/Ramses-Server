@@ -170,7 +170,7 @@
             // Insert / Update new rows
             if (count( $inTable["in"] ) > 0)
             {
-                if ($inTable == "RamUser") $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
+                if ($tableName == "RamUser") $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
                 else $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
                 
                 $values = array();
