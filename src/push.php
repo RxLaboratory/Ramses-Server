@@ -187,10 +187,16 @@
                         $data = encrypt($data);
                         $userName = $newRow["userName"];
 
+                        if ($sqlMode == 'sqlite') $userName = str_replace("'", "''", $userName);
+                        else $userName = str_replace("'", "\\'", $userName);
+
                         $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed}, '-', '{$userName}' )";
                     }
                     else
                     {
+                        if ($sqlMode == 'sqlite') $data = str_replace("'", "''", $data);
+                        else $data = str_replace("'", "\\'", $data);
+
                         $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed} )";
                     }
                 }
