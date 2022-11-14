@@ -147,6 +147,7 @@
         {
             $reply["success"] = true;
             $reply["message"] = "Accepted data. Waiting for commit.";
+            $reply["content"]["commited"] = false;
             $_SESSION["syncData"]["commited"] = false;
             printAndDie();
         }
@@ -155,6 +156,7 @@
         {
             $reply["success"] = false;
             $reply["message"] = "This sync session has already been commited. Start a new session to commit new changes.";
+            $reply["content"]["commited"] = true;
             printAndDie();
         }
 
@@ -211,6 +213,7 @@
                     $reply["success"] = false;
                     $reply["message"] = "Failed updating objects in {$tableName}, sorry.";
                     $log->debugLog("Failed when inserting/updating new rows in {$tableName}.\n" . $q->errorInfo(), "WARNING");
+                    $reply["content"]["commited"] = false;
                     printAndDie();
                 }
             }                
@@ -232,6 +235,7 @@
 
         $reply["success"] = true;
         $reply["message"] = "Data saved!";
+        $reply["content"]["commited"] = true;
         printAndDie();
     }
 
