@@ -98,6 +98,49 @@
         // The page to send
         $page = getArg("page", 1);
 
-        // Pull the 
+        // Pull the data
+        if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
+
+        if ( !$_SESSION["syncData"]["commited"] )
+        {
+            $reply["success"] = false;
+            $reply["message"] = "The push session has not been commited yet, you can't retrieve the data if you don't commit changes.";
+            printAndDie();
+        }
+
+        if ( !isset($_SESSION["syncData"][$table]))
+        {
+            $reply["success"] = false;
+            $reply["message"] = "The '{$table}' table hasn't been pushed. You need to push local data (or an empty table) to the server before pulling the server data.";
+            printAndDie();
+        }
+
+        // Collect rows
+        $outRows = $_SESSION["syncData"][$table]["out"];
+        $reply["content"]["rows"] = array();
+        $reply["content"]["table"] = $table;
+        $reply["content"]["page"] = $page;
+
+        // A page is 100 rows
+        $start = ($page - 1) * 100;
+
+        if ($start >= count($outRows))
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Sorry, page #{$page} is out of the '{$table}' table.";
+            printAndDie();
+        }
+
+        $end = $start + 100;
+        $end = min($end, count($outRows));
+        for ($i = $start; $i < $end; $i++)
+        {
+            $reply["content"]["rows"][] = $outRows[$i];
+        }
+
+        $end = $end - 1;
+        $reply["success"] = true;
+        $reply["message"] = "Here's the '{$table}' table data, for page #{$page} (rows {$start} to {$end}).";
+        printAndDie();
     }
 ?>
