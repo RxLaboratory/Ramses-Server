@@ -53,7 +53,7 @@ def sync():
     r = session.post(url + "/?sync", headers=headers, data=json.dumps(data))
     print( html2text.html2text( r.text ) )
 
-def push( tableName, rows, date, commit = False ):
+def push( tableName, rows = (), date = "1818-05-05 12:00:00", commit = False ):
     global token, session, version
     data = {
         "version": version,
@@ -62,6 +62,16 @@ def push( tableName, rows, date, commit = False ):
         "table": tableName,
         "rows": rows,
         "commit": commit
+    }
+    r = session.post(url + "/?push", headers=headers, data=json.dumps(data))
+    print( html2text.html2text( r.text ) )
+
+def commit():
+    global token, session, version
+    data = {
+        "version": version,
+        "token": token,
+        "commit": True
     }
     r = session.post(url + "/?push", headers=headers, data=json.dumps(data))
     print( html2text.html2text( r.text ) )
@@ -146,113 +156,66 @@ def testSync():
     uuid6 = str(uuid.uuid4())
     uuid7 = str(uuid.uuid4())
 
-    # 1. 
-    print("Create a few items in the tables. Should return an empty list")
-    sync( (
-        {
-            "name": "RamApplication",
-            "modifiedRows": (
-                {
-                    "uuid": uuid1,
-                    "data": '{"name":"After Effects", "shortName":"WRONG" }',
-                    "modified": "2022-07-15 01:00:00",
-                    "removed": 0
-                },
-                {
-                    "uuid":  uuid2,
-                    "data": '{"name":"Photoshop", "shortName":"Ps" }',
-                    "modified": "2022-07-15 02:00:00",
-                    "removed": 0
-                }
-            )
-        },
-        {
-            "name": "RamFileType",
-            "modifiedRows": (
-                {
-                    "uuid": uuid3,
-                    "data": '{"name":"After Effects Project", "shortName":"aep" }',
-                    "modified": "2022-07-15 03:00:00",
-                    "removed": 0
-                },
-                {
-                    "uuid":  uuid4,
-                    "data": '{"name":"Photoshop Document", "shortName":"wrong" }',
-                    "modified": "2022-07-15 04:00:00",
-                    "removed": 0
-                }
-            )
-        }
-    ), "2022-07-15 00:00:00")
+    # 1.
+    print("=== Start sync session")
+    sync()
 
-    # 2. 
-    print("Update a few lines, add new ones. Should return an empty list.")
-    sync( (
-        {
-            "name": "RamApplication",
-            "modifiedRows": (
-                {
-                    "uuid": uuid1,
-                    "data": '{"name":"After Effects", "shortName":"Ae" }',
-                    "modified": "2022-07-16 05:00:00",
-                    "removed": 0
-                },
-                {
-                    "uuid": uuid5,
-                    "data": '{"name":"Krita", "shortName":"Krita" }',
-                    "modified": "2022-07-16 06:00:00",
-                    "removed": 0
-                },
-            )
-        },
-        {
-            "name": "RamFileType",
-            "modifiedRows": (
-                {
-                    "uuid":  uuid4,
-                    "data": '{"name":"Photoshop Document", "shortName":"psd" }',
-                    "modified": "2022-07-16 07:00:00",
-                    "removed": 0
-                },
-                {
-                    "uuid":  uuid6,
-                    "data": '{"name":"Krita Document", "shortName":"kra" }',
-                    "modified": "2022-07-16 08:00:00",
-                    "removed": 0
-                },
-            )
-        }
-    ), "2022-07-16 00:00:00")
+    # 2.
+    print("=== Push some data.")
 
-    # 3. 
-    print("Send an outdated object along with a new one and an updated one. Should return the updated object")
-    sync( (
-        {
-            "name": "RamApplication",
-            "modifiedRows": (
-                {
-                    "uuid": uuid1,
-                    "data": '{"name":"After Effects", "shortName":"wrong" }',
-                    "modified": "2022-07-16 03:00:00",
-                    "removed": 0
-                },
-                {
-                    "uuid": uuid2,
-                    "data": '{"name":"Photoshop", "shortName":"Ps", "color":"#232323" }',
-                    "modified": "2022-07-16 12:00:00",
-                    "removed": 0
-                },
-                {
-                    "uuid": uuid7,
-                    "data": '{"name":"Blender", "shortName":"Blender" }',
-                    "modified": "2022-07-16 13:00:00",
-                    "removed": 0
-                },
-            )
-        },
-    ), "2022-07-16 00:00:00")
-    
-    print("Finished. Check coherence in the DB")
+    push( "RamApplication",
+        (
+            {
+                "uuid": uuid1,
+                "data": '{"name":"After Effects", "shortName":"WRONG" }',
+                "modified": "2022-07-15 01:00:00",
+                "removed": 0
+            },
+            {
+                "uuid":  uuid2,
+                "data": '{"name":"Photoshop", "shortName":"Ps" }',
+                "modified": "2022-07-15 02:00:00",
+                "removed": 0
+            }
+        ),
+        "2022-07-15 00:00:00"
+    )
+
+    push( "RamFileType",
+        (
+            {
+                "uuid": uuid3,
+                "data": '{"name":"After Effects Project, "shortName":"aep" }',
+                "modified": "2022-07-15 01:30:00",
+                "removed": 0
+            },
+            {
+                "uuid": uuid4,
+                "data": '{"name":"After Effects Template, "shortName":"aet" }',
+                "modified": "2022-07-15 01:40:00",
+                "removed": 0
+            }
+        ),
+        "2022-07-15 00:00:00",
+        True
+    )
+
+    # 3.
+    print("=== Fetch.")
+    fetch()
+
+    # 4.
+    print("=== Pull RamUser")
+    pull("RamUSer")
+
+    print("=== Pull RamApplication")
+    pull("RamApplication")
+
+    print("=== Pull RamFileType")
+    pull("RamFileType")
+
+    # 5.
+    downloadTables(("RamUser", "RamApplication", "RamFileType"))
 
 def testSyncUser():
     uuid1 = str(uuid.uuid4())
@@ -293,14 +256,15 @@ def testSyncUser():
     ), "2022-07-16 00:00:00")
 
 def downloadTables(tableNames):
-    tables = []
+    print("=== New Sync session to download all")
+
+    sync()
     for tableName in tableNames:
-        table = {
-            "name": tableName,
-            "modifiedRows": ()
-        }
-        tables.append(table)
-    sync(tables, "1970-01-01 00:00:00")
+        push(tableName)
+    commit()
+    fetch()
+    for tableName in tableNames:
+        pull(tableName)
 
 def testClean():
     clean( ( 
@@ -318,10 +282,14 @@ ping()
 login("Admin", "password")
 
 # Sync methods
-sync()
-push( "RamUser", (), "1818-05-05 12:00:00", True)
-fetch()
-pull( "RamUser" )
+#sync()
+#push( "RamUser", (), "1818-05-05 12:00:00", True)
+#fetch()
+#pull( "RamUser" )
+
+# Test Sync
+#testSync()
+downloadTables(("RamUser", "RamApplication", "RamFileType"))
 
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #login("Admin", "pass")

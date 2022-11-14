@@ -35,122 +35,126 @@
         // Do we have everything (commit)
         $commit = getArg("commit", true);
 
-        // Check incoming data
-
-        if ($table == "")
-        {
-            $reply["success"] = false;
-            $reply["message"] = "Malformed request, sorry. The table name is missing.";
-            printAndDie();
-        }
-
         // Store pagination
         if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
 
-        // If this table does not exist, it has to be created
-        createTable( $table );
-        // Create the deletedData table in case it doesn't exist yet
-        createDeletedDataTable();
+        // Check incoming data
 
-        // Get the current rows
-        if (!isset($_SESSION["syncData"][$table]))
+        if ($table != "")
         {
-            set_time_limit(30);
+            // If this table does not exist, it has to be created
+            createTable( $table );
+            // Create the deletedData table in case it doesn't exist yet
+            createDeletedDataTable();
 
-            $_SESSION["syncData"][$table] = array();
-            $_SESSION["syncData"][$table]["current"] = array();
-            $_SESSION["syncData"][$table]["out"] = array();
-            $_SESSION["syncData"][$table]["in"] = array();
-            $_SESSION["syncData"][$table]["deleted"] = array();
-            $_SESSION["syncData"][$table]["inUuids"] = array();
-
-            // Get this table rows
-            $currentRows = array();
-            $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
-            if ($table == "RamUser") $qStr = $qStr. ", `userName` ";
-            $qStr = $qStr . "FROM `{$tablePrefix}{$table}` WHERE `modified` >= :modified ;";
-
-            $q = new DBQuery();
-            $q->prepare($qStr);
-            $q->bindStr("modified", $prevSync);
-            $q->execute();
-
-            // Store
-            while ($r = $q->fetch())
+            // Get the current rows
+            if (!isset($_SESSION["syncData"][$table]))
             {
-                $row = array();
-                $row["uuid"] = $r["uuid"];
-                $row["data"] = $r["data"];
-                $row["modified"] = $r["modified"];
-                $row["removed"] = $r["removed"];
-                if ($table == "RamUser")
-                {
-                    $row["userName"] = $r["userName"];
-                    $row["data"] = decrypt($row["data"]);
-                }
-                $_SESSION["syncData"][$table]["current"][$row["uuid"]] = $row;
-            }
+                set_time_limit(30);
 
-            $q->close();
-        }
+                $_SESSION["syncData"][$table] = array();
+                $_SESSION["syncData"][$table]["current"] = array();
+                $_SESSION["syncData"][$table]["out"] = array();
+                $_SESSION["syncData"][$table]["in"] = array();
+                $_SESSION["syncData"][$table]["deleted"] = array();
+                $_SESSION["syncData"][$table]["inUuids"] = array();
 
-        $current = $_SESSION["syncData"][$table]["current"];
-        $out = $_SESSION["syncData"][$table]["out"];
-        $in = $_SESSION["syncData"][$table]["in"];
-        $deletedUuids = $_SESSION["syncData"][$table]["deleted"];
-        $inUuids = $_SESSION["syncData"][$table]["inUuids"];
+                // Get this table rows
+                $currentRows = array();
+                $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
+                if ($table == "RamUser") $qStr = $qStr. ", `userName` ";
+                $qStr = $qStr . "FROM `{$tablePrefix}{$table}` WHERE `modified` >= :modified ;";
 
-        set_time_limit(30);
-
-        // Process received rows
-        foreach ($inRows as $inRow)
-        {
-            $uuid = $inRow["uuid"];
-
-            // Store
-            $inUuids[] = $uuid;
-
-            // Not set, it's either a new one or it may have been deleted
-            if (!isset( $currentRows[$uuid] ) )
-            {
-                // Check if it's been deleted
-                $qStr = "SELECT `uuid` FROM `{$tablePrefix}deletedData` WHERE `uuid` = :uuid ;";
                 $q = new DBQuery();
                 $q->prepare($qStr);
-                $q->bindStr("uuid", $uuid);
+                $q->bindStr("modified", $prevSync);
                 $q->execute();
 
-                if ($q->fetch()) $deletedUuids = $uuid;
-                else $in[] = $inRow;
+                // Store
+                while ($r = $q->fetch())
+                {
+                    $row = array();
+                    $row["uuid"] = $r["uuid"];
+                    $row["data"] = $r["data"];
+                    $row["modified"] = $r["modified"];
+                    $row["removed"] = $r["removed"];
+                    if ($table == "RamUser")
+                    {
+                        $row["userName"] = $r["userName"];
+                        $row["data"] = decrypt($row["data"]);
+                    }
+                    $_SESSION["syncData"][$table]["current"][$row["uuid"]] = $row;
+                }
 
-                continue;
+                $q->close();
             }
 
-            // Check modification date
-            $currentRow = $current[$uuid];
+            $current = $_SESSION["syncData"][$table]["current"];
+            $out = $_SESSION["syncData"][$table]["out"];
+            $in = $_SESSION["syncData"][$table]["in"];
+            $deletedUuids = $_SESSION["syncData"][$table]["deleted"];
+            $inUuids = $_SESSION["syncData"][$table]["inUuids"];
 
-            $currentDate = strtotime( $currentRow["modified"] );
-            $inDate = strtotime( $inRow["modified"] );
+            set_time_limit(30);
 
-            // Same date, ignore
-            if ($inDate == $currentDate) continue;
-            // Newer, to update later
-            if ($inDate > $currentDate) $in[] = $inRow;
-            // Older, send ours
-            else $out[] = $currentRow;
+            // Process received rows
+            foreach ($inRows as $inRow)
+            {
+                $uuid = $inRow["uuid"];
+
+                // Store
+                $inUuids[] = $uuid;
+
+                // Not set, it's either a new one or it may have been deleted
+                if (!isset( $currentRows[$uuid] ) )
+                {
+                    // Check if it's been deleted
+                    $qStr = "SELECT `uuid` FROM `{$tablePrefix}deletedData` WHERE `uuid` = :uuid ;";
+                    $q = new DBQuery();
+                    $q->prepare($qStr);
+                    $q->bindStr("uuid", $uuid);
+                    $q->execute();
+
+                    if ($q->fetch()) $deletedUuids = $uuid;
+                    else $in[] = $inRow;
+
+                    continue;
+                }
+
+                // Check modification date
+                $currentRow = $current[$uuid];
+
+                $currentDate = strtotime( $currentRow["modified"] );
+                $inDate = strtotime( $inRow["modified"] );
+
+                // Same date, ignore
+                if ($inDate == $currentDate) continue;
+                // Newer, to update later
+                if ($inDate > $currentDate) $in[] = $inRow;
+                // Older, send ours
+                else $out[] = $currentRow;
+            }
+
+            // Store results
+            $_SESSION["syncData"][$table]["out"] = $out;
+            $_SESSION["syncData"][$table]["in"] = $in;
+            $_SESSION["syncData"][$table]["deleted"] = $deletedUuids;
+            $_SESSION["syncData"][$table]["inUuids"] = $inUuids;
         }
-
-        // Store results
-        $_SESSION["syncData"][$table]["out"] = $out;
-        $_SESSION["syncData"][$table]["in"] = $in;
-        $_SESSION["syncData"][$table]["deleted"] = $deletedUuids;
-        $_SESSION["syncData"][$table]["inUuids"] = $inUuids;
         
         // Finished if we're not commiting
         if (!$commit)
         {
             $reply["success"] = true;
             $reply["message"] = "Accepted data. Waiting for commit.";
+            $_SESSION["syncData"]["commited"] = false;
+            printAndDie();
+        }
+
+        if ($commit && $_SESSION["syncData"]["commited"] )
+        {
+            $reply["success"] = false;
+            $reply["message"] = "This sync session has already been commited. Start a new session to commit new changes.";
             printAndDie();
         }
 
