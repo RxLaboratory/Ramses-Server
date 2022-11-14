@@ -35,25 +35,27 @@
             printAndDie();
         }
 
-        $numTables = count( $_SESSION["syncData"] );
-
-        if ($numTables == 0)
-        {
-            $reply["success"] = false;
-            $reply["message"] = "Nothing to pull, you need to push something first.";
-            printAndDie();
-        }
-
         // Count the number of pages
         $tables = array();
+        $numTables = 0;
         foreach( $_SESSION["syncData"] as $tableName => $table )
         {
+            if ($tableName == "commited") continue;
+
             $tableInfo = array();
             $tableInfo["name"] = $tableName;
             $tableInfo["rowCount"] = count($table["out"]);
             $tableInfo["deleteCount"] = count($table["deleted"]);
             $tableInfo["pageCount"] = ceil( $tableInfo["rowCount"] / 100 );
             $tables[] = $tableInfo;
+            $numTables++;
+        }
+
+        if ($numTables == 0)
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Nothing to pull, you need to push something first.";
+            printAndDie();
         }
 
         $reply["content"]["tables"] = $tables;
