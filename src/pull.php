@@ -120,11 +120,12 @@
         $reply["content"]["rows"] = array();
         $reply["content"]["table"] = $table;
         $reply["content"]["page"] = $page;
+        $reply["content"]["deleted"] = array();
 
         // A page is 100 rows
         $start = ($page - 1) * 100;
 
-        if ($start >= count($outRows))
+        if ($start > 1 && $start >= count($outRows))
         {
             $reply["success"] = false;
             $reply["message"] = "Sorry, page #{$page} is out of the '{$table}' table.";
@@ -138,9 +139,15 @@
             $reply["content"]["rows"][] = $outRows[$i];
         }
 
+        // If page 1, add deleted info
+        if ($page == 1)
+        {
+            $reply["content"]["deleted"] = $_SESSION["syncData"][$table]["deleted"];
+        }
+
         $end = $end - 1;
         $reply["success"] = true;
-        $reply["message"] = "Here's the '{$table}' table data, for page #{$page} (rows {$start} to {$end}).";
+        $reply["message"] = "Retrieved the '{$table}' table data, for page #{$page} (rows {$start} to {$end}).";
         printAndDie();
     }
 ?>
