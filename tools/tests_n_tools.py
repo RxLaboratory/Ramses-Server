@@ -321,7 +321,7 @@ login("Admin", "password")
 sync()
 push( "RamUser", (), "1818-05-05 12:00:00", True)
 fetch()
-#pull( "RamUser" )
+pull( "RamUser" )
 
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #login("Admin", "pass")
