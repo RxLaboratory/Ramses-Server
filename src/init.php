@@ -112,6 +112,7 @@
 	$bodyContent = array();
 	if ($ok)
 	{
+		$log->debugLog("Request body:\n" . $rawBody, "DATA");
 		$bodyContent = json_decode($rawBody, true);
 	}
 	else
