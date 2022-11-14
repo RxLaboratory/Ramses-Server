@@ -68,7 +68,7 @@
             $currentRows = array();
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
             if ($table == "RamUser") $qStr = $qStr. ", `userName` ";
-            $qStr = "FROM `{$tablePrefix}{$table}` WHERE `modified` >= :modified ;";
+            $qStr = $qStr . "FROM `{$tablePrefix}{$table}` WHERE `modified` >= :modified ;";
 
             $q = new DBQuery();
             $q->prepare($qStr);
@@ -83,7 +83,11 @@
                 $row["data"] = $r["data"];
                 $row["modified"] = $r["modified"];
                 $row["removed"] = $r["removed"];
-                if ($table == "RamUser") $row["userName"] = $r["userName"];
+                if ($table == "RamUser")
+                {
+                    $row["userName"] = $r["userName"];
+                    $row["data"] = decrypt($row["data"]);
+                }
                 $_SESSION["syncData"][$table]["current"][$row["uuid"]] = $row;
             }
 
@@ -154,6 +158,8 @@
         foreach( $_SESSION["syncData"] as $tableName => $inTable )
         {
             set_time_limit(30);
+
+            if ($tableName == "commited") continue;
 
             // Insert / Update new rows
             if (count( $inTable["in"] ) > 0)

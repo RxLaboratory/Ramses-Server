@@ -6,8 +6,8 @@ import hashlib
 import html2text
 
 token = ""
-version = "0.5.1-Beta"
-url = "http://127.0.0.1/ramses"
+version = "0.7.0-Beta"
+url = "http://127.0.0.1:8001/ramses"
 clientKey = "drHSV2XQ"
 
 session = requests.Session()
@@ -19,10 +19,12 @@ headers = {
 }
 
 def installServer():
+    global token, session, version
     r = session.get(url + "/install/index.php", headers=headers)
     print( html2text.html2text( r.text ) )
 
 def ping():
+    global token, session, version
     data = {
         "version": version
     }
@@ -30,7 +32,7 @@ def ping():
     print( html2text.html2text( r.text ) )
 
 def login(username, password):
-    global token
+    global token, session, version
     data = {
         "version": version,
         "username": username,
@@ -42,19 +44,50 @@ def login(username, password):
     token = data["content"]["token"]
     print(token)
 
-def sync( tables, date ):
-    global token
+def sync():
+    global token, session, version
     data = {
         "version": version,
-        "token": token,
-        "previousSyncDate": date,
-        "tables": tables
+        "token": token
     }
     r = session.post(url + "/?sync", headers=headers, data=json.dumps(data))
     print( html2text.html2text( r.text ) )
 
+def push( tableName, rows, date, commit = False ):
+    global token, session, version
+    data = {
+        "version": version,
+        "token": token,
+        "previousSyncDate": date,
+        "table": tableName,
+        "rows": rows,
+        "commit": commit
+    }
+    r = session.post(url + "/?push", headers=headers, data=json.dumps(data))
+    print( html2text.html2text( r.text ) )
+
+def fetch():
+    global token, session, version
+    data = {
+        "version": version,
+        "token": token
+    }
+    r = session.post(url + "/?fetch", headers=headers, data=json.dumps(data))
+    print( html2text.html2text( r.text ) )
+
+def pull( tableName, page = 1):
+    global token, session, version
+    data = {
+        "version": version,
+        "token": token,
+        "table": tableName,
+        "page": page,
+    }
+    r = session.post(url + "/?pull", headers=headers, data=json.dumps(data))
+    print( html2text.html2text( r.text ) )
+
 def setPassword( uuid, pswd, current = "" ):
-    global token, clientKey, url
+    global token, session, version, clientKey, url
     # Client hash
     pswd = url.replace('https://', '').replace('/','') + pswd + clientKey
     pswd = hashlib.sha3_512(pswd.encode()).hexdigest()
@@ -92,7 +125,7 @@ def setUserName( uuid, username, name ):
     )
 
 def clean( tables ):
-    global token
+    global token, session, version
     data = {
         "version": version,
         "token": token,
@@ -283,11 +316,13 @@ def testClean():
 ping()
 # We need to login before everything else
 login("Admin", "password")
-# Test empty sync
-sync( (), "2022-07-15 00:00:00")
-# Let's test sync
-#testSync()
-#testSyncUser()
+
+# Sync methods
+sync()
+push( "RamUser", (), "1818-05-05 12:00:00", True)
+#fetch()
+#pull( "RamUser" )
+
 #setUserName( "dda85817-34a4-4a97-a1ae-43e9b04da031", "Duf", "Nicolas Dufresne" )
 #login("Admin", "pass")
 #setPassword( "cac400e4-dfe1-4005-949e-a085f9aa43bd", "password", "pass" )
