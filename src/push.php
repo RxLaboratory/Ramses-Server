@@ -77,7 +77,7 @@
                     $row["uuid"] = $r["uuid"];
                     $row["data"] = $r["data"];
                     $row["modified"] = $r["modified"];
-                    $row["removed"] = $r["removed"];
+                    $row["removed"] = (int)$r["removed"];
                     if ($table == "RamUser")
                     {
                         $row["userName"] = $r["userName"];
