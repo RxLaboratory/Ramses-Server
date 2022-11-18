@@ -26,6 +26,8 @@
 
     if ( acceptReply( "sync" ) )
     {
+        $q = new DBQuery();
+        $q->vacuum();
         $_SESSION["syncData"] = array();
         $_SESSION["syncData"]["commited"] = false;
         $reply["success"] = true;

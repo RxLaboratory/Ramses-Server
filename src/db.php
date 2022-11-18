@@ -306,5 +306,14 @@
 				printAndDie();
 			}
 		}
+
+		public function vacuum()
+		{
+			global $sqlMode, $db;
+			if ( $sqlMode != 'sqlite' ) return;
+			$query = $db->prepare("VACUUM");
+			$query->execute();
+			$query->closeCursor();
+		}
 	}
 ?>

@@ -48,6 +48,7 @@
         }
 
         $q = new DBQuery();
+        $q->vacuum();
         $q->prepare( "SELECT `uuid`,`userName`,`password`,`data`, `modified` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
         $q->bindStr( "username", $username );
         $q->execute();
