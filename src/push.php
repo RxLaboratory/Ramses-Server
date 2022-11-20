@@ -220,7 +220,7 @@
                 $values = array();
 
                 $endRow = $startRow + $SQLMaxRowPerRequest;
-                $endRow = min($endRow, count($inTable["in"]));
+                $endRow = min($endRow, count($in));
 
                 for ($i = $startRow; $i < $endRow; $i++)
                 {
@@ -253,7 +253,7 @@
                 $startRow += $SQLMaxRowPerRequest;
 
                 $qStr = $qStrHeader . join(", ", $values) . " ";
-                
+
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
                 
