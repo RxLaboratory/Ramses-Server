@@ -27,6 +27,9 @@
 	// Measure time spent by the script
 	$scriptStartTime = time();
 
+	//global constants
+	require_once("global.php");
+
 	//configuration and init 
 	require_once("config/config.php");
 	require_once("config/config_logs.php");

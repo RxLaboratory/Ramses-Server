@@ -122,8 +122,7 @@
         $reply["content"]["page"] = $page;
         $reply["content"]["deleted"] = array();
 
-        // A page is 100 rows
-        $start = ($page - 1) * 100;
+        $start = ($page - 1) * $pageRowCount;
 
         if ($start > 1 && $start >= count($outRows))
         {
@@ -132,7 +131,7 @@
             printAndDie();
         }
 
-        $end = $start + 100;
+        $end = $start + $pageRowCount;
         $end = min($end, count($outRows));
         for ($i = $start; $i < $end; $i++)
         {

@@ -23,7 +23,6 @@
 	$serverAddress = $currentURL;
 	debugLog("This is the current server address: " . $serverAddress);*/
 
-    $ramsesVersion = "0.7.0-Beta";
 	$installed = file_exists($__ROOT__."/config/config_security.php");
 
 	// Set the timezone to UTC so it matches the SQL db

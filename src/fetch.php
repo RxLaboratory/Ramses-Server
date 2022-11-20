@@ -46,7 +46,7 @@
             $tableInfo["name"] = $tableName;
             $tableInfo["rowCount"] = count($table["out"]);
             $tableInfo["deleteCount"] = count($table["deleted"]);
-            $tableInfo["pageCount"] = ceil( $tableInfo["rowCount"] / 100 );
+            $tableInfo["pageCount"] = ceil( $tableInfo["rowCount"] / $pageRowCount );
             if ($tableInfo["pageCount"] == 0 && $tableInfo["deleteCount"] > 0)
                 $tableInfo["pageCount"] = 1;
             $tables[] = $tableInfo;
