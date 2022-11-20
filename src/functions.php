@@ -22,7 +22,7 @@
         if (isset($jsonSession["token"]))
             $jsonSession["token"] = "Hidden-Token";
         $jsonSession = json_encode($jsonSession);
-        $log->debugLog("These are the session variables:\n" . $jsonSession, "DATA");
+        //$log->debugLog("These are the session variables:\n" . $jsonSession, "DATA");
     }
 
     function createEncryptionKey ()
@@ -262,9 +262,11 @@
         $decordedArg = "";
 
         if (isset($bodyContent[$name]))
+        {
             $decordedArg = $bodyContent[$name];
+        }
 
-        if ($decordedArg == "") return $defaultValue;       
+        if ($decordedArg === "") return $defaultValue;       
 
         if ( is_string($decordedArg) )
             return checkForbiddenWords( $decordedArg );
@@ -487,9 +489,10 @@
 
     function printAndDie()
     {
-        global $reply, $sessionTimeout, $log, $_SESSION, $server_uuid;
+        global $reply, $sessionTimeout, $log, $_SESSION, $server_uuid, $scriptStartTime;
 
         $reply["serverUuid"] = $server_uuid;
+        $reply["timeSpent"] = time() - $scriptStartTime;
 
         // Set time out
         $_SESSION['discard_after'] = time() + $sessionTimeout;
@@ -499,4 +502,25 @@
 
         die( json_encode($reply) );
     }
+
+        // Useful functions to handle cache
+        function loadCache($filePath)
+        {
+            $file = fopen($filePath, "r");
+            if ($file)
+            {
+                $dataStr = fread($file, filesize($filePath));
+                fclose($file);
+                return json_decode($dataStr, true);
+            }
+            else return array();
+        }
+    
+        function saveCache($filePath, $rows)
+        {
+            $cacheStr = json_encode($rows);
+            $file = fopen($filePath, "w");
+            fwrite($file, $cacheStr);
+            fclose($file);
+        }
 ?>

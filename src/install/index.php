@@ -7,6 +7,9 @@
 
     $__ROOT__ = dirname(dirname(__FILE__)); 
 
+    // global constants
+	require_once($__ROOT__."global.php");
+    // config
     require_once($__ROOT__."/config/config.php");
 
     // Get current address

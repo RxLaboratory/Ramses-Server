@@ -24,219 +24,50 @@
         If not, see http://www.gnu.org/licenses/.
     */
 
-    function parseRow( $row, $tableName )
-    {
-        $outRow = array();
-        $outRow["uuid"] = $row["uuid"];
-        
-        $outRow["modified"] = $row["modified"];
-        $outRow["removed"] = (int)$row["removed"];
-        $outRow["project"] = $row["project"];
-        
-        if ($tableName == "RamUser")
-        {
-            $outRow["userName"] = $row["userName"];
-            // We need to decrypt the user data
-            $data = $row["data"];
-            $outRow["data"] = decrypt( $data );
-        }
-        else
-        {
-            $outRow["data"] = $row["data"];
-        }
-
-        return $outRow;
-    }
-
     if ( acceptReply( "sync" ) )
     {
-        $tables = getArg("tables", array());
-        $projectFilterUuid = getArg("project");
-        $prevSync = getArg("previousSyncDate", "1970-01-01 00:00:00");
+        $q = new DBQuery();
+        $q->vacuum();
 
-        $log->debugLog("Sync accepted.", "INFO");
+        // Create the sync cache folder
+        $syncCachePath = $__ROOT__."/sync_cache";
+        if (!is_dir($syncCachePath)) mkdir($syncCachePath);
 
-        // Create the deletedData table in case it doesn't exist yet
-        createDeletedDataTable();
+        // Clean older sync data if any
 
-        $outTables = array();
-        $rowsToDelete = array();
-        foreach( $tables as $table )
+        // Previous sync for this session
+        if (isset($_SESSION["syncCachePath"]))
         {
-            if (!isset($table["name"]))
+            $syncFolder = $_SESSION["syncCachePath"];
+            if (is_dir($syncFolder))
             {
-                if ($devMode)
-                {
-                    $reply["success"] = false;
-                    $reply["message"] = "Malformed request, sorry. I've found a table without name.";
-                    printAndDie();
-                }
-                else
-                {
-                    $log->debugLog("Sync : Malformed request. I've found a table without name.", "WARNING");
-                    continue;
-                }
+                $log->debugLog("Deleting previous Sync cache at '{$syncFolder}'", "DEBUG");
+                deleteDir($syncFolder);
             }
-
-            $tableName = $table["name"];
-
-            set_time_limit(60);
-
-            $log->debugLog("Sync table: {$tableName}.", "DEBUG");
-
-            $incomingRows = array();
-            if (isset($table["modifiedRows"])) $incomingRows = $table["modifiedRows"];
-
-            $outTable = array();
-            $outTable["name"] = $tableName;
-            $outTable["modifiedRows"] = array();
-  
-            // Create the table if it doesn't exists
-            createTable( $tableName );
-
-            // Get all rows (more recent than prevSync)
-            $q = new DBQuery();
-
-            $qStr = "SELECT `uuid`, `data`, `modified`, `removed`, `project` ";
-            if ($tableName == "RamUser") $qStr = $qStr . ", `userName` ";
-            $qStr = $qStr . " FROM `{$tablePrefix}{$tableName}` WHERE `modified` >= :modified";
-            // Filter by project
-            if ($projectFilterUuid != "") $qStr = $qStr . " AND `project` = :projectFilterUuid";
-            
-            $q->prepare($qStr);
-            $q->bindStr("modified", $prevSync);
-            if ($projectFilterUuid != "") $q->bindStr("projectFilterUuid", $projectFilterUuid);
-            $q->execute();
-
-            // For each row, check if it is more recent or equal or older
-            $qStr = "";
-            while ($row = $q->fetch())
-            {
-                // Check UUID
-                $found = false;
-                               
-                for ($i = count($incomingRows) -1; $i >= 0; $i--)
-                {
-                    $inRow = $incomingRows[$i];
-                    
-                    // If the row is older than previous sync, ignore it
-                    $inRowDate = strtotime( $inRow["modified"] );
-                    /*if ($inRowDate < strtotime($prevSync)) {
-                        array_splice($incomingRows, $i, 1);
-                        continue;
-                    }*/
-
-                    if ($inRow["uuid"] != $row["uuid"]) continue;
-
-                    // Found it!
-                    $found = true;
-                    array_splice($incomingRows, $i, 1);
-
-                    $rowDate = strtotime( $row["modified"] );
-                    // If in row is newer, update our side
-                    if ($inRowDate > $rowDate)
-                    {
-                        // Encrypt user data
-                        $data = $inRow["data"];
-                        if ($tableName == "RamUser") $data = encrypt($data);
-
-                        $qStr = "UPDATE `{$tablePrefix}{$tableName}` SET `data` = :data, `project` = :project, `modified` = :modified, `removed` = :removed";
-                        if ($tableName == "RamUser") $qStr = $qStr . ", `userName` = :userName";
-                        $qStr = $qStr . " WHERE `uuid` = :uuid";
-                        
-                        $qr = new DBQuery();
-                        $qr->prepare($qStr);
-                        $qr->bindStr("data", $data);
-                        $qr->bindStr("modified", $inRow["modified"]);
-                        $qr->bindInt("removed", $inRow["removed"]);
-                        $proj = "";
-                        if (isset( $inRow["project"] )) $proj = $inRow["project"];
-                        $qr->bindStr("project", $proj);
-                        $qr->bindStr("uuid", $inRow["uuid"]);
-                        if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
-                        $qr->execute();
-                        $qr->close();
-                    }
-                    // If it's older, send new data
-                    else if ($inRowDate < $rowDate) $outTable["modifiedRows"][] = parseRow($row, $tableName);
-                    // Done!
-                    break;
-                }
-
-                // Not found, it's a new row, send it
-                if (!$found) $outTable["modifiedRows"][] = parseRow($row, $tableName);
-            }
-                       
-            $q->close();
-
-            // Add remaining rows to table (if it's not been deleted and it's the right project)
-            $tableRowsToDelete = array();
-            $tableRowsToDelete["name"] = $tableName;
-            $tableRowsToDelete["rows"] = array();
-            foreach( $incomingRows as $inRow)
-            {
-                $qr = new DBQuery();
-
-                // Check if the row has been deleted
-                $qStr = "SELECT `uuid` FROM `{$tablePrefix}deletedData` WHERE `uuid` = :uuid ;";
-                $qr->prepare($qStr);
-                $qr->bindStr("uuid", $inRow["uuid"]);
-                $qr->execute();
-                
-                if ($qr->fetch()) {
-                    $tableRowsToDelete["rows"][] = $inRow["uuid"];
-                    $qr->close();
-                    continue;
-                }
-
-                $proj = "";
-                if (isset( $inRow["project"] )) $proj = $inRow["project"];
-                
-                // Check if it's the right project
-                if ($projectFilterUuid != "")
-                {
-                    if ($proj != $projectFilterUuid) continue;
-                }
-
-                if ($tableName == "RamUser")
-                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `project`, `modified`, `removed`, `password`, `userName` ) 
-                            VALUES ( :uuid, :data, :project, :modified, :removed, '-', :userName ) ";
-                else
-                    $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `project`, `modified`, `removed`) 
-                            VALUES ( :uuid, :data, :project, :modified, :removed ) ";
-                
-                if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
-                else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
-
-                if ($tableName == "RamUser")
-                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `project` = :project, `modified` = :modified, `removed` = :removed, `userName` = :userName ;";
-                else
-                    $qStr = $qStr . "`uuid` = :uuid, `data` = :data, `project` = :project, `modified` = :modified, `removed` = :removed ;";
-
-                // Encrypt user data
-                $data = $inRow["data"];
-                if ($tableName == "RamUser") $data = encrypt($data);
-                
-                $qr->prepare($qStr);
-                $qr->bindStr("data", $data);
-                $qr->bindStr("modified", $inRow["modified"]);
-                $qr->bindInt("removed", (int)$inRow["removed"]);
-                $qr->bindStr("project", $proj);
-                $qr->bindStr("uuid", $inRow["uuid"]);
-                if ($tableName == "RamUser") $qr->bindStr("userName", $inRow["userName"]);
-                $qr->execute();
-                $qr->close();
-            }
-
-            // Add table to complete list
-            $outTables[] = $outTable;
-            $rowsToDelete[] = $tableRowsToDelete;
         }
 
-        $reply["content"]["tables"] = $outTables;
-        $reply["content"]["deletedData"] = $rowsToDelete;
+        // Syncs which are too old
+        $syncFolders = glob($syncCachePath . "/" . "*/", GLOB_MARK);
+        foreach( $syncFolders as $syncFolder)
+        {
+            $syncTime = filectime($syncFolder);
+            $now = time();
+            if ($now - $syncTime == 3600) // an hour
+            {
+                $log->debugLog("Deleting old Sync cache at '{$syncFolder}'", "DEBUG");
+                deleteDir($syncFolder);
+            }
+        }
+
+        // Create a new cache folder
+        $syncCacheFolder = $syncCachePath . "/" . uniqid();
+        mkdir($syncCacheFolder);
+        $log->debugLog("Created new Sync cache at '{$syncCacheFolder}'", "DEBUG");
+        $_SESSION["syncCachePath"] = $syncCacheFolder;
+        $_SESSION["syncCommited"] = false;
+
         $reply["success"] = true;
-        $reply["message"] = "Data Sync: OK!";
+        $reply["message"] = "Sync session started. You can now push your changes.";
         printAndDie();
     }
 ?>

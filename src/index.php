@@ -22,7 +22,13 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	$__ROOT__ = dirname(__FILE__); 
+	$__ROOT__ = dirname(__FILE__);
+
+	// Measure time spent by the script
+	$scriptStartTime = time();
+
+	//global constants
+	require_once("global.php");
 
 	//configuration and init 
 	require_once("config/config.php");
@@ -76,8 +82,12 @@
 	}
 	
 	include("sync.php");
+	include("push.php");
+	include("fetch.php");
 	include("pull.php");
 	include("set_password.php");
 	include("clean.php");
+
+	printAndDie();
 
 ?>
