@@ -432,6 +432,7 @@
                     `id`	INTEGER NOT NULL UNIQUE,
                     `uuid`	TEXT NOT NULL UNIQUE,
                     `data`	TEXT NOT NULL DEFAULT '{}',
+                    `project`	TEXT,
                     `modified`	timestamp NOT NULL,
                     `removed`	INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
@@ -439,6 +440,7 @@
                     `id` int(11) NOT NULL,
                     `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL,
                     `data` mediumtext NOT NULL,
+                    `project` mediumtext NULL,
                     `modified` timestamp NOT NULL,
                     `removed` tinyint(4) NOT NULL DEFAULT 0
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;

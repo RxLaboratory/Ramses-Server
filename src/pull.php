@@ -29,6 +29,7 @@
         // There may be a uuid and a table for a single-object pull
         $table = getArg("table");
 
+
         if ($table == "")
         {
             $reply["success"] = false;

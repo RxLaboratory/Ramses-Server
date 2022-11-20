@@ -30,19 +30,7 @@
         $reply["query"] = "ping";
         $reply["content"]["version"] = $ramsesVersion;
         
-        $ramVersion = strtolower($ramsesVersion);
-        $clientVersion = $_SESSION["clientVersion"];
-
-        $testRamVersion = explode(".", $ramVersion);
-        $clientVersionArray = explode(".", $clientVersion);
-
-        if (count($clientVersionArray) < 2 || $clientVersionArray[0] != $testRamVersion[0] || $clientVersionArray[1] != $testRamVersion[1])
-        {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Warning, the version of Ramses you're using ({$clientVersion}) differs with the one of this server ({$ramVersion}).";
-        }
-        else if ($installed)
+        if ($installed)
         {
             $reply["content"]["installed"] = true;
             $reply["success"] = true;

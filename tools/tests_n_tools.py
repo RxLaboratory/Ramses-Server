@@ -7,6 +7,7 @@ import html2text
 
 token = ""
 version = "0.7.0-Beta"
+
 url = "http://127.0.0.1:8001/ramses"
 clientKey = "drHSV2XQ"
 
@@ -217,6 +218,7 @@ def testSync():
     # 5.
     downloadTables(("RamUser", "RamApplication", "RamFileType"))
 
+
 def testSyncUser():
     uuid1 = str(uuid.uuid4())
     uuid2 = str(uuid.uuid4())
@@ -274,7 +276,7 @@ def testClean():
             },
         ))
 
-#installServer()
+installServer()
 
 # Always start a session with a ping
 ping()
