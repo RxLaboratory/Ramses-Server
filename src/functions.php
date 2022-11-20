@@ -22,7 +22,7 @@
         if (isset($jsonSession["token"]))
             $jsonSession["token"] = "Hidden-Token";
         $jsonSession = json_encode($jsonSession);
-        $log->debugLog("These are the session variables:\n" . $jsonSession, "DATA");
+        //$log->debugLog("These are the session variables:\n" . $jsonSession, "DATA");
     }
 
     function createEncryptionKey ()
@@ -500,4 +500,25 @@
 
         die( json_encode($reply) );
     }
+
+        // Useful functions to handle cache
+        function loadCache($filePath)
+        {
+            $file = fopen($filePath, "r");
+            if ($file)
+            {
+                $dataStr = fread($file, filesize($filePath));
+                fclose($file);
+                return json_decode($dataStr, true);
+            }
+            else return array();
+        }
+    
+        function saveCache($filePath, $rows)
+        {
+            $cacheStr = json_encode($rows);
+            $file = fopen($filePath, "w");
+            fwrite($file, $cacheStr);
+            fclose($file);
+        }
 ?>

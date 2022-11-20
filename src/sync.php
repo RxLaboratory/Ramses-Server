@@ -28,8 +28,44 @@
     {
         $q = new DBQuery();
         $q->vacuum();
-        $_SESSION["syncData"] = array();
-        $_SESSION["syncData"]["commited"] = false;
+
+        // Create the sync cache folder
+        $syncCachePath = $__ROOT__."/sync_cache";
+        if (!is_dir($syncCachePath)) mkdir($syncCachePath);
+
+        // Clean older sync data if any
+
+        // Previous sync for this session
+        if (isset($_SESSION["syncCachePath"]))
+        {
+            $syncFolder = $_SESSION["syncCachePath"];
+            if (is_dir($syncFolder))
+            {
+                $log->debugLog("Deleting previous Sync cache at '{$syncFolder}'", "DEBUG");
+                deleteDir($syncFolder);
+            }
+        }
+
+        // Syncs which are too old
+        $syncFolders = glob($syncCachePath . "/" . "*/", GLOB_MARK);
+        foreach( $syncFolders as $syncFolder)
+        {
+            $syncTime = filectime($syncFolder);
+            $now = time();
+            if ($now - $syncTime == 3600) // an hour
+            {
+                $log->debugLog("Deleting old Sync cache at '{$syncFolder}'", "DEBUG");
+                deleteDir($syncFolder);
+            }
+        }
+
+        // Create a new cache folder
+        $syncCacheFolder = $syncCachePath . "/" . uniqid();
+        mkdir($syncCacheFolder);
+        $log->debugLog("Created new Sync cache at '{$syncCacheFolder}'", "DEBUG");
+        $_SESSION["syncCachePath"] = $syncCacheFolder;
+        $_SESSION["syncCommited"] = false;
+
         $reply["success"] = true;
         $reply["message"] = "Sync session started. You can now push your changes.";
         printAndDie();

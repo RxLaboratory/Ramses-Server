@@ -26,9 +26,24 @@
 
     if ( acceptReply( "fetch" ) )
     {
-        if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
+        if (!isset($_SESSION["syncCachePath"]))
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Not ready to fetch data; you need to call 'sync' and 'push' some data first.";
+            $_SESSION["syncCommited"] = false;
+            printAndDie();
+        }
 
-        if ( !$_SESSION["syncData"]["commited"] )
+        if (!is_dir($_SESSION["syncCachePath"]))
+        {
+            $log->debugLog("Server Sync cache not found: '" . $_SESSION["syncCachePath"] . "'", "WARNING");
+            $reply["success"] = false;
+            $reply["message"] = "The Sync cache had not been created. Call 'sync' again. If the problem persists, this may be a misconfiguration of the server.";
+            $_SESSION["syncCommited"] = false;
+            printAndDie();
+        }
+
+        if ( !$_SESSION["syncCommited"] )
         {
             $reply["success"] = false;
             $reply["message"] = "The push session has not been commited yet, you can't retrieve the data if you don't commit changes.";
@@ -36,16 +51,25 @@
         }
 
         // Count the number of pages
+        $tableCacheFolders = glob($_SESSION["syncCachePath"] . "/" . "*/", GLOB_MARK);
+        
         $tables = array();
         $numTables = 0;
-        foreach( $_SESSION["syncData"] as $tableName => $table )
+        foreach( $tableCacheFolders as $tableCacheFolder )
         {
-            if ($tableName == "commited") continue;
+            // The table name is the name of the folder
+            $tableName = basename($tableCacheFolder);
+
+            // Load cache
+            $outCacheFile = $tableCacheFolder . "/out.json";
+            $out = loadCache($outCacheFile);
+            $deletedCacheFile = $tableCacheFolder . "/deleted.json";
+            $deletedUuids = loadCache($deletedCacheFile);
 
             $tableInfo = array();
             $tableInfo["name"] = $tableName;
-            $tableInfo["rowCount"] = count($table["out"]);
-            $tableInfo["deleteCount"] = count($table["deleted"]);
+            $tableInfo["rowCount"] = count($out);
+            $tableInfo["deleteCount"] = count($deletedUuids);
             $tableInfo["pageCount"] = ceil( $tableInfo["rowCount"] / $pageRowCount );
             if ($tableInfo["pageCount"] == 0 && $tableInfo["deleteCount"] > 0)
                 $tableInfo["pageCount"] = 1;

@@ -99,16 +99,34 @@
         $page = getArg("page", 1);
 
         // Pull the data
-        if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
+        if (!isset($_SESSION["syncCachePath"]))
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Not ready to fetch data; you need to call 'sync', 'push' and 'fetch' some data first.";
+            $_SESSION["syncCommited"] = false;
+            printAndDie();
+        }
 
-        if ( !$_SESSION["syncData"]["commited"] )
+        if (!is_dir($_SESSION["syncCachePath"]))
+        {
+            $log->debugLog("Server Sync cache not found: '" . $_SESSION["syncCachePath"] . "'", "WARNING");
+            $reply["success"] = false;
+            $reply["message"] = "The Sync cache had not been created. Call 'sync' again. If the problem persists, this may be a misconfiguration of the server.";
+            $_SESSION["syncCommited"] = false;
+            printAndDie();
+        }
+
+        if ( !$_SESSION["syncCommited"] )
         {
             $reply["success"] = false;
             $reply["message"] = "The push session has not been commited yet, you can't retrieve the data if you don't commit changes.";
             printAndDie();
         }
 
-        if ( !isset($_SESSION["syncData"][$table]))
+        // Get the folder for the table
+        $tableCacheFolder = $_SESSION["syncCachePath"] . "/{$table}";
+
+        if ( !is_dir($tableCacheFolder) )
         {
             $reply["success"] = false;
             $reply["message"] = "The '{$table}' table hasn't been pushed. You need to push local data (or an empty table) to the server before pulling the server data.";
@@ -116,7 +134,9 @@
         }
 
         // Collect rows
-        $outRows = $_SESSION["syncData"][$table]["out"];
+        $outCacheFile = $tableCacheFolder . "/out.json";
+        $outRows = loadCache($outCacheFile);
+
         $reply["content"]["rows"] = array();
         $reply["content"]["table"] = $table;
         $reply["content"]["page"] = $page;
@@ -141,12 +161,16 @@
         // If page 1, add deleted info
         if ($page == 1)
         {
-            $reply["content"]["deleted"] = $_SESSION["syncData"][$table]["deleted"];
+            $deletedCacheFile = $tableCacheFolder . "/deleted.json";
+            $deletedUuids = loadCache($deletedCacheFile);
+
+            $reply["content"]["deleted"] = $deletedUuids;
         }
 
         $end = $end - 1;
         $reply["success"] = true;
         $reply["message"] = "Retrieved the '{$table}' table data, for page #{$page} (rows {$start} to {$end}).";
+
         printAndDie();
     }
 ?>

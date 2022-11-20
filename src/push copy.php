@@ -36,53 +36,28 @@
         $commit = getArg("commit", true);
 
         // Store pagination
-        if (!isset($_SESSION["syncCachePath"]))
-        {
-            $reply["success"] = false;
-            $reply["message"] = "Not ready to accept data; you need to call 'sync' first.";
-            $_SESSION["syncCommited"] = false;
-            printAndDie();
-        }
-
-        if (!is_dir($_SESSION["syncCachePath"]))
-        {
-            $reply["success"] = false;
-            $reply["message"] = "The Sync cache had not been created. Call 'sync' again. If the problem persists, this may be a misconfiguration of the server.";
-            $_SESSION["syncCommited"] = false;
-            printAndDie();
-        }
+        if (!isset($_SESSION["syncData"])) $_SESSION["syncData"] = array();
 
         // Check incoming data
 
         if ($table != "")
         {
-            $log->debugLog("Receiving " . $table, "DEBUG");
-
             // If this table does not exist, it has to be created
             createTable( $table );
             // Create the deletedData table in case it doesn't exist yet
             createDeletedDataTable();
 
-            // This table cache folder
-            $tableCacheFolder = $_SESSION["syncCachePath"] . "/{$table}";
-            // And its cache files
-            $currentCacheFile = $tableCacheFolder . "/current.json";
-            $outCacheFile = $tableCacheFolder . "/out.json";
-            $inCacheFile = $tableCacheFolder . "/in.json";
-            $deletedCacheFile = $tableCacheFolder . "/deleted.json";
-            $inUuidsCacheFile = $tableCacheFolder . "/inUuids.json";
-
-            // Get the data
-            $current = array();
-            $out = array();
-            $in = array();
-            $deletedUuids = array();
-            $inUuids = array();
-            if (!is_dir($tableCacheFolder))
+            // Get the current rows
+            if (!isset($_SESSION["syncData"][$table]))
             {
                 set_time_limit(30);
 
-                mkdir($tableCacheFolder);
+                $_SESSION["syncData"][$table] = array();
+                $_SESSION["syncData"][$table]["current"] = array();
+                $_SESSION["syncData"][$table]["out"] = array();
+                $_SESSION["syncData"][$table]["in"] = array();
+                $_SESSION["syncData"][$table]["deleted"] = array();
+                $_SESSION["syncData"][$table]["inUuids"] = array();
 
                 // Get this table rows
                 $currentRows = array();
@@ -108,27 +83,19 @@
                         $row["userName"] = $r["userName"];
                         $row["data"] = decrypt($row["data"]);
                     }
-                    $current[$row["uuid"]] = $row;
+                    $_SESSION["syncData"][$table]["current"][$row["uuid"]] = $row;
                 }
 
                 $q->close();
+            }
 
-                // Save cache
-                saveCache($currentCacheFile, $current);
-            }
-            else
-            {
-                // Load cache
-                $current = loadCache($currentCacheFile);
-                $out = loadCache($outCacheFile);
-                $in = loadCache($inCacheFile);
-                $deletedUuids = loadCache($deletedCacheFile);
-                $inUuids = loadCache($inUuidsCacheFile);
-            }
+            $current = $_SESSION["syncData"][$table]["current"];
+            $out = $_SESSION["syncData"][$table]["out"];
+            $in = $_SESSION["syncData"][$table]["in"];
+            $deletedUuids = $_SESSION["syncData"][$table]["deleted"];
+            $inUuids = $_SESSION["syncData"][$table]["inUuids"];
 
             set_time_limit(30);
-
-            $log->debugLog("Got " . count($inRows) . " rows.", "DEBUG");
 
             // Process received rows
             foreach ($inRows as $inRow)
@@ -169,10 +136,10 @@
             }
 
             // Store results
-            saveCache($outCacheFile, $out);
-            saveCache($inCacheFile, $in);
-            saveCache($deletedCacheFile, $deletedUuids);
-            saveCache($inUuidsCacheFile, $inUuids);
+            $_SESSION["syncData"][$table]["out"] = $out;
+            $_SESSION["syncData"][$table]["in"] = $in;
+            $_SESSION["syncData"][$table]["deleted"] = $deletedUuids;
+            $_SESSION["syncData"][$table]["inUuids"] = $inUuids;
         }
         
         // Finished if we're not commiting
@@ -194,34 +161,26 @@
         }
 
         // Commit changes
-        // Load cache
-        $tableCacheFolders = glob($_SESSION["syncCachePath"] . "/" . "*/", GLOB_MARK);
-        foreach( $tableCacheFolders as $tableCacheFolder )
+        foreach( $_SESSION["syncData"] as $tableName => $inTable )
         {
-            set_time_limit(30);
-
-            // The table name is the name of the folder
-            $tableName = basename($tableCacheFolder);
-
-            // Get the incoming rows from cache
-            $inCacheFile = $tableCacheFolder . "/in.json";
-            $in = loadCache($inCacheFile);
-
-            $log->debugLog("Committing " . $tableName, "DEBUG");
+            //set_time_limit(30);
 
             if ($tableName == "commited") continue;
 
-            // Insert / Update new rows
-            if (count( $in ) > 0)
-            {
-                $log->debugLog("Found " . count( $in ) . " Rows", "DEBUG");
+            if ($tableName == "RamUser") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
+            else $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
 
-                if ($tableName == "RamUser") $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
-                else $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
-                
+            $startRow = 0;
+            while($startRow <= count( $inTable["in"] ))
+            {
                 $values = array();
-                foreach ($in as $newRow)
+
+                $endRow = $startRow + $SQLMaxRowPerRequest;
+                $endRow = min($endRow, count($inTable["in"]));
+
+                for ($i = $startRow; $i < $endRow; $i++)
                 {
+                    $newRow = $inTable["in"][$i];
                     $uuid = $newRow["uuid"];
                     $data = $newRow["data"];
                     $modified = $newRow["modified"];
@@ -247,7 +206,10 @@
                     }
                 }
 
-                $qStr = $qStr . join(", ", $values) . " ";
+                $startRow += $SQLMaxRowPerRequest;
+
+                $qStr = $qStrHeader . join(", ", $values) . " ";
+
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
                 
@@ -268,33 +230,22 @@
                     $reply["content"]["commited"] = false;
                     printAndDie();
                 }
-            }
-
-            // Get the current rows
-            $currentCacheFile = $tableCacheFolder . "/current.json";
-            $current = loadCache($currentCacheFile);
-            $inUuidsCacheFile = $tableCacheFolder . "/inUuids.json";
-            $inUuids = loadCache($inUuidsCacheFile);
-            $outCacheFile = $tableCacheFolder . "/out.json";
-            $out = loadCache($outCacheFile);
+            }          
 
             // Add the new current rows to the out rows
-            foreach ($current as $currentRow)
+            foreach ($inTable["current"] as $currentRow)
             {
                 $currentUuid = $currentRow["uuid"];
-                if (!in_array($currentUuid, $inUuids))
+                if (!in_array($currentUuid, $inTable["inUuids"]))
                 {
-                    $out[] = $currentRow;
+                    $inTable["out"][] = $currentRow;
                 }
             }
 
-            // Store results
-            saveCache($outCacheFile, $out);
-            saveCache($inCacheFile, $in);
-            saveCache($inUuidsCacheFile, $inUuids);
+            // Save
+            $_SESSION["syncData"][$tableName] = $inTable;
+            $_SESSION["syncData"]["commited"] = true;
         }
-
-        $_SESSION["syncCommited"] = true;
 
         $reply["success"] = true;
         $reply["message"] = "Data saved!";

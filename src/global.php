@@ -29,7 +29,7 @@
     // Settings
     // Number of pages returned by fetch and pull
     $pageRowCount = 1000;
-
+    $SQLMaxRowPerRequest = 5000;
 
     // DEFAULT CONFIG VALUES //
     // Don't change these, edit config.php instead //
