@@ -215,7 +215,7 @@
             $log->debugLog("Found " . count( $in ) . " Rows", "DEBUG");
 
             $startRow = 0;
-            while($startRow <= count( $in ))
+            while($startRow < count( $in ))
             {
                 $values = array();
 
