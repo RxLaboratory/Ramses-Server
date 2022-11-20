@@ -209,19 +209,22 @@
 
             $log->debugLog("Committing " . $tableName, "DEBUG");
 
-            if ($tableName == "commited") continue;
+            if ($tableName == "RamUser") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
+            else $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
+            
+            $log->debugLog("Found " . count( $in ) . " Rows", "DEBUG");
 
-            // Insert / Update new rows
-            if (count( $in ) > 0)
+            $startRow = 0;
+            while($startRow <= count( $in ))
             {
-                $log->debugLog("Found " . count( $in ) . " Rows", "DEBUG");
-
-                if ($tableName == "RamUser") $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
-                else $qStr = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
-                
                 $values = array();
-                foreach ($in as $newRow)
+
+                $endRow = $startRow + $SQLMaxRowPerRequest;
+                $endRow = min($endRow, count($inTable["in"]));
+
+                for ($i = $startRow; $i < $endRow; $i++)
                 {
+                    $newRow = $in[$i];
                     $uuid = $newRow["uuid"];
                     $data = $newRow["data"];
                     $modified = $newRow["modified"];
@@ -247,7 +250,10 @@
                     }
                 }
 
-                $qStr = $qStr . join(", ", $values) . " ";
+                $startRow += $SQLMaxRowPerRequest;
+
+                $qStr = $qStrHeader . join(", ", $values) . " ";
+                
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
                 
