@@ -68,6 +68,7 @@
 		$log->debugLog("Session has expired.", "WARNING");
 		logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
 	}
+
 	//connect to database
 	require_once('db.php');
 
@@ -81,6 +82,7 @@
 		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
 	}
 	
+	include("db_clean.php");
 	include("sync.php");
 	include("push.php");
 	include("fetch.php");

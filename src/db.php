@@ -12,6 +12,9 @@
 	// Security, chmod the data file
 	if (is_file($__ROOT__."/data/ramses_data")) chmod($__ROOT__."/data/ramses_data", 0600);
 
+	// In SQLite, no more than a 1000 rows at once (let's set 900)
+	if ($sqlMode == "sqlite" && $SQLMaxRowPerRequest > 900) $SQLMaxRowPerRequest = 900; 
+
 	try
 	{
 		if ( $sqlMode == 'mysql' )

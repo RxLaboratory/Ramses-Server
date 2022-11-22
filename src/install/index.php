@@ -5,10 +5,13 @@
 		Installs the SQL Database
 	*/
 
-    $__ROOT__ = dirname(dirname(__FILE__)); 
+    $__ROOT__ = dirname(dirname(__FILE__));
+
+    echo ("Beginning installation...<br/>");
+    flush();
 
     // global constants
-	require_once($__ROOT__."global.php");
+	require_once($__ROOT__."/global.php");
     // config
     require_once($__ROOT__."/config/config.php");
 

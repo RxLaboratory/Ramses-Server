@@ -29,6 +29,7 @@
     // Settings
     // Number of pages returned by fetch and pull
     $pageRowCount = 1000;
+    // No more than a 1000 rows if SQLite anyway
     $SQLMaxRowPerRequest = 5000;
 
     // DEFAULT CONFIG VALUES //
