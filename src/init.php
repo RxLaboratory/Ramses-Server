@@ -24,6 +24,7 @@
 	debugLog("This is the current server address: " . $serverAddress);*/
 
 	$installed = file_exists($__ROOT__."/config/config_security.php");
+	$maintenance = file_exists($__ROOT__."/maintenance");
 
 	// Set the timezone to UTC so it matches the SQL db
 	date_default_timezone_set('UTC');

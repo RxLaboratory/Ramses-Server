@@ -43,6 +43,16 @@
 	//prepare reply
 	require_once("reply.php");
 
+	// Maintenance mode
+	if ($maintenance)
+	{
+		$reply["success"] = false;
+		$reply["accepted"] = false;
+		$reply["message"] = "The server is under maintenance. Please try again later.";
+		$log->debugLog("The server is under maintenance.", "WARNING");
+		printAndDie();
+	}
+
 	//get request metadata
 	include("clientmetadata.php");
 
