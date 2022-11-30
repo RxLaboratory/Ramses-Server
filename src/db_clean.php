@@ -39,7 +39,7 @@
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
         else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}ServerData` (
                     `id` int(11) NOT NULL,
-                    `lastDBClean` timestamp NOT NULL,
+                    `lastDBClean` timestamp NOT NULL
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
                 ALTER TABLE `{$tablePrefix}ServerData`
                     ADD PRIMARY KEY (`id`);
@@ -196,14 +196,19 @@
                     $moved++;
                 }
 
-                $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory` (`uuid`, `data`, `modified`, `removed`) 
-                        SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
-                        WHERE {$condition} ";
-
-                if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
-                else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
-
-                $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
+                if ($sqlMode == 'sqlite') 
+                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory` (`uuid`, `data`, `modified`, `removed`) 
+                            SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
+                            WHERE {$condition} 
+                            ON CONFLICT(uuid) DO UPDATE SET 
+                            `data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`, `modified`, `removed`) 
+                            SELECT new.uuid, new.data, new.modified, new.removed 
+                            FROM ( SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
+                            WHERE  {$condition} ) 
+                            AS new 
+                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified, `removed` = new.removed ;";
 
                 $q->prepare($qStr);
                 $q->execute();
