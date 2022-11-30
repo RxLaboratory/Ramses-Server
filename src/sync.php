@@ -52,7 +52,7 @@
         {
             $syncTime = filectime($syncFolder);
             $now = time();
-            if ($now - $syncTime == 3600) // an hour
+            if ($now - $syncTime > 3600) // an hour
             {
                 $log->debugLog("Deleting old Sync cache at '{$syncFolder}'", "DEBUG");
                 deleteDir($syncFolder);
