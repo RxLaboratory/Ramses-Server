@@ -24,11 +24,12 @@
     // GLOBAL VARIABLES AND SETTINGS //
 
     // The version
-    $ramsesVersion = "0.7.0-Beta";
+    $ramsesVersion = "0.8.0-Beta";
 
     // Settings
     // Number of pages returned by fetch and pull
     $pageRowCount = 1000;
+    // No more than a 1000 rows if SQLite anyway
     $SQLMaxRowPerRequest = 5000;
 
     // DEFAULT CONFIG VALUES //

@@ -43,6 +43,16 @@
 	//prepare reply
 	require_once("reply.php");
 
+	// Maintenance mode
+	if ($maintenance)
+	{
+		$reply["success"] = false;
+		$reply["accepted"] = false;
+		$reply["message"] = "The server is under maintenance. Please try again later.";
+		$log->debugLog("The server is under maintenance.", "WARNING");
+		printAndDie();
+	}
+
 	//get request metadata
 	include("clientmetadata.php");
 
@@ -68,6 +78,7 @@
 		$log->debugLog("Session has expired.", "WARNING");
 		logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
 	}
+
 	//connect to database
 	require_once('db.php');
 
@@ -81,6 +92,7 @@
 		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
 	}
 	
+	include("db_clean.php");
 	include("sync.php");
 	include("push.php");
 	include("fetch.php");

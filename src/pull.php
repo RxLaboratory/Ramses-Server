@@ -45,7 +45,7 @@
             // Create the table if it doesn't exists
             createTable( $table );
 
-            $qStr = "SELECT `uuid`, `data`, `modified`, `removed`, `project` ";
+            $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
             if ($table == "RamUser") $qStr = $qStr . ", `userName` ";
             $qStr = $qStr . " FROM `{$tablePrefix}{$table}` WHERE `uuid` = :uuid ;";
 
@@ -60,7 +60,6 @@
                 $reply["content"]["uuid"] = $r["uuid"];
                 $reply["content"]["modified"] = $r["modified"];
                 $reply["content"]["removed"] = (int)$r["removed"];
-                $reply["content"]["project"] = $r["project"];
 
                 if ($table == "RamUser")
                 {
@@ -82,7 +81,6 @@
                 $reply["content"]["uuid"] = "";
                 $reply["content"]["modified"] = "";
                 $reply["content"]["removed"] = 0;
-                $reply["content"]["project"] = "";
                 $reply["content"]["data"] = "";
 
                 if ($table == "RamUser") $reply["content"]["userName"] = "";
