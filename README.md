@@ -18,7 +18,9 @@ This is a quick overview as a reminder, the [developer documentation and all ref
 
 ### Sync session
 
-1. `https://server.tld/ramses/?sync` starts the sync session.
-2. `https://server.tld/ramses/?push` to push modified rows (or an empty list to download all table data)
-3. `https://server.tld/ramses/?fetch` to get some information, including the number of tables and rows available to pull
-4. `https://server.tld/ramses/?pull` to pull the updated data from the server
+1. `https://server.tld/ramses/?ping` says "hi" to the server. This is mandatory to start a session.
+1. `https://server.tld/ramses/?login` tells who you are. This is mandatory to be able to sync data, the server will refuse if you're not logged in.
+3. `https://server.tld/ramses/?sync` starts the sync session.
+4. `https://server.tld/ramses/?push` to push modified rows (or an empty list to download all table data)
+5. `https://server.tld/ramses/?fetch` to get some information, including the number of tables and rows available to pull
+6. `https://server.tld/ramses/?pull` to pull the updated data from the server
