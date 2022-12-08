@@ -85,7 +85,6 @@
                 mkdir($tableCacheFolder);
 
                 // Get this table rows
-                $currentRows = array();
                 $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
                 if ($table == "RamUser") $qStr = $qStr. ", `userName` ";
                 $qStr = $qStr . "FROM `{$tablePrefix}{$table}` WHERE `modified` >= :modified ;";
@@ -139,7 +138,7 @@
                 $inUuids[] = $uuid;
 
                 // Not set, it's either a new one or it may have been deleted
-                if (!isset( $currentRows[$uuid] ) )
+                if (!isset( $current[$uuid] ) )
                 {
                     // Check if it's been deleted
                     $qStr = "SELECT `uuid` FROM `{$tablePrefix}deletedData` WHERE `uuid` = :uuid ;";
@@ -156,6 +155,9 @@
 
                 // Check modification date
                 $currentRow = $current[$uuid];
+
+                // Same date, ignore
+                if ($currentRow["modified"] == $inRow["modified"]) continue;
 
                 $currentDate = strtotime( $currentRow["modified"] );
                 $inDate = strtotime( $inRow["modified"] );
