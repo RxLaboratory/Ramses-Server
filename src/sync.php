@@ -60,7 +60,12 @@
         }
 
         // Create a new cache folder
-        $syncCacheFolder = $syncCachePath . "/" . uniqid();
+        $folderName = "";
+        if (isset($_SESSION["uuid"]) && $_SESSION["uuid"] != "") {
+            $folderName = $_SESSION["uuid"];
+        }
+        $folderName = $folderName . "-" . uniqid();
+        $syncCacheFolder = $syncCachePath . "/" . $folderName;
         mkdir($syncCacheFolder);
         $log->debugLog("Created new Sync cache at '{$syncCacheFolder}'", "DEBUG");
         $_SESSION["syncCachePath"] = $syncCacheFolder;
