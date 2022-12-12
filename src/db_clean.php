@@ -70,7 +70,7 @@
         // An hour
         $elapsed = $now-$previous;
 
-        if ($elapsed < 30) return false;
+        if ($elapsed < 3600) return false;
 
         $log->debugLog("It's time to clean the database", "DEBUG");
 
@@ -153,9 +153,12 @@
             {
                 $other = $latestItemStepData[$itemUuid][$stepUuid];
                 $otherData = $other["data"];
+                // dates may not be set, for some reason
+                if (!isset($data["date"])) $data["date"] = "1818-05-05 00:00:00";
+                if (!isset($otherData["date"])) $otherData["date"] = "1818-05-05 00:00:00";
                 // compare dates
-                $currentDate = $data["date"];
-                $otherDate = $otherData["date"];
+                $currentDate = strtotime($data["date"]);
+                $otherDate = strtotime($otherData["date"]);
                 if ($currentDate > $otherDate)
                 {
                     $otherUuid = $other["uuid"];
@@ -181,8 +184,7 @@
         $log->debugLog("Found {$moveCount} status to move to history.", "DEBUG");
 
         // Move the data to the other table
-        $moved = 0;
-        if (!$moveCount == 0)
+        if ($moveCount != 0)
         {
             $moved = 0;
             while($moved < $moveCount)
@@ -225,7 +227,7 @@
 
     function db_clean_ramSchedule()
     {
-        global $tablePrefix, $log;
+        global $tablePrefix, $log, $SQLMaxRowPerRequest, $sqlMode;
 
         // Make sure the tables exit
         createTable("RamScheduleEntry");
@@ -241,9 +243,127 @@
         if (!$q->isOK()) $log->debugLog("Can't save delete removed schedule entries from RamScheduleEntry", "DEBUG");
 
         $log->debugLog("Finished cleaning RamScheduleEntry", "DEBUG");
+
+        // Add the project in schedule entries data
+        $q->prepare("SELECT `uuid`, `data` FROM `{$tablePrefix}RamScheduleEntry` ;");
+        $q->execute();
+
+        // Parse all data
+        // To speed up things, keep step/project association
+        $stepProjectUuids = array();
+        $uuidsToRemove = array();
+        $updateData = array();
+        while($r = $q->fetch())
+        {
+            $dataStr = $r["data"];
+            $uuid = $r["uuid"];
+            $data = json_decode( $dataStr, true );
+            $projUuid = "";
+            if (isset($data["project"])) $projUuid = $data["project"];
+            if ($projUuid != "") continue;
+            if (!isset($data["step"])) {
+                $uuidsToRemove[] = $uuid;
+                continue;
+            }
+            $stepUuid = $data["step"];
+            if ($stepUuid == "" || $stepUuid = "none") {
+                $uuidsToRemove[] = $uuid;
+                continue;
+            }
+            if (isset($stepProjectUuids[$stepUuid])) {
+                $projUuid = $stepProjectUuids[$stepUuid];
+            }
+            if ($projUuid == "") {
+                // Get the project
+                $qProj = new DBQuery();
+                $qProj->prepare( "SELECT `data` FROM `{$tablePrefix}RamStep` WHERE `uuid` = :uuid ;" );
+                $qProj->bindStr("uuid", $stepUuid );
+                $qProj->execute();
+                $p = $qProj->fetch();
+                if ($p) {
+                    $pDataStr = $p["data"];
+                    $pData = json_decode( $dataStr, true );
+                    if (isset($pData["project"])) $projUuid = $pData["project"];
+                    if ($projUuid != "") $stepProjectUuids[$stepUuid] = $projUuid;
+                }
+                $qProj->close();
+            }
+            if ($projUuid != "") {
+                $data["project"] = $projUuid;
+                $newData = array();
+                $newData['uuid'] = $uuid;
+                $newData['data'] = $data;
+                $updateData[] = $newData;
+            }
+            else {
+                $uuidsToRemove[] = $uuid;
+            }
+        }
+        $q->close();
+
+        $removeCount = count($uuidsToRemove);
+        $updateCount = count($updateData);
+        $log->debugLog("Found {$removeCount} invalid or empty schedule entries to remove.", "DEBUG");
+        $log->debugLog("Found {$updateCount} schedule entries to update with the project data.", "DEBUG");
+
+        if ($removeCount != 0)
+        {
+            $remove = 0;
+            while ($remove < $removeCount)
+            {
+                $condition = " `uuid` = '" . $uuidsToRemove[$remove] . "' ";
+                $remove++;
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    if ($remove == $removeCount) break;
+                    $condition .=  " OR `uuid` = '" . $uuidsToRemove[$remove] . "' ";
+                    $remove++;
+                }
+
+                $q->prepare("DELETE FROM `{$tablePrefix}RamScheduleEntry` WHERE {$condition} ;");
+                $q->execute();
+                $q->close();
+            }
+        }
+
+        if ($updateCount != 0)
+        {
+            $update = 0;
+            while ($update < $updateCount)
+            {
+                $d = $updateData[$update];
+                $uuid = $d['uuid'];
+                $data = json_encode( $d['data'] );
+                if ($sqlMode == 'sqlite') $data = str_replace("'", "''", $data);
+                else $data = str_replace("'", "\\'", $data);
+                $values = " ( `uuid` = '" . $uuid . "', '" . $data . "' ) ";
+                $update++;
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    if ($update == $updateCount) break;
+                    $d = $updateData[$update];
+                    $uuid = $d['uuid'];
+                    $data = json_encode( $d['data'] );
+                    $values .= ", ( `uuid` = '" . $uuid . "', '" . $data . "' ) ";
+                    $update++;
+                }
+
+                if ($sqlMode == 'sqlite') 
+                    $qStr = "INSERT INTO `{$tablePrefix}RamScheduleEntry` (`uuid`, `data`) {$values}
+                            ON CONFLICT(uuid) DO UPDATE SET 
+                            `data` = excluded.data ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`) {$values}
+                            AS new 
+                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified, `removed` = new.removed ;";
+
+                $q->prepare($qStr);
+                $q->execute();
+                $q->close();
+            }
+        }
     }
     
-
     //  Runs the clean
     function db_clean()
     {
