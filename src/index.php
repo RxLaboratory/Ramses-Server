@@ -1,5 +1,5 @@
 <?php
-    
+
     /*
 		Ramses: Rx Asset Management System
         
@@ -91,7 +91,7 @@
 		$log->debugLog("Disconnected (Invalid token).", "WARNING");
 		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
 	}
-	
+
 	include("db_clean.php");
 	include("sync.php");
 	include("push.php");
