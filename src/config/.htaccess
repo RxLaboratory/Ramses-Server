@@ -1,0 +1,7 @@
+Order allow,deny
+Deny from All
+
+# Disable directory browsing
+Options All -Indexes
+# Prevent folder listing
+IndexIgnore *

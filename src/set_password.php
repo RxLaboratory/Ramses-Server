@@ -27,9 +27,9 @@
 
     if ( acceptReply( "setPassword" ) )
     {
-        $newPassword = getArg("newPassword");
-        $currentPassword = getArg("currentPassword");
-        $uuid = getArg("uuid");
+        $newPassword = RequestParser::getArg("newPassword");
+        $currentPassword = RequestParser::getArg("currentPassword");
+        $uuid = RequestParser::getArg("uuid");
 
         $log->debugLog("Changing password for {$uuid}.", "INFO");
 
@@ -80,7 +80,7 @@
             }
             $testPassword = $row['password'];
 
-            if ( !checkPassword($currentPassword, $uuid, $testPassword ) )
+            if ( !SecurityManager::checkPassword($currentPassword, $uuid, $testPassword ) )
             {
                 $reply["message"] = "Wrong current password, sorry!";
                 $reply["success"] = false;
@@ -90,7 +90,7 @@
         }
 
         // Hash
-        $newPassword = hashPassword($newPassword, $uuid);
+        $newPassword = SecurityManager::hashPassword($newPassword, $uuid);
 
         $q = new DBQuery();
         $qStr = "UPDATE `{$tablePrefix}RamUser` SET `password` = :password WHERE `uuid` = :uuid ;";

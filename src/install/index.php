@@ -55,19 +55,26 @@
     echo ( "Generating encryption keys...<br />" );
     flush();
 
-    $encrypt_key = createEncryptionKey();
+    $ok = SecurityManager::createEncryptionKey();
+    $encrypt_key = SecurityManager::$encryptionKey();
+    $cost = SecurityManager::$passwordCost();
     $encrypt_key_txt = base64_encode($encrypt_key);
+    if (!$ok) {
+        echo("    ▫ Failed. Could not write the key file. We need write permissions in the ramses folder." );
+        echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config/config_security.php</strong> file,");
+        echo("<br />upload this new file to the server, and refresh this page.</p>");
+        die("<strong><code>&lt;?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?&gt;</strong></code>");
+    }
     echo( "The encryption key has been saved in <code>config/config_security.php</code>. You should backup this file now.<br />" );
     flush();
 
     echo ( "Generating server identifier...<br />" );
     flush();
-    if (createServerUuid() != "") echo ( "The server universal has been saved.<br />" );
+    if (SecurityManager::createServerUuid() != "") echo ( "The server universal identifier has been saved.<br />" );
     else echo( "<strong>Warning</strong>: The server UUID can't be generated.<br />");
     flush();
 
     include($__ROOT__."/config/config_security.php");
-    include($__ROOT__."/config/config_server_uuid.php");
 
     // Set the DB if MySQL (if SQLite, the file is already available)
     if ($sqlMode != "sqlite")
@@ -114,12 +121,12 @@
     flush();
     
     //Setup admin user
-    $uuid = uuid();
+    $uuid = UUID::create();
     //Prepare password
     $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
-    $pswd = hashPassword($pswd, $uuid);
-    $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
+    $pswd = SecurityManager::hashPassword($pswd, $uuid);
+    $data = SecurityManager::encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
     $q = new DBQuery();
     $qStr = "REPLACE INTO `{$tablePrefix}RamUser` ( `uuid`, `userName`, `password`, `data`, `modified` )

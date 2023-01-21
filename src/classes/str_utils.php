@@ -1,7 +1,4 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
-    
     /*
 		Ramses: Rx Asset Management System
         
@@ -24,25 +21,26 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (RequestParser::hasArg("ping"))
+    /**
+     * Useful methods to handle strings
+     */
+    class StrUtils
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "ping";
-        $reply["content"]["version"] = $ramsesVersion;
-        
-        if ($installed)
-        {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Server ready.";
-        }
-        else
-        {
-            $reply["content"]["installed"] = false;
-            $reply["success"] = false;
-            $reply["message"] = "The server is not installed!";
+        static function endsWith( $string, $substring ) {
+            $length = strlen( $substring );
+            if( !$length ) {
+                return true;
+            }
+            return substr( $string, -$length ) === $substring;
         }
 
-        printAndDie();
+        /**
+         * Tests if a string starts with a substring
+         */
+        static function startsWith( $string, $substring ) {
+            $length = strlen( $substring );
+            return substr( $string, 0, $length ) === $substring;
+        }
     }
+
 ?>

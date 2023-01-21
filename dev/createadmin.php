@@ -28,13 +28,13 @@
     echo ( "Setup admin user...<br />" );
 
     //Setup admin user
-    $uuid = uuid();
+    $uuid = UUID::create();
     $shortName = "Admin";
-    $name = encrypt("Administrator");
-    $email = encrypt("");
+    $name = SecurityManager::encrypt("Administrator");
+    $email = SecurityManager::encrypt("");
     $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
-    $pswd = hashPassword($pswd, $uuid);
+    $pswd = SecurityManager::hashPassword($pswd, $uuid);
     $comment = "The default Administrator user. Don't forget to rename it and change its password!";
     $role = hashRole('admin');
    

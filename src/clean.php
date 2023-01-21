@@ -36,7 +36,7 @@
             printAndDie();
         }
 
-        $tables = getArg("tables", array());
+        $tables = RequestParser::getArg("tables", array());
 
         $count = 0;
 

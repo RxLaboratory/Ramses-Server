@@ -6,7 +6,6 @@
     require_once ($__ROOT__."/config/config_security.php");
     require_once ($__ROOT__."/functions.php");
     require_once ($__ROOT__."/logger.php");
-    require_once ($__ROOT__."/session_manager.php");
     require_once ($__ROOT__."/init.php");
 
     /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -20,10 +19,10 @@
     include('../db.php');
 
     //Set a password to a specific user
-    if (hasArg("setPassword"))
+    if (RequestParser::hasArg("setPassword"))
     {
-        $username = getArg("username");
-        $password = getArg("password");
+        $username = RequestParser::getArg("username");
+        $password = RequestParser::getArg("password");
 
         //query the database for the user uuid
         $rep = $db->prepare("SELECT uuid FROM `{$tablePrefix}users` WHERE shortName = :username ;");
@@ -35,7 +34,7 @@
         $clientPassword = hash("sha3-512", $password . "H6BuYLsW" );
         //hash password (server side)
         $uuid = $testPass["uuid"];
-        $password = hashPassword( $clientPassword, $uuid );
+        $password = SecurityManager::hashPassword( $clientPassword, $uuid );
 
         //set in the database
         $rep = $db->prepare("UPDATE `{$tablePrefix}users` SET password = :password WHERE uuid= :uuid ;" );
@@ -48,13 +47,13 @@
         echo "Server password: " . $password;
         echo "<br />Client password: " . $clientPassword;
     }
-    else if (hasArg("login"))
+    else if (RequestParser::hasArg("login"))
     {
         $username = "";
         $password = "";
         
-        $username = getArg("username");
-        $password = getArg("password", "truc");
+        $username = RequestParser::getArg("username");
+        $password = RequestParser::getArg("password", "truc");
 
         if (strlen($username) > 0 AND strlen($password) > 0)
         {
@@ -78,7 +77,7 @@
             $uuid = $row["uuid"];
             $testPass = $row["password"];
                        
-            if ( checkPassword($password, $uuid, $testPass) )
+            if ( SecurityManager::checkPassword($password, $uuid, $testPass) )
             {
                 $token = login($uuid, "test", "test", "test");
                 //reply content

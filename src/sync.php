@@ -42,7 +42,7 @@
             if (is_dir($syncFolder))
             {
                 $log->debugLog("Deleting previous Sync cache at '{$syncFolder}'", "DEBUG");
-                deleteDir($syncFolder);
+                FS::deleteFolder($syncFolder);
             }
         }
 
@@ -55,7 +55,7 @@
             if ($now - $syncTime > 3600) // an hour
             {
                 $log->debugLog("Deleting old Sync cache at '{$syncFolder}'", "DEBUG");
-                deleteDir($syncFolder);
+                FS::deleteFolder($syncFolder);
             }
         }
 

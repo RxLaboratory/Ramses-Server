@@ -24,7 +24,7 @@
     // GLOBAL VARIABLES AND SETTINGS //
 
     // The version
-    $ramsesVersion = "0.8.2-Beta";
+    $ramsesVersion = "0.9.0-Beta";
 
     // Settings
     // Number of pages returned by fetch and pull
@@ -55,5 +55,10 @@
     $requestLogs = false;
     $debugLogs = false;
     $logsExpiration = 2;
+
+    // Set during init
+    
+    $installed = false;
+    $maintenance = false;
 
 ?>

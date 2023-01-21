@@ -26,8 +26,8 @@
 
     if ( acceptReply( "login" ) )
     {
-        $username = getArg( "username" );
-        $password = getArg( "password" );
+        $username = RequestParser::getArg( "username" );
+        $password = RequestParser::getArg( "password" );
 
         $log->debugLog("Login...", "INFO");
 
@@ -82,7 +82,7 @@
             $tPassword = $user["password"];
             $modified = $user["modified"];
             // decrypt data
-            $dataStr = decrypt( $dataStr );
+            $dataStr = SecurityManager::decrypt( $dataStr );
             $dataArr = json_decode( $dataStr, true);
 
             //check password

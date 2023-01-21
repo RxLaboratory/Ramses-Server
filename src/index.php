@@ -22,20 +22,20 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
+	// If there's no parameter, redirect to the admin section
+	if (count($_GET) == 0) {
+		header("Location: admin/");
+		die();
+	}
+
 	$__ROOT__ = dirname(__FILE__);
 
 	// Measure time spent by the script
 	$scriptStartTime = time();
 
-	//global constants
-	require_once("global.php");
+	require_once("include.php");
 
-	//configuration and init 
-	require_once("config/config.php");
-	require_once("config/config_logs.php");
 	require_once("functions.php");
-	require_once("logger.php");
-	require_once("session_manager.php");
 
 	// INIT
 	include("init.php");
@@ -86,7 +86,7 @@
 	include("login.php");
 
 	//secured operations, check token first
-	$token = getArg("token");
+	$token = RequestParser::getArg("token");
 	if ($token != $_SESSION["token"]){
 		$log->debugLog("Disconnected (Invalid token).", "WARNING");
 		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");

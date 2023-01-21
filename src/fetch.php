@@ -62,9 +62,9 @@
 
             // Load cache
             $outCacheFile = $tableCacheFolder . "/out.json";
-            $out = loadCache($outCacheFile);
+            $out = JSON::loadFile($outCacheFile);
             $deletedCacheFile = $tableCacheFolder . "/deleted.json";
-            $deletedUuids = loadCache($deletedCacheFile);
+            $deletedUuids = JSON::loadFile($deletedCacheFile);
 
             $tableInfo = array();
             $tableInfo["name"] = $tableName;

@@ -14,8 +14,6 @@
 	}
 
 	require_once($__ROOT__."/functions.php");
-	require_once($__ROOT__."/logger.php");
-	require_once($__ROOT__."/session_manager.php");
 
 	// Get the server address
 	/*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -29,13 +27,6 @@
 	// Set the timezone to UTC so it matches the SQL db
 	date_default_timezone_set('UTC');
 
-	// The encryption key
-	if( $installed ) include( $__ROOT__."/config/config_security.php" );
-	else $encrypt_key = '';
-
-	if (file_exists($__ROOT__."/config/config_server_uuid.php")) include( $__ROOT__."/config/config_server_uuid.php" );
-	else $server_uuid = createServerUuid();
-
 	// Enable dev mode
 	if ($devMode)
 	{
@@ -46,7 +37,7 @@
 
 	// Start session
 
-	// server should keep session data for AT LEAST  sessionTimeout
+	// server should keep session data for AT LEAST sessionTimeout
 	ini_set('session.gc_maxlifetime', $sessionTimeout);
 
 	//prepare log
@@ -59,7 +50,7 @@
 	$addressArray = explode("/", $serverAddress);
 	$domain = array_shift($addressArray);
 	$path = "/" . join("/",$addressArray);
-	if (!endsWith($path, "/")) $path = $path . "/";
+	if (!StrUtils::endsWith($path, "/")) $path = $path . "/";
 	// Init session
 	SessionManager::sessionStart("Ramses_Server", $cookieTimeout, $path, $domain, $forceSSL );
 
@@ -74,48 +65,8 @@
 	//add the "_" after table prefix if needed
 	setupTablePrefix();
 
-	// Parse body content to make it quickly available later
-	// Check the content type, accept application/json or application/x-www-form-urlencoded
-	$allHeaders = getallheaders();
-	$rawBody = file_get_contents('php://input');
-	$log->requestLog($allHeaders, $rawBody);
-
-	$ok = true;
-	if (isset($allHeaders['Content-Type']))
-	{
-		$cType = $allHeaders['Content-Type'];
-		$contentArray = explode(";", $cType);
-		$contentType = "";
-		$charset = "";
-		$ok = false;
-		foreach( $contentArray as $c)
-		{
-			$c = trim($c);
-			if ($c == "application/json")
-			{
-				$ok = true;
-				continue;
-			}
-
-			if (startsWith($c, "charset="))
-			{
-				$charsetArray = explode($c, "=");
-				if (count($charsetArray) == 2)
-				{
-					$charset = trim($charsetArray[1]);
-				}
-				continue;
-			}
-		}
-	}
-	// If json, parse it right now
-	$bodyContent = array();
-	if ($ok)
-	{
-		//$log->debugLog("Request body:\n" . $rawBody, "DATA");
-		$bodyContent = json_decode($rawBody, true);
-	}
-	else
+	// Check the request
+	if (!RequestParser::$isJson)
 	{
 		$reply["success"] = false;
 		$reply["message"] = "Sorry, malformed request. We accept only application/json POST";

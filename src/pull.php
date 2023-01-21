@@ -27,7 +27,7 @@
     if ( acceptReply( "pull" ) )
     {
         // There may be a uuid and a table for a single-object pull
-        $table = getArg("table");
+        $table = RequestParser::getArg("table");
 
 
         if ($table == "")
@@ -37,7 +37,7 @@
             printAndDie();
         }
 
-        $uuid = getArg("uuid");
+        $uuid = RequestParser::getArg("uuid");
 
         // Single object pull
         if ($uuid != "")
@@ -66,7 +66,7 @@
                     $reply["content"]["userName"] = $r["userName"];
                     // We need to decrypt the user data
                     $data = $r["data"];
-                    $reply["content"]["data"] = decrypt( $data );
+                    $reply["content"]["data"] = SecurityManager::decrypt( $data );
                 }
                 else
                 {
@@ -95,7 +95,7 @@
         }
 
         // The page to send
-        $page = getArg("page", 1);
+        $page = RequestParser::getArg("page", 1);
 
         // Pull the data
         if (!isset($_SESSION["syncCachePath"]))
@@ -134,7 +134,7 @@
 
         // Collect rows
         $outCacheFile = $tableCacheFolder . "/out.json";
-        $outRows = loadCache($outCacheFile);
+        $outRows = JSON::loadFile($outCacheFile);
 
         $reply["content"]["rows"] = array();
         $reply["content"]["table"] = $table;
@@ -161,7 +161,7 @@
         if ($page == 1)
         {
             $deletedCacheFile = $tableCacheFolder . "/deleted.json";
-            $deletedUuids = loadCache($deletedCacheFile);
+            $deletedUuids = JSON::loadFile($deletedCacheFile);
 
             $reply["content"]["deleted"] = $deletedUuids;
         }

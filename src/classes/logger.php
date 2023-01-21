@@ -1,6 +1,4 @@
 <?php
-    require_once($__ROOT__."/config/config_logs.php");
-
     class Logger
     {
         private $logsPath = "";
@@ -26,9 +24,9 @@
 
             // Prepare folder
             $this->logsPath = "logs/";
-            createFolder($this->logsPath, true);
+            FS::createFolder($this->logsPath, true);
             // Create folder for current month too
-            createFolder($this->logsPath . date("Y/m/") , true);
+            FS::createFolder($this->logsPath . date("Y/m/") , true);
 
             if (!$connexionLogs && !$requestLogs && !$debugLogs) return;
 
@@ -102,7 +100,7 @@
             $date = date("Y-m-d H:i:s");
 
             $this->requestPath = "logs/" . date("Y/m/") . "/request_{$date}";
-            createFolder($this->requestPath, true);
+            FS::createFolder($this->requestPath, true);
 
             $headerFile = $this->requestPath . "/request-header.txt";
             $bodyFile = $this->requestPath . "/request-body.json";
@@ -180,7 +178,7 @@
             $yearFolders = glob($this->logsPath . "*/", GLOB_MARK);
             foreach( $yearFolders as $yearFolder)
             {
-                if (basename($yearFolder) < $yearLimit) deleteDir($yearFolder);
+                if (basename($yearFolder) < $yearLimit) FS::deleteFolder($yearFolder);
                 else break;
             }
             // Month and day
@@ -190,7 +188,7 @@
                 $monthFolders = glob($currentYearFolder . "*/", GLOB_MARK);
                 foreach( $monthFolders as $monthFolder)
                 {
-                    if (basename($monthFolder) < $monthLimit) deleteDir($monthFolder);
+                    if (basename($monthFolder) < $monthLimit) FS::deleteFolder($monthFolder);
                     else break;
                 }
 

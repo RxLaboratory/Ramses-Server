@@ -1,7 +1,4 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
-    
     /*
 		Ramses: Rx Asset Management System
         
@@ -24,25 +21,18 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (RequestParser::hasArg("ping"))
-    {
-        $reply["accepted"] = true;
-        $reply["query"] = "ping";
-        $reply["content"]["version"] = $ramsesVersion;
-        
-        if ($installed)
-        {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Server ready.";
-        }
-        else
-        {
-            $reply["content"]["installed"] = false;
-            $reply["success"] = false;
-            $reply["message"] = "The server is not installed!";
-        }
+    $__ROOT__ = dirname(dirname(__FILE__));
 
-        printAndDie();
-    }
+    require_once($__ROOT__."/include.php");
+
+    include("init.php");
+
+    include("html_header.php");
+
+    // Maintenance mode
+    include("maintenance.php");
+    // Login
+    include("login.php");
+
+    Utils::endHtmlAndExit();
 ?>

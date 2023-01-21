@@ -1,7 +1,4 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
-    
     /*
 		Ramses: Rx Asset Management System
         
@@ -24,25 +21,31 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (RequestParser::hasArg("ping"))
+    /**
+     * Useful methods to handle strings
+     */
+    class JSON
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "ping";
-        $reply["content"]["version"] = $ramsesVersion;
-        
-        if ($installed)
+        // Useful functions to handle cache
+        static function loadFile($filePath)
         {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Server ready.";
-        }
-        else
-        {
-            $reply["content"]["installed"] = false;
-            $reply["success"] = false;
-            $reply["message"] = "The server is not installed!";
+            $file = fopen($filePath, "r");
+            if ($file)
+            {
+                $dataStr = fread($file, filesize($filePath));
+                fclose($file);
+                return json_decode($dataStr, true);
+            }
+            else return array();
         }
 
-        printAndDie();
+        static function saveFile($filePath, $data)
+        {
+            $cacheStr = json_encode($data);
+            $file = fopen($filePath, "w");
+            fwrite($file, $cacheStr);
+            fclose($file);
+        }
     }
+
 ?>

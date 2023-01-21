@@ -27,13 +27,13 @@
     if ( acceptReply( "push" ) )
     {
         // The table name
-        $table = getArg("table" );
+        $table = RequestParser::getArg("table" );
         // The rows
-        $inRows = getArg("rows", array() );
+        $inRows = RequestParser::getArg("rows", array() );
         // The sync date
-        $prevSync = getArg("previousSyncDate", "1818-05-05 00:00:00");
+        $prevSync = RequestParser::getArg("previousSyncDate", "1818-05-05 00:00:00");
         // Do we have everything (commit)
-        $commit = getArg("commit", true);
+        $commit = RequestParser::getArg("commit", true);
 
         // Store pagination
         if (!isset($_SESSION["syncCachePath"]))
@@ -105,7 +105,7 @@
                     if ($table == "RamUser")
                     {
                         $row["userName"] = $r["userName"];
-                        $row["data"] = decrypt($row["data"]);
+                        $row["data"] = SecurityManager::decrypt($row["data"]);
                     }
                     $current[$row["uuid"]] = $row;
                 }
@@ -113,16 +113,16 @@
                 $q->close();
 
                 // Save cache
-                saveCache($currentCacheFile, $current);
+                JSON::saveFile($currentCacheFile, $current);
             }
             else
             {
                 // Load cache
-                $current = loadCache($currentCacheFile);
-                $out = loadCache($outCacheFile);
-                $in = loadCache($inCacheFile);
-                $deletedUuids = loadCache($deletedCacheFile);
-                $inUuids = loadCache($inUuidsCacheFile);
+                $current = JSON::loadFile($currentCacheFile);
+                $out = JSON::loadFile($outCacheFile);
+                $in = JSON::loadFile($inCacheFile);
+                $deletedUuids = JSON::loadFile($deletedCacheFile);
+                $inUuids = JSON::loadFile($inUuidsCacheFile);
             }
 
             set_time_limit(30);
@@ -171,10 +171,10 @@
             }
 
             // Store results
-            saveCache($outCacheFile, $out);
-            saveCache($inCacheFile, $in);
-            saveCache($deletedCacheFile, $deletedUuids);
-            saveCache($inUuidsCacheFile, $inUuids);
+            JSON::saveFile($outCacheFile, $out);
+            JSON::saveFile($inCacheFile, $in);
+            JSON::saveFile($deletedCacheFile, $deletedUuids);
+            JSON::saveFile($inUuidsCacheFile, $inUuids);
         }
         
         // Finished if we're not commiting
@@ -207,7 +207,7 @@
 
             // Get the incoming rows from cache
             $inCacheFile = $tableCacheFolder . "/in.json";
-            $in = loadCache($inCacheFile);
+            $in = JSON::loadFile($inCacheFile);
 
             $log->debugLog("Committing " . $tableName, "DEBUG");
 
@@ -235,7 +235,7 @@
                     if ($tableName == "RamUser")
                     {
                         // Encrypt data
-                        $data = encrypt($data);
+                        $data = SecurityManager::encrypt($data);
                         $userName = $newRow["userName"];
 
                         if ($sqlMode == 'sqlite') $userName = str_replace("'", "''", $userName);
@@ -280,11 +280,11 @@
 
             // Get the current rows
             $currentCacheFile = $tableCacheFolder . "/current.json";
-            $current = loadCache($currentCacheFile);
+            $current = JSON::loadFile($currentCacheFile);
             $inUuidsCacheFile = $tableCacheFolder . "/inUuids.json";
-            $inUuids = loadCache($inUuidsCacheFile);
+            $inUuids = JSON::loadFile($inUuidsCacheFile);
             $outCacheFile = $tableCacheFolder . "/out.json";
-            $out = loadCache($outCacheFile);
+            $out = JSON::loadFile($outCacheFile);
 
             // Add the new current rows to the out rows
             foreach ($current as $currentRow)
@@ -297,9 +297,9 @@
             }
 
             // Store results
-            saveCache($outCacheFile, $out);
-            saveCache($inCacheFile, $in);
-            saveCache($inUuidsCacheFile, $inUuids);
+            JSON::saveFile($outCacheFile, $out);
+            JSON::saveFile($inCacheFile, $in);
+            JSON::saveFile($inUuidsCacheFile, $inUuids);
         }
 
         $_SESSION["syncCommited"] = true;

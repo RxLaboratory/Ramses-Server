@@ -1,7 +1,4 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
-    
     /*
 		Ramses: Rx Asset Management System
         
@@ -24,25 +21,21 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (RequestParser::hasArg("ping"))
+    /**
+     * Useful methods to handle arrays
+     */
+    class ArrUtils
     {
-        $reply["accepted"] = true;
-        $reply["query"] = "ping";
-        $reply["content"]["version"] = $ramsesVersion;
-        
-        if ($installed)
+        static function getAttr($name, $obj, $defaultValue = "")
         {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Server ready.";
+            $attr = "";
+            if (isset($obj[$name]))
+                $attr = $obj[$name];
+    
+            if ($attr == "") return $defaultValue;
+    
+            return $attr;
         }
-        else
-        {
-            $reply["content"]["installed"] = false;
-            $reply["success"] = false;
-            $reply["message"] = "The server is not installed!";
-        }
-
-        printAndDie();
     }
+
 ?>

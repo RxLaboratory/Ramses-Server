@@ -1,13 +1,10 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
-    
     /*
 		Ramses: Rx Asset Management System
         
         This program is licensed under the GNU General Public License.
 
-        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+        Copyright (C) 2020-2023 Nicolas Dufresne and Contributors.
 
         This program is free software;
         you can redistribute it and/or modify it
@@ -24,25 +21,16 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-    if (RequestParser::hasArg("ping"))
-    {
-        $reply["accepted"] = true;
-        $reply["query"] = "ping";
-        $reply["content"]["version"] = $ramsesVersion;
-        
-        if ($installed)
-        {
-            $reply["content"]["installed"] = true;
-            $reply["success"] = true;
-            $reply["message"] = "Server ready.";
-        }
-        else
-        {
-            $reply["content"]["installed"] = false;
-            $reply["success"] = false;
-            $reply["message"] = "The server is not installed!";
-        }
-
-        printAndDie();
+    function camelToSnaleCase($string, $us = "_") {
+        return strtolower(preg_replace(
+            '/(?<=\d)(?=[A-Za-z])|(?<=[A-Za-z])(?=\d)|(?<=[a-z])(?=[A-Z])/', $us, $string));
     }
+
+    spl_autoload_register(function ($class_name) {
+        $dir = dirname(__FILE__);
+        include $dir . "/" . camelToSnaleCase( $class_name ) . '.php';
+        if (method_exists($class_name, 'init')) $class_name::init();
+    });
 ?>
+
+
