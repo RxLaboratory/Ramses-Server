@@ -500,7 +500,7 @@
         $log->debugLog("Sending the reply.");
         debugSessionVar();
 
-        die( json_encode($reply) );
+        die( json_encode($reply, JSON_INVALID_UTF8_SUBSTITUTE ) );
     }
 
         // Useful functions to handle cache
