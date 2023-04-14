@@ -55,9 +55,15 @@
 	else $log->debugLog("GZIP compression disabled", "DEBUG");
 	$log->debugLog("Preparing session", "DEBUG");
 
+	// Remove protocol
+	$serverAddress  = str_replace('http://', '', $serverAddress);
+	$serverAddress  = str_replace('https://', '', $serverAddress);
 	// Get domain and path
 	$addressArray = explode("/", $serverAddress);
 	$domain = array_shift($addressArray);
+	// Remove port
+	$domain = explode(':', $domain);
+	$domain = array_shift($domain);
 	$path = "/" . join("/",$addressArray);
 	if (!endsWith($path, "/")) $path = $path . "/";
 	// Init session
