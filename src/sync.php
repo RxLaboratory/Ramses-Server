@@ -31,7 +31,15 @@
 
         // Create the sync cache folder
         $syncCachePath = $__ROOT__."/sync_cache";
-        if (!is_dir($syncCachePath)) mkdir($syncCachePath);
+        if (!is_dir($syncCachePath)) {
+            $log->debugLog("Creating the '{$syncCachePath}' folder.", "DEBUG");
+            if (!mkdir($syncCachePath)) {
+                $reply["success"] = false;
+                $reply["message"] = "Can't sync: failed creating the '{$syncCachePath}' folder. An administrator may try to create it manually, and give it read/write access to the server.";
+                $log->debugLog("Can't create the '{$syncCachePath}' folder.", "CRITICAL");
+                printAndDie();
+            };
+        }
 
         // Clean older sync data if any
 
@@ -66,7 +74,15 @@
         }
         $folderName = $folderName . "-" . uniqid();
         $syncCacheFolder = $syncCachePath . "/" . $folderName;
-        mkdir($syncCacheFolder);
+
+        $log->debugLog("Creating the '{$syncCacheFolder}' folder.", "DEBUG");
+        if (!mkdir($syncCacheFolder)) {
+            $reply["success"] = false;
+            $reply["message"] = "Can't sync: failed creating the '{$syncCacheFolder}' folder. Make sure Ramses has read and write access in the '$syncCachePath' folder.";
+            $log->debugLog("Can't create the '{$syncCacheFolder}' folder.", "CRITICAL");
+            printAndDie();
+        }
+
         $log->debugLog("Created new Sync cache at '{$syncCacheFolder}'", "DEBUG");
         $_SESSION["syncCachePath"] = $syncCacheFolder;
         $_SESSION["syncCommited"] = false;

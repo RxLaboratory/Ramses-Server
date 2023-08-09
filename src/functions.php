@@ -321,6 +321,8 @@
 
     /**
      * Recursively deletes a directory
+     * @param string The path to delete, must be a directory
+     * @return bool true on success
      */
     function deleteDir($dirPath) {
         if (! is_dir($dirPath)) {
@@ -332,12 +334,12 @@
         $files = glob($dirPath . '*', GLOB_MARK);
         foreach ($files as $file) {
             if (is_dir($file)) {
-                deleteDir($file);
+                if (!deleteDir($file)) return false;
             } else {
-                unlink($file);
+                if (!unlink($file)) return false;
             }
         }
-        rmdir($dirPath);
+        return rmdir($dirPath);
     }
 
     function acceptReply($queryName)
