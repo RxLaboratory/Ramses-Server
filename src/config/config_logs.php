@@ -4,7 +4,7 @@
         
         This program is licensed under the GNU General Public License.
 
-        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+        Copyright (C) 2020-2023 Nicolas Dufresne and Contributors.
 
         This program is free software;
         you can redistribute it and/or modify it
