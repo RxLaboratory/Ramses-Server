@@ -38,13 +38,10 @@
                     `lastDBClean`	timestamp NOT NULL,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
         else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}ServerData` (
-                    `id` int(11) NOT NULL,
-                    `lastDBClean` timestamp NOT NULL
+                    `id` int(11) NOT NULL UNIQUE AUTO_INCREMENT,
+                    `lastDBClean` timestamp NOT NULL,
+                    PRIMARY KEY (`id`)
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-                ALTER TABLE `{$tablePrefix}ServerData`
-                    ADD PRIMARY KEY (`id`);
-                ALTER TABLE `{$tablePrefix}ServerData`
-                    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
                 ";
         $q->prepare($qStr);
         $q->execute();
