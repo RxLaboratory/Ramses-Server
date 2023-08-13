@@ -257,9 +257,12 @@
                 $qStr = $qStrHeader . join(", ", $values) . " ";
 
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
-                else $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
-                
-                if ($tableName == "RamUser") $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed, `userName` = excluded.userName ;";
+                else if ($sqlMode == 'mysql') $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
+                else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
+               
+                if ($tableName == "RamUser" && $sqlMode != 'mariadb') $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed, `userName` = excluded.userName ;";
+                else if ($tableName == "RamUser" && $sqlMode == 'mariadb') $qStr = $qStr . "`data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`), `userName` = VALUES(`userName`) ;";
+                else if ($sqlMode == 'mariadb') $qStr = $qStr . "`data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`) ;";
                 else $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
         
                 $q = new DBQuery();

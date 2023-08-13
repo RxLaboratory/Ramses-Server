@@ -6,6 +6,7 @@
         private $logsPath = "";
         private $connexionLogFile = "";
         private $debugLogFile = "";
+        private $requestPath = "";
         private $levels = Array (
             'DATA' => 0,
             'DEBUG' => 1,

@@ -56,6 +56,11 @@
     flush();
 
     $encrypt_key = createEncryptionKey();
+    if ($encrypt_key === ""){
+        echo("<strong>> Can't create the encryption key!</strong><br>");
+        echo("Check the server has write permissions in the <code>condig</code> folder.");
+        die();
+    }
     $encrypt_key_txt = base64_encode($encrypt_key);
     echo( "The encryption key has been saved in <code>config/config_security.php</code>. You should backup this file now.<br />" );
     flush();

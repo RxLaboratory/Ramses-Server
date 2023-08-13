@@ -44,6 +44,7 @@
         $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
 
         $configSecFile = fopen($__ROOT__."/config/config_security.php", "w");
+        if (!$configSecFile) return "";
         $encryption_key_txt = base64_encode($encryption_key);
         $ok = fwrite($configSecFile, "<?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?>");
         fclose($configSecFile);
@@ -467,14 +468,9 @@
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
 
         else $qStr = "CREATE TABLE IF NOT EXISTS `{$tablePrefix}deletedData` (
-                    `id` int(11) NOT NULL,
+                    `id` int(11) NOT NULL UNIQUE AUTO_INCREMENT PRIMARY KEY,
                     `uuid` varchar(36) COLLATE utf8_unicode_ci NOT NULL
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-                ALTER TABLE `{$tablePrefix}deletedData`
-                    ADD PRIMARY KEY (`id`),
-                    ADD UNIQUE KEY `uuid` (`uuid`);
-                ALTER TABLE `{$tablePrefix}deletedData`
-                    MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
                 ";
 
         $q->prepare($qStr);

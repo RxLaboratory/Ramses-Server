@@ -201,13 +201,19 @@
                             WHERE {$condition} 
                             ON CONFLICT(uuid) DO UPDATE SET 
                             `data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
-                else
+                else if ($sqlMode == 'mysql')
                     $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`, `modified`, `removed`) 
                             SELECT new.uuid, new.data, new.modified, new.removed 
                             FROM ( SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
                             WHERE  {$condition} ) 
                             AS new 
                             ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified, `removed` = new.removed ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`, `modified`, `removed`) 
+                        SELECT new.uuid, new.data, new.modified, new.removed 
+                        FROM ( SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
+                        WHERE  {$condition} ) 
+                        ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`) ;";
 
                 $q->prepare($qStr);
                 $q->execute();
@@ -349,10 +355,13 @@
                     $qStr = "INSERT INTO `{$tablePrefix}RamScheduleEntry` (`uuid`, `data`) {$values}
                             ON CONFLICT(uuid) DO UPDATE SET 
                             `data` = excluded.data ;";
-                else
+                else if ($sqlMode == 'mysql')
                     $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`) {$values}
                             AS new 
-                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified, `removed` = new.removed ;";
+                            ON DUPLICATE KEY UPDATE `data` = new.data ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`) {$values}
+                        ON DUPLICATE KEY UPDATE `data` = VALUES(`data`) ;";
 
                 $q->prepare($qStr);
                 $q->execute();

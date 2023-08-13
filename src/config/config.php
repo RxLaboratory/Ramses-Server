@@ -34,7 +34,7 @@
 
 	// ==== SQL SETTINGS ====
 
-	// either 'mysql' (works for MariaDB too) or 'sqlite'
+	// either 'mysql', 'mariadb' or 'sqlite'
 	// Note: with 'mysql', the minimum version of MySQL is 8.0.19
 	$sqlMode = 'sqlite';
 	// Table prefix
