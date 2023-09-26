@@ -1,0 +1,26 @@
+{
+    "title": "Ramses Server",
+    "hosts": [
+        {
+            "name": "web",
+            "title": "PHP+SQL server"
+        }
+    ],
+    "os": [],
+    "assets": [
+        {
+            "nameRegEx": "ramses-server_[\\d.]*.zip",
+            "name": "Ramses Server",
+            "description": "Read the [update](https://ramses.rxlab.guide/components/server/update/) or [install](https://ramses.rxlab.guide/components/server/install/) instructions [here](https://ramses.rxlab.guide/components/server/).",
+            "hosts": [ {"name": "web", "title": "PHP+SQL server"} ],
+            "os": [ ],
+            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
+        }
+    ],
+    "userGuide": "http://ramses.rxlab.guide/components/server",
+    "apiReference": "https://ramses.rxlab.guide/dev/server-reference/",
+    "website": "https://rxlaboratory.org/tools/ramses/",
+    "description": "Ramses, the Rx Asset Management System, is a complete framework to help you, your team, your studio, track the production of your films and automate your workflow. The Ramses server stores and serves all shared data to the Ramses Application between all workstations in the studio. The Ramses Applications installed on these workstations connect to it to sync the data they need.",
+    "tutorials": "",
+    "books": ""
+}
