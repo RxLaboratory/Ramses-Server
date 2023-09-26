@@ -15,6 +15,22 @@
             "hosts": [ {"name": "web", "title": "PHP+SQL server"} ],
             "os": [ ],
             "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
+        },
+        {
+            "nameRegEx": "ramses-server_[\\d.]*_docker-sqlite.zip",
+            "name": "Ramses Server (Docker/SQLite)",
+            "description": "This is a Docker version of the server configured to use an SQLite database.",
+            "hosts": [ {"name": "docker", "title": "Docker"} ],
+            "os": [ ],
+            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
+        },
+        {
+            "nameRegEx": "ramses-server_[\\d.]*_docker-mysql.zip",
+            "name": "Ramses Server (Docker/MySQL)",
+            "description": "This is a Docker version of the server configured to use a MySQL database.",
+            "hosts": [ {"name": "docker", "title": "Docker"} ],
+            "os": [ ],
+            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
         }
     ],
     "userGuide": "http://ramses.rxlab.guide/components/server",
