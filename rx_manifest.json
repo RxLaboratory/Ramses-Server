@@ -36,7 +36,7 @@
     "userGuide": "http://ramses.rxlab.guide/components/server",
     "apiReference": "https://ramses.rxlab.guide/dev/server-reference/",
     "website": "https://rxlaboratory.org/tools/ramses/",
-    "description": "Ramses, the Rx Asset Management System, is a complete framework to help you, your team, your studio, track the production of your films and automate your workflow. The Ramses server stores and serves all shared data to the Ramses Application between all workstations in the studio. The Ramses Applications installed on these workstations connect to it to sync the data they need.",
+    "description": " The Rx Asset Management System (Ramses) Server.",
     "tutorials": "",
     "books": ""
 }
