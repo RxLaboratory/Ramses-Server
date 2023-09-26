@@ -14,7 +14,7 @@
             "description": "Read the [update](https://ramses.rxlab.guide/components/server/update/) or [install](https://ramses.rxlab.guide/components/server/install/) instructions [here](https://ramses.rxlab.guide/components/server/).",
             "hosts": [ {"name": "web", "title": "PHP+SQL server"} ],
             "os": [ ],
-            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
+            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"}]
         },
         {
             "nameRegEx": "ramses-server_[\\d.]*_docker-sqlite.zip",
@@ -22,7 +22,7 @@
             "description": "This is a Docker version of the server configured to use an SQLite database.",
             "hosts": [ {"name": "docker", "title": "Docker"} ],
             "os": [ ],
-            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
+            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"}]
         },
         {
             "nameRegEx": "ramses-server_[\\d.]*_docker-mysql.zip",
@@ -30,7 +30,7 @@
             "description": "This is a Docker version of the server configured to use a MySQL database.",
             "hosts": [ {"name": "docker", "title": "Docker"} ],
             "os": [ ],
-            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"},]
+            "urls": [{"title": "Documentation", "url": "http://ramses.rxlab.guide/components/server"}]
         }
     ],
     "userGuide": "http://ramses.rxlab.guide/components/server",
