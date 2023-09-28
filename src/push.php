@@ -54,7 +54,7 @@
 
         // Check incoming data
 
-        if ($table != "")
+        if ($table != "" && $table != "RamStatusHistory")
         {
             $log->debugLog("Receiving " . $table, "DEBUG");
 

@@ -29,6 +29,13 @@
         // There may be a uuid and a table for a single-object pull
         $table = getArg("table");
 
+        // Disable status history
+        if ($table == "RamStatusHistory") {
+            $reply["success"] = true;
+            $reply["message"] = "Status History is ignored.";
+            printAndDie();
+        }
+
 
         if ($table == "")
         {
