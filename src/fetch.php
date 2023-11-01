@@ -63,8 +63,10 @@
             // Load cache
             $outCacheFile = $tableCacheFolder . "/out.json";
             $out = loadCache($outCacheFile);
+            if (!$out) $out = array(); // If the cache file is empty, out is null
             $deletedCacheFile = $tableCacheFolder . "/deleted.json";
             $deletedUuids = loadCache($deletedCacheFile);
+            if (!$deletedUuids) $deletedUuids = array(); // If the cache file is empty, deletedUuids is null
 
             $tableInfo = array();
             $tableInfo["name"] = $tableName;
