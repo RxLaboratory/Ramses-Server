@@ -212,7 +212,8 @@
                     $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`, `modified`, `removed`) 
                         SELECT new.uuid, new.data, new.modified, new.removed 
                         FROM ( SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
-                        WHERE  {$condition} ) 
+                        WHERE  {$condition} )
+                        AS new 
                         ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`) ;";
 
                 $q->prepare($qStr);
