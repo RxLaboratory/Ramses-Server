@@ -227,28 +227,31 @@
                 for ($i = $startRow; $i < $endRow; $i++)
                 {
                     $newRow = $in[$i];
-                    $uuid = $newRow["uuid"];
+                    // Escape uuid
+                    $uuid = $db->quote($newRow["uuid"]);
+                    // Data will be encrypter/escaped later
                     $data = $newRow["data"];
-                    $modified = $newRow["modified"];
+                    // Escape date
+                    $modified = $db->quote($newRow["modified"]);
+                    // Should be either 1 or 0, nothing else
                     $removed = $newRow["removed"];
+                    if ($removed != 1 && $removed != 0) $removed = 0;
 
                     if ($tableName == "RamUser")
                     {
                         // Encrypt data
                         $data = encrypt($data);
-                        $userName = $newRow["userName"];
+                        // Escape user name
+                        $userName = $db->quote($newRow["userName"]);
 
-                        if ($sqlMode == 'sqlite') $userName = str_replace("'", "''", $userName);
-                        else $userName = str_replace("'", "\\'", $userName);
-
-                        $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed}, '-', '{$userName}' )";
+                        $values[] = "( $uuid, $data, $modified, $removed, '-', $userName )";
                     }
                     else
                     {
-                        if ($sqlMode == 'sqlite') $data = str_replace("'", "''", $data);
-                        else $data = str_replace("'", "\\'", $data);
+                        // Escape data
+                        $data = $db->quote($data);
 
-                        $values[] = "( '{$uuid}', '{$data}', '{$modified}', {$removed} )";
+                        $values[] = "( $uuid, $data, $modified, $removed )";
                     }
                 }
 

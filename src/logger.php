@@ -122,17 +122,26 @@
 
             $file = fopen($headerFile, "a");
             if (!$file) return;
+            if (!flock($file, LOCK_EX))
+                return;
             fwrite($file, $headerStr);
+            flock($file, LOCK_UN);
             fclose($file);
 
             $file = fopen($bodyFile, "a");
             if (!$file) return;
+            if (!flock($file, LOCK_EX))
+                return;
             fwrite($file, $body);
+            flock($file, LOCK_UN);
             fclose($file);
 
             $file = fopen($metaFile, "a");
             if (!$file) return;
+            if (!flock($file, LOCK_EX))
+                return;
             fwrite($file, "IP: {$ip}\nClient: {$clientVer}");
+            flock($file, LOCK_UN);
             fclose($file);
         }
 
@@ -145,9 +154,16 @@
             $file = fopen($this->connexionLogFile, "a");
 
             if (!$file) return;
+
+            // Lock exclusive
+            if (!flock($file, LOCK_EX))
+                return;
             
             if ($appendDateAndVersion) fwrite($file, "{$text},{$clientVer},{$date}\n");
             else fwrite($file, "{$text}\n");
+
+            // Unlock
+            flock($file, LOCK_UN);
 
             fclose($file);
         }
@@ -162,7 +178,11 @@
         {
             $file = fopen($this->debugLogFile, "a");
             if (!$file) return;
+            // Lock exclusive
+            if (!flock($file, LOCK_EX))
+                return;
             fwrite($file, "{$text}\n");
+            flock($file, LOCK_UN);
             fclose($file);
         }
 

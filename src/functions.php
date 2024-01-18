@@ -502,8 +502,16 @@
             $file = fopen($filePath, "r");
             if ($file)
             {
+                // Lock shared
+                if (!flock($file, LOCK_SH))
+                    return array();
+
                 $dataStr = fread($file, filesize($filePath));
+
+                // Unlock
+                flock($file, LOCK_UN);
                 fclose($file);
+                
                 return json_decode($dataStr, true);
             }
             else return array();
@@ -513,7 +521,19 @@
         {
             $cacheStr = json_encode($rows);
             $file = fopen($filePath, "w");
-            fwrite($file, $cacheStr);
-            fclose($file);
+            if ($file)
+            {
+                // Lock exclusive
+                if (!flock($file, LOCK_EX))
+                    return;
+
+                fwrite($file, $cacheStr);
+                fflush($file);
+
+                // Unlock
+                flock($file, LOCK_UN);
+                fclose($file);
+            }
+            
         }
 ?>
