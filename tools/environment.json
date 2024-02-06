@@ -1,0 +1,23 @@
+{
+    "php": {
+        "src_path": "./src",
+        "docker_folders": [
+            { "path": "./docker-mysql", "www": "www/ramses" },
+            { "path": "./docker-sqlite", "www": "www/ramses" }
+        ],
+        "ignore": [
+            ".foldex.ini",
+            "update"
+        ]
+    },
+    "src": {
+        "repo_path": ".",
+        "icon_set": "",
+        "desktop": ""
+    },
+    "meta": {
+        "name": "Ramses Server",
+        "version": "0.9.1-Beta",
+        "prerelease": false
+    }
+}
