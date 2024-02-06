@@ -240,7 +240,9 @@
                     if ($tableName == "RamUser")
                     {
                         // Encrypt data
-                        $data = encrypt($data);
+                        $data = $db->quote(
+                            encrypt($data)
+                        );
                         // Escape user name
                         $userName = $db->quote($newRow["userName"]);
 
