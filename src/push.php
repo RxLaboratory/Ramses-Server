@@ -235,7 +235,8 @@
                     $modified = $db->quote($newRow["modified"]);
                     // Should be either 1 or 0, nothing else
                     $removed = $newRow["removed"];
-                    if ($removed != 1 && $removed != 0) $removed = 0;
+                    if (!$removed || $removed == 0 || $removed == "0" || $removed == "" || $removed == "false") $removed = 0;
+                    else $removed = 1;
 
                     if ($tableName == "RamUser")
                     {
