@@ -24,7 +24,7 @@
     // GLOBAL VARIABLES AND SETTINGS //
 
     // The version
-    $ramsesVersion = "0.9.1-Beta";
+    $ramsesVersion = "0.9.2-Beta";
 
     // Settings
     // Number of pages returned by fetch and pull
