@@ -55,18 +55,10 @@
 	else $log->debugLog("GZIP compression disabled", "DEBUG");
 	$log->debugLog("Preparing session", "DEBUG");
 
-	// Remove protocol
-	$serverAddress  = str_replace('http://', '', $serverAddress);
-	$serverAddress  = str_replace('https://', '', $serverAddress);
-	// Get domain and path
-	$addressArray = explode("/", $serverAddress);
-	$domain = array_shift($addressArray);
-	// Remove port
-	$domain = explode(':', $domain);
-	$domain = array_shift($domain);
-	$path = "/" . join("/",$addressArray);
-	if (!endsWith($path, "/")) $path = $path . "/";
 	// Init session
+	$serverData = cleanServerAddress();
+	$domain = $serverData[0];
+	$path = $serverData[1];
 	SessionManager::sessionStart("Ramses_Server", $cookieTimeout, $path, $domain, $forceSSL );
 
 	$log->debugLog("Session started", "DEBUG");

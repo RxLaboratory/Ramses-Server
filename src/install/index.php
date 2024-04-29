@@ -121,6 +121,7 @@
     //Setup admin user
     $uuid = uuid();
     //Prepare password
+    cleanServerAddress();
     $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
     $pswd = hash("sha3-512", $pswd);
     $pswd = hashPassword($pswd, $uuid);
