@@ -6,8 +6,7 @@
             { "path": "./docker-sqlite", "www": "www/ramses" }
         ],
         "ignore": [
-            ".foldex.ini",
-            "update"
+            ".foldex.ini"
         ]
     },
     "src": {
@@ -17,7 +16,7 @@
     },
     "meta": {
         "name": "Ramses Server",
-        "version": "0.9.1-Beta",
+        "version": "0.10.0-Beta",
         "prerelease": false
     }
 }
