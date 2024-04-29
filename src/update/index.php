@@ -8,6 +8,7 @@
     $__ROOT__ = dirname(__FILE__, 2);
 
     // INIT
+    require_once($__ROOT__.'/global.php');
 	include($__ROOT__."/init.php");
 
     //connect to database
@@ -24,6 +25,11 @@
     include($__ROOT__."/update/project_columns.php");
     addProjectColumns();
 
+    // Run a database clean
+    echo "<p>Cleaning database...</p>";
+    flush();
+    require_once($__ROOT__."/db_clean.php");
+    db_clean(true);
 
     echo "<p><strong>Update finished</strong></p>";
     flush();

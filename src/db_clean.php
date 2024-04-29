@@ -53,7 +53,7 @@
     // Checks the date
     function db_clean_checkDate()
     {
-        global $tablePrefix, $log;
+        global $tablePrefix, $log, $dbCleanFrequency;
 
         $now = time();
         $previous = 0;
@@ -67,7 +67,7 @@
         // An hour
         $elapsed = $now-$previous;
 
-        if ($elapsed < 3600) return false;
+        if ($elapsed < $dbCleanFrequency) return false;
 
         $log->debugLog("It's time to clean the database", "DEBUG");
 
@@ -104,19 +104,19 @@
 
         // Make sure the tables exit
         createTable("RamStatus");
-        createTable("RamStatusHistory");
 
         $q = new DBQuery();
 
         // === Delete removed statuses ===
 
-        $q->prepare("DELETE FROM `{$tablePrefix}RamStatus` WHERE `removed` = 1 ;");
-        $q->execute();
-        $q->close();
+        //$q->prepare("DELETE FROM `{$tablePrefix}RamStatus` WHERE `removed` = 1 ;");
+        //$q->execute();
+        //$q->close();
 
         if (!$q->isOK()) $log->debugLog("Can't save delete removed statuses from RamStatus", "DEBUG");
 
-        // === Move the oldest statuses to their statushistory table ===
+        // === Mark obsolete statuses as removed ===
+        // They will be deleted during the next clean up
 
         // List all statuses
         $q->prepare("SELECT `uuid`, `data` FROM `{$tablePrefix}RamStatus` ;");
@@ -178,9 +178,9 @@
         $moveCount = count($statusToMove);
 
         $log->debugLog("Found {$rowCount} status rows.", "DEBUG");
-        $log->debugLog("Found {$moveCount} status to move to history.", "DEBUG");
+        $log->debugLog("Found {$moveCount} obsolete status to be removed.", "DEBUG");
 
-        // Move the data to the other table
+        // Remove obsolete data
         if ($moveCount != 0)
         {
             $moved = 0;
@@ -195,198 +195,423 @@
                     $moved++;
                 }
 
-                if ($sqlMode == 'sqlite') 
-                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory` (`uuid`, `data`, `modified`, `removed`) 
-                            SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
-                            WHERE {$condition} 
-                            ON CONFLICT(uuid) DO UPDATE SET 
-                            `data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
-                else if ($sqlMode == 'mysql')
-                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`, `modified`, `removed`) 
-                            SELECT new.uuid, new.data, new.modified, new.removed 
-                            FROM ( SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
-                            WHERE  {$condition} ) 
-                            AS new 
-                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified, `removed` = new.removed ;";
-                else
-                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`, `modified`, `removed`) 
-                        SELECT new.uuid, new.data, new.modified, new.removed 
-                        FROM ( SELECT `uuid`, `data`, `modified`, `removed` FROM `{$tablePrefix}RamStatus` 
-                        WHERE  {$condition} )
-                        AS new 
-                        ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`) ;";
+                $qStr = "UPDATE `{$tablePrefix}RamStatus`
+                        SET `removed` = 1
+                        WHERE {$condition} ;";
 
                 $q->prepare($qStr);
-                $q->execute();
-                $q->close();
-
-                $q->prepare("DELETE FROM `{$tablePrefix}RamStatus` WHERE {$condition} ;");
                 $q->execute();
                 $q->close();
             }
         }
 
-        $log->debugLog("Finished cleaning RamStatus and RamStatusHistory", "DEBUG");
+        // === Delete the RamStatusHistory table if it exists ===
+        // The use of this table has been deprecated
+
+        $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}RamStatusHistory`; ";
+        $q->prepare($qStr);
+        $q->execute();
+        $q->close();
+
+        $log->debugLog("Finished cleaning RamStatus", "DEBUG");
     }
 
-    function db_clean_ramSchedule()
+    function db_clean_ramScheduleEntry()
     {
-        global $tablePrefix, $log, $SQLMaxRowPerRequest, $sqlMode;
+        global $tablePrefix, $log;
 
         // Make sure the tables exit
         createTable("RamScheduleEntry");
+        createTable("RamScheduleRow");
+        createTable("RamStep");
 
         $q = new DBQuery();
 
         // === Delete removed schedule entries ===
 
-        $q->prepare("DELETE FROM `{$tablePrefix}RamScheduleEntry` WHERE `removed` = 1 ;");
-        $q->execute();
-        $q->close();
+        //$q->prepare("DELETE FROM `{$tablePrefix}RamScheduleEntry` WHERE `removed` = 1 ;");
+        //$q->execute();
+        //$q->close();
+        //if (!$q->isOK()) $log->debugLog("Can't save delete removed schedule entries from RamScheduleEntry", "DEBUG");
 
-        if (!$q->isOK()) $log->debugLog("Can't save delete removed schedule entries from RamScheduleEntry", "DEBUG");
+        // === Update schedule entries ===
 
-        $log->debugLog("Finished cleaning RamScheduleEntry", "DEBUG");
+        // Check the existing rows to clean entries if they use a non-existing row
+        // Row data by uuid
+        $existingRows = array();
+        $qRows = new DBQuery();
+        $qRows->prepare("SELECT `uuid`, `data` FROM `{$tablePrefix}RamScheduleRow` ;");
+        $qRows->execute();
+        while($row = $qRows->fetch()) {
+            $rowUuid = $row["uuid"] ?? "";
+            if ($rowUuid == "")
+                continue;
+
+            $dataStr = $row["data"] ?? "";
+            if ($dataStr == "")
+                continue;
+
+            $existingRows[$rowUuid] = json_decode($dataStr, true);
+        }
+        $qRows->close();
 
         // Add the project in schedule entries data
+        // And add row info if it's missing (old client versions may not include it)
         $q->prepare("SELECT `uuid`, `data` FROM `{$tablePrefix}RamScheduleEntry` ;");
         $q->execute();
 
         // Parse all data
-        // To speed up things, keep step/project association
+        // To speed up things,
+        // keep step/project association
+        // and row/project association
+        // and user/row association per project
         $stepProjectUuids = array();
+        $rowProjectUuids = array();
+        $userRowUuids = array();
+
         $uuidsToRemove = array();
-        $updateData = array();
+        $updateData = [];
+        $updateUuids = [];
+        $newRowsData = [];
+        $newRowsUuids = [];
+
         while($r = $q->fetch())
         {
             $dataStr = $r["data"];
             $uuid = $r["uuid"];
             $data = json_decode( $dataStr, true );
-            $projUuid = "";
-            if (isset($data["project"])) $projUuid = $data["project"];
-            if ($projUuid != "") continue;
-            if (!isset($data["step"])) {
-                $uuidsToRemove[] = $uuid;
+
+            $projUuid = $data["project"] ?? "";
+            $rowUuid = $data["row"] ?? "";
+
+            if (!isset($existingRows[$rowUuid]))
+                $rowUuid = "";
+
+            // If there already is a row and a project,
+            // we're fine
+            if ($projUuid != "" && $rowUuid != "")
                 continue;
-            }
-            $stepUuid = $data["step"];
-            if ($stepUuid == "" || $stepUuid = "none") {
-                $uuidsToRemove[] = $uuid;
-                continue;
-            }
-            if (isset($stepProjectUuids[$stepUuid])) {
-                $projUuid = $stepProjectUuids[$stepUuid];
-            }
+
+            // Do we need to update the entry?
+            $update = false;
+
+            // Set the project if needed
             if ($projUuid == "") {
-                // Get the project
-                $qProj = new DBQuery();
-                $qProj->prepare( "SELECT `data` FROM `{$tablePrefix}RamStep` WHERE `uuid` = :uuid ;" );
-                $qProj->bindStr("uuid", $stepUuid );
-                $qProj->execute();
-                $p = $qProj->fetch();
-                if ($p) {
-                    $pDataStr = $p["data"];
-                    $pData = json_decode( $dataStr, true );
-                    if (isset($pData["project"])) $projUuid = $pData["project"];
-                    if ($projUuid != "") $stepProjectUuids[$stepUuid] = $projUuid;
+
+                // Find it from the step or the row
+                $stepUuid = $data["step"] ?? "";
+
+                // Clean this, it's invalid
+                if (($stepUuid == "" || $stepUuid == "none") &&
+                    $rowUuid == "") {
+                    $uuidsToRemove[] = $uuid;
+                    continue;
                 }
-                $qProj->close();
+
+                if (isset($stepProjectUuids[$stepUuid])) {
+                    $projUuid = $stepProjectUuids[$stepUuid];
+                }
+                else if (isset($rowProjectUuids[$rowUuid])) {
+                    $projUuid = $rowProjectUuids[$rowUuid];
+                }
+
+                // Find the project from the step
+                if ($projUuid == "" && $stepUuid != "" && $stepUuid != "none") {
+                    // Get the project
+                    $qProj = new DBQuery();
+                    $qProj->prepare( "SELECT `data` FROM `{$tablePrefix}RamStep` WHERE `uuid` = :uuid ;" );
+                    $qProj->bindStr("uuid", $stepUuid );
+                    $qProj->execute();
+                    $p = $qProj->fetch();
+                    if ($p) {
+                        $pDataStr = $p["data"];
+                        $pData = json_decode( $pDataStr, true );
+                        if (isset($pData["project"])) $projUuid = $pData["project"];
+                        if ($projUuid != "") $stepProjectUuids[$stepUuid] = $projUuid;
+                    }
+                    $qProj->close();
+                }
+                // Or from the row
+                if ($projUuid == "" && $rowUuid != "") {
+                    // Get the project
+                    $qProj = new DBQuery();
+                    $qProj->prepare( "SELECT `data` FROM `{$tablePrefix}RamScheduleRow` WHERE `uuid` = :uuid ;" );
+                    $qProj->bindStr("uuid", $rowUuid );
+                    $qProj->execute();
+                    $p = $qProj->fetch();
+                    if ($p) {
+                        $pDataStr = $p["data"];
+                        $pData = json_decode( $pDataStr, true );
+                        if (isset($pData["project"])) $projUuid = $pData["project"];
+                        if ($projUuid != "") $rowProjectUuids[$stepUuid] = $projUuid;
+                    }
+                    $qProj->close();
+                }
+
+                // Update if found
+                if ($projUuid != "") {
+                    $data["project"] = $projUuid;
+                    $update = true;
+                }
             }
-            if ($projUuid != "") {
-                $data["project"] = $projUuid;
-                $newData = array();
-                $newData['uuid'] = $uuid;
-                $newData['data'] = $data;
-                $updateData[] = $newData;
+
+            // Set the row if needed
+            if ($rowUuid == "") {
+
+                // Get/Create it from the user
+                $userUuid = $data["user"] ?? "";
+
+                // Clean this, it's invalid
+                if ($userUuid == "") {
+                    $uuidsToRemove[] = $uuid;
+                    continue;
+                }
+
+                // If we don't have the project,
+                // We can't set a row
+                if ($rowUuid == "" && $projUuid == "") {
+                    $uuidsToRemove[] = $uuid;
+                    continue;
+                }
+
+                $projectRows = $userRowUuids[$projUuid] ?? array();
+                $rowUuid = $projectRows[$userUuid] ?? "";
+
+                // Find the row for this user & project
+                if ($rowUuid == "") {
+                    // Get the row
+                    foreach($existingRows as $rUuid => $rData){
+                        // Check User
+                        $qrUserUuid = $rData["user"] ?? "";
+                        if ($qrUserUuid != $userUuid) 
+                            continue;
+
+                        // Check Project
+                        $qrProjUuid = $rData["project"] ?? "";
+                        if ($qrProjUuid != $projUuid) 
+                            continue;
+
+                        $rowUuid = $rUuid;
+                        if ($rowUuid != "") {
+                            if (!isset($userRowUuids[$projUuid]))
+                                $userRowUuids[$projUuid] = array();
+                            $userRowUuids[$projUuid][$userUuid] = $rowUuid;
+                        }
+                    }
+                }
+
+                // Create a new row
+                if ($rowUuid == "") {
+
+                    $rowData = array();
+                    $rowData["comment"] = "Row automatically created on database clean-up.";
+                    $rowData["name"] = "User";
+                    $rowData["order"] = "0";
+                    $rowData["project"] = $projUuid;
+                    $rowData["user"] = $userUuid;
+                    $rowData["shortName"] = "user-row";
+                    $rowUuid = uuid();
+
+                    $newRowsData[] = $rowData;
+                    $newRowsUuids[] = $rowUuid;
+
+                    $existingRows[$rowUuid] = $rowData;
+                }
+
+                // Update 
+                if ($rowUuid != "") {
+                    $data["row"] = $rowUuid;
+                    $update = true;
+                }
             }
-            else {
-                $uuidsToRemove[] = $uuid;
+
+            // Make sure the date doesn't include any time
+            $date = $data["date"] ?? "";
+            $date = explode(" ", $date);
+            if (count($date) > 1) {
+                $data["date"] = $date[0];
+                $update = true;
+            }
+
+            // Add to the update list
+            if ($update) {
+                $updateData[] = $data;
+                $updateUuids[] = $uuid;
             }
         }
         $q->close();
 
         $removeCount = count($uuidsToRemove);
         $updateCount = count($updateData);
+        $newRowsCount = count($newRowsData);
         $log->debugLog("Found {$removeCount} invalid or empty schedule entries to remove.", "DEBUG");
-        $log->debugLog("Found {$updateCount} schedule entries to update with the project data.", "DEBUG");
+        $log->debugLog("Found {$updateCount} schedule entries to update with row and project data.", "DEBUG");
+        $log->debugLog("Found {$newRowsCount} new schedule rows to be created.", "DEBUG");
 
-        if ($removeCount != 0)
+        // Remove
+        $q->remove("RamScheduleEntry", $uuidsToRemove);
+        
+        // Create needed rows
+        $q->createOrUpdate("RamScheduleRow", $newRowsData, $newRowsUuids);
+
+        // Update
+        $q->createOrUpdate("RamScheduleEntry", $updateData, $updateUuids);
+
+        $log->debugLog("Schedule entries updated.", "DEBUG");
+    }
+
+    function db_clean_ramScheduleComment()
+    {
+        global $tablePrefix, $log;
+
+        // Make sure the tables exit
+        createTable("RamScheduleEntry");
+        createTable("RamScheduleRow");
+        createTable("RamScheduleComment");
+
+        $q = new DBQuery();
+
+        // Check the existing schedule rows
+        // Row data by uuid
+        $existingRows = $q->get("RamScheduleRow", true);       
+
+        // === Update Schedule Comments ===
+        
+        // Get comments
+        $q->prepare("SELECT `uuid`, `data`, `modified` FROM `{$tablePrefix}RamScheduleComment` WHERE `removed` = 0 ;");
+        $q->execute();
+
+        // Note rows per project
+        $projectNoteRowUuids = array();
+
+        // New data
+        $updateData = [];
+        $newRowsData = [];
+        $newRowsUuids = [];
+        $commentUuidsToRemove = [];
+
+        while($r = $q->fetch())
         {
-            $remove = 0;
-            while ($remove < $removeCount)
-            {
-                $condition = " `uuid` = '" . $uuidsToRemove[$remove] . "' ";
-                $remove++;
-                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
-                {
-                    if ($remove == $removeCount) break;
-                    $condition .=  " OR `uuid` = '" . $uuidsToRemove[$remove] . "' ";
-                    $remove++;
-                }
+            $dataStr = $r["data"];
+            $uuid = $r["uuid"];
+            $data = json_decode( $dataStr, true );
 
-                $q->prepare("DELETE FROM `{$tablePrefix}RamScheduleEntry` WHERE {$condition} ;");
-                $q->execute();
-                $q->close();
+            $projUuid = $data["project"] ?? "";
+            $comment = $data["comment"] ?? "";
+            $color = $data["color"] ?? "";
+            if ($projUuid == "" || ($comment == "" && $color == "")) {
+                $commentUuidsToRemove[] = $uuid;
+                continue;
             }
+
+            // Get the notes row for the given project
+            $rowUuid = $projectNoteRowUuids[$projUuid] ?? "";
+
+            if ($rowUuid == "") {
+                foreach($existingRows as $rUuid => $rData) {
+                    $pUuid = $rData["data"]["project"] ?? "";
+
+                    // Same project
+                    if ($pUuid != $projUuid)
+                        continue;
+
+                    // No user
+                    $uUuid = $rData["user"] ?? "";
+                    if ($uUuid != "" && $uUuid != "none")
+                        continue;
+
+                    // Shortname must be "notes-row"
+                    $name = $rData["shortName"] ?? "";
+                    if ($name != "notes-row")
+                        continue;
+
+                    // Found it!
+                    $rowUuid = $rUuid;
+                    $projectNoteRowUuids[$projUuid] = $rowUuid;
+                    break;
+                }
+            }
+
+            // Not found, create it
+            if ($rowUuid == "") {
+                $rowData = array();
+                $rowData["comment"] = "Row automatically created on database clean-up.";
+                $rowData["name"] = "Notes";
+                $rowData["order"] = "0";
+                $rowData["project"] = $projUuid;
+                $rowData["user"] = "";
+                $rowData["shortName"] = "notes-row";
+                $rowUuid = uuid();
+
+                $newRowsData[] = $rowData;
+                $newRowsUuids[] = $rowUuid;
+                
+                $rData = array();
+                $rData["data"] = $rowData;
+                $existingRows[$rowUuid] = $rData;
+                $projectNoteRowUuids[$projUuid] = $rowUuid;
+            }
+
+            // Create a Schedule entry
+            $entryData = array();
+            $commentArr = explode("\n", $comment);
+            $entryData["name"] = array_shift($commentArr);
+            $entryData["comment"] = join("\n", $commentArr);
+            $entryData["color"] = $color;
+            $entryData["row"] = $rowUuid;
+            $entryData["project"] = $projUuid;
+            $entryData["shortName"] = "note";
+            $entryData["step"] = "";
+            // Get the date without time
+            $date = explode(" ", $data["date"])[0];
+            $entryData["date"] = $date;
+            $updateData[] = $entryData;
+
+            $commentUuidsToRemove[] = $uuid;
         }
 
-        if ($updateCount != 0)
-        {
-            $update = 0;
-            while ($update < $updateCount)
-            {
-                $d = $updateData[$update];
-                $uuid = $d['uuid'];
-                $data = json_encode( $d['data'] );
-                if ($sqlMode == 'sqlite') $data = str_replace("'", "''", $data);
-                else $data = str_replace("'", "\\'", $data);
-                $values = " ( `uuid` = '" . $uuid . "', '" . $data . "' ) ";
-                $update++;
-                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
-                {
-                    if ($update == $updateCount) break;
-                    $d = $updateData[$update];
-                    $uuid = $d['uuid'];
-                    $data = json_encode( $d['data'] );
-                    $values .= ", ( `uuid` = '" . $uuid . "', '" . $data . "' ) ";
-                    $update++;
-                }
+        $q->close();
 
-                if ($sqlMode == 'sqlite') 
-                    $qStr = "INSERT INTO `{$tablePrefix}RamScheduleEntry` (`uuid`, `data`) {$values}
-                            ON CONFLICT(uuid) DO UPDATE SET 
-                            `data` = excluded.data ;";
-                else if ($sqlMode == 'mysql')
-                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`) {$values}
-                            AS new 
-                            ON DUPLICATE KEY UPDATE `data` = new.data ;";
-                else
-                    $qStr = "INSERT INTO `{$tablePrefix}RamStatusHistory`  (`uuid`, `data`) {$values}
-                        ON DUPLICATE KEY UPDATE `data` = VALUES(`data`) ;";
+        $updateCount = count($updateData);
+        $rowsCount = count($newRowsData);
+        $log->debugLog("Found {$updateCount} schedule comments which are copied to schedule entries.", "DEBUG");
+        $log->debugLog("Found {$rowsCount} schedule rows to create to store old notes.", "DEBUG");
 
-                $q->prepare($qStr);
-                $q->execute();
-                $q->close();
-            }
-        }
+        // Remove comments
+        $q->remove("RamScheduleComment", $commentUuidsToRemove);
+
+        // Create needed rows
+        $q->createOrUpdate("RamScheduleRow", $newRowsData, $newRowsUuids);
+
+        // Create schedule entries
+        $q->createOrUpdate("RamScheduleEntry", $updateData);
+
+        $log->debugLog("Schedule comments updated.", "DEBUG");
     }
     
     //  Runs the clean
-    function db_clean()
+    function db_clean($force=false)
     {
+        global $log;
+
         if (!db_clean_createTable()) return;
-        if (!db_clean_checkDate()) return;
+        if (!$force && !db_clean_checkDate()) return;
+
+        $log->debugLog("Running scheduled DB Clean...", "DEBUG");
 
         update_time_limit(60);
-        db_clean_ramStatus();
 
-        db_clean_ramSchedule();
+        db_clean_ramStatus();
+        db_clean_ramScheduleEntry();
+        db_clean_ramScheduleComment();
 
         // A vacuum for SQLite
         $q = new DBQuery();
         $q->vacuum();
 
         db_clean_saveDate();
+
+        $log->debugLog("DB Cleaned.", "DEBUG");
     }
 
     db_clean();

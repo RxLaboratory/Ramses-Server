@@ -130,7 +130,7 @@
             $q->prepare( "UPDATE `{$tablePrefix}RamUser` SET `removed` = 1, `modified` = :modified WHERE `userName` = :username AND `uuid` != :uuid;" );
             $q->bindStr( "username", $username );
             $q->bindStr( "uuid", $uuid );
-            $q->bindStr( "modified", date("Y-m-d H:i:s") );
+            $q->bindStr( "modified", gmdate("Y-m-d H:i:s") );
             $q->execute();
             $q->close();
         }

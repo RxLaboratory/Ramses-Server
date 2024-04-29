@@ -29,15 +29,15 @@
             $this->logsPath = "logs/";
             createFolder($this->logsPath, true);
             // Create folder for current month too
-            createFolder($this->logsPath . date("Y/m/") , true);
+            createFolder($this->logsPath . gmdate("Y/m/") , true);
 
             if (!$connexionLogs && !$requestLogs && !$debugLogs) return;
 
             // Prepare files
-            $this->connexionLogFile = $this->logsPath . date("Y/m/") . date("Y-m-d") . "_connexionLog.csv";
+            $this->connexionLogFile = $this->logsPath . gmdate("Y/m/") . gmdate("Y-m-d") . "_connexionLog.csv";
             if (!is_file($this->connexionLogFile)) $this->appendConnexionLog("UUID,ID,Name,Role,Action,Client version,Date");
 
-            $this->debugLogFile = $this->logsPath . date("Y/m/") . date("Y-m-d") . "_debugLog.csv";
+            $this->debugLogFile = $this->logsPath . gmdate("Y/m/") . gmdate("Y-m-d") . "_debugLog.csv";
             $this->initDebugLog();
 
             // Delete old logs
@@ -74,7 +74,7 @@
             global $reply;
             global $logLevel;
 
-            $date = date("Y/m/d H:i:s");
+            $date = gmdate("Y/m/d H:i:s");
 
             // Add the log to the reply
             if ($this->levels[$level] >= $this->levels[$logLevel])
@@ -100,9 +100,9 @@
             if (!$enableLogs) return;
             if (!$requestLogs) return;
 
-            $date = date("Y-m-d H:i:s");
+            $date = gmdate("Y-m-d H:i:s");
 
-            $this->requestPath = "logs/" . date("Y/m/") . "/request_{$date}";
+            $this->requestPath = "logs/" . gmdate("Y/m/") . "/request_{$date}";
             createFolder($this->requestPath, true);
 
             $headerFile = $this->requestPath . "/request-header.txt";
@@ -147,7 +147,7 @@
 
         private function appendConnexionLog($text, $appendDateAndVersion = true)
         {
-            $date = date("Y/m/d H:i:s");
+            $date = gmdate("Y/m/d H:i:s");
             if (isset($_SESSION["clientVersion"])) $clientVer = $_SESSION["clientVersion"];
             else $clientVer = "unknown";
             
@@ -193,9 +193,9 @@
             $timeout = ($logsExpiration+1) * 86400;
             // get limit
             $timeLimit = strtotime("now") - $timeout;
-            $yearLimit = date("Y", $timeLimit);
-            $monthLimit = date("m", $timeLimit);
-            $dayLimit = date("d", $timeLimit);
+            $yearLimit = gmdate("Y", $timeLimit);
+            $monthLimit = gmdate("m", $timeLimit);
+            $dayLimit = gmdate("d", $timeLimit);
 
             // Year
             $yearFolders = glob($this->logsPath . "*/", GLOB_MARK);

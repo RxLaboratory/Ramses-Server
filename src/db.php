@@ -46,6 +46,9 @@
 		private $ok = false;
 		private $closed = true;
 		private $errorInfo = "";
+		private $start_time = 0; // used to time methods
+
+		// === Status ===
 
 		public function isOK()
 		{
@@ -57,124 +60,181 @@
 			return $this->errorInfo;
 		}
 
-		// Insert/Replace a new row in a table
-		public function insert( $table, $keys )
-		{
-			global $tablePrefix;
 
-			$qKeys = array();
-			$qVals = array();
+		// === High level methods ===
 
-			foreach( $keys as $key )
+		/**
+		 * Mark a bunch of items as removed
+		 * @param string $table The name of the table
+		 * @param array $uuids The uuids to be marked as removed
+		 */
+		public function remove($table, $uuids) {
+
+			global $SQLMaxRowPerRequest, $tablePrefix, $log;
+
+			$this->start_timer();
+
+			// Remove entries in the table
+			$remove = 0;
+			$removeCount = count($uuids);
+
+			$log->debugLog("Removing {$removeCount} items from $table.", "DEBUG");
+
+			$keys = [];
+			$vals = [];
+			$condition = [];
+
+			$modified = gmdate("Y-m-d H:i:s", time()); 
+
+			while ($remove < $removeCount)
 			{
-				array_push( $qKeys, '`' . $key . '`');
-				array_push( $qVals, ':' . $key);
-			}
-
-			array_push( $qKeys, '`latestUpdate`');
-			array_push( $qKeys, '`removed`');
-			array_push( $qVals, ':udpateTime');
-			array_push( $qVals, ':removed');
-
-			$q = "REPLACE INTO `{$tablePrefix}{$table}` (" . join(",",$qKeys) . ") VALUES (" . join(",",$qVals) . ");";
-
-			$this->prepare($q);
-			$this->bindStr('udpateTime', dateTimeStr() );
-			$this->bindInt('removed', '0' );
-		}
-
-		// Removes a row from a table
-		public function remove( $table, $uuid, $deleteNEW = true )
-		{
-			global $tablePrefix;
-
-			$sName = '';
-
-			if ($deleteNEW)
-			{
-				$q = "SELECT `shortName` FROM `{$tablePrefix}{$table}` WHERE `uuid`= :uuid ;";
-
-				$this->prepare($q);
-				$this->bindStr( "uuid", $uuid, true);
-				$this->execute();
-
-				$item = $this->fetch();
-				if ($item) $sName = $item['shortName'];
-
-				$this->close();
-			}
-			
-			// DELETE
-			if ($sName == "NEW")
-			{
-				$q = "DELETE FROM `{$tablePrefix}{$table}` WHERE uuid= :uuid ;";
-				
-				$this->prepare($q);
-				$this->bindStr('uuid', $uuid, true );
-				$this->execute( "'NEW' item deleted." );
-				$this->close();
-			}
-			// SET REMOVED
-			else
-			{
-				$q = "UPDATE `{$tablePrefix}{$table}` SET removed = 1, latestUpdate = :udpateTime WHERE uuid= :uuid ;";
-				
-				$this->prepare($q);
-				$this->bindStr('uuid', $uuid, true );
-				$this->bindStr('udpateTime', dateTimeStr() );
-				$this->execute( "Item '{$sName}' removed from {$table}." );
-				$this->close();
-			}
-		}
-
-		// Updates a row in a table
-		public function update( $table, $keys, $uuid )
-		{
-			global $tablePrefix;
-
-			$qKeys = array();
-
-			foreach( $keys as $key )
-			{
-				array_push( $qKeys, '`' . $key . '`= :' . $key);
-			}
-			array_push($qKeys, '`latestUpdate`= :updateTime');
-
-			$q = "UPDATE `{$tablePrefix}{$table}` SET " . join(",",$qKeys) . " WHERE `uuid`= :uuid;";
-
-			$this->prepare($q);
-			$this->bindStr('uuid',  $uuid );
-			$this->bindStr('updateTime', dateTimeStr() );
-		}
-
-		// Gets values from a single row
-		public function get( $table, $keys, $uuid )
-		{
-			global $tablePrefix;
-
-			$qKeys = array();
-			foreach( $keys as $key )
-			{
-				array_push( $qKeys, '`' . $key . '`');
-			}
-
-			$q = "SELECT " . join(',',$qKeys) . " FROM `{$tablePrefix}{$table}` WHERE `uuid`= :uuid;";
-
-			$this->prepare($q);
-			$this->bindStr('uuid',  $uuid );
-
-			$result = Array();
-			$this->execute();
-			if ($r = $this->fetch())
-			{
-				foreach($keys as $key)
+				for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
 				{
-					$result[$key] = $r[$key];
+					if ($remove == $removeCount) break;
+
+					$key = "uuid$remove";
+					$condition[] =  "`uuid` = :$key ";
+					$keys[] = $key;
+					$vals[] = $uuids[$remove];
+					$remove++;
 				}
+	
+				$condition = join(" OR ", $condition);
+				$this->prepare("UPDATE `{$tablePrefix}$table` SET `modified` = '$modified', `removed` = 1 WHERE {$condition} ;");
+				$this->bindStrings($keys, $vals);
+				$this->execute();
+				$this->close();
 			}
-			$this->close();
-			return $result;
+
+			$elapsed = $this->elapsed();
+			$log->debugLog("Rmoved {$removeCount} items in $table in $elapsed ms", "DEBUG");
 		}
+
+		/**
+		 * Create new items or update existing items in a table
+		 * @param string $table The name of the table
+		 * @param array $data The list of data to be created
+		 * @param array $uuids The uuids. If the array is empty, will generate new uuids.
+		 */
+		public function createOrUpdate($table, $data, $uuids = array() ) {
+
+			global $SQLMaxRowPerRequest, $tablePrefix, $sqlMode, $log;
+
+			$this->start_timer();
+
+			$update = 0;
+			$updateCount = count($data);
+
+			$log->debugLog("Updating {$updateCount} items from $table.", "DEBUG");
+
+			$modified = gmdate("Y-m-d H:i:s", time());
+
+            while ($update < $updateCount)
+            {
+                // The values to be added to the request
+                $vals = [];
+                $keys = [];
+
+                // The array of values for building the request
+                $valuesStr = [];
+
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    // Got all
+                    if ($update == $updateCount) break;
+
+					$uuidkey = "uuid$update";
+                    $keys[] = $uuidkey;
+                    $vals[] = $uuids[$update] ?? uuid();
+
+					$datakey = "data$update";
+                    $keys[] = $datakey;
+                    $vals[] = json_encode( $data[$update] );
+
+                    $valuesStr[] = "( :$uuidkey, :$datakey, '$modified' )";
+
+                    $update++;
+                }
+
+                $valuesStr = implode(", ", $valuesStr);
+
+                if ($sqlMode == 'sqlite') 
+                    $qStr = "INSERT INTO `{$tablePrefix}$table` (`uuid`, `data`, `modified`)
+							VALUES {$valuesStr}
+                            ON CONFLICT(uuid) DO UPDATE SET 
+                            `data` = excluded.data, `modified` = excluded.modified ;";
+                else if ($sqlMode == 'mysql')
+                    $qStr = "INSERT INTO `{$tablePrefix}$table`  (`uuid`, `data`, `modified`)
+							VALUES {$valuesStr}
+							AS new 
+                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}$table`  (`uuid`, `data`, `modified`)
+							VALUES {$valuesStr}
+                        	ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`) ;";
+
+                $this->prepare($qStr);
+                $this->bindStrings($keys, $vals);
+                $this->execute();
+                $this->close();
+            }
+
+			$elapsed = $this->elapsed();
+			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
+		}
+
+		/**
+		 * Get all items from a table
+		 * @param string $table The name of the table
+		 * @param boolean $includeRemoved Whether to include removed items
+		 * @return array The items by uuid, as an associative array with uuid, data (decoded as an associative array), modified (as a string), removed (as a bool)
+		 */
+		public function get($table, $includeRemoved = false) {
+
+			global $tablePrefix, $log;
+
+			$this->start_timer();
+
+			$qStr = "SELECT `uuid`, `data`, `modified`, `removed`
+					FROM {$tablePrefix}$table ";
+
+			if (!$includeRemoved)
+				$qStr .= "WHERE `removed` = 0 ";
+			
+			$qStr .= ";";
+
+			$items = array();
+
+			$this->prepare($qStr);
+			$this->execute();
+			while($r = $this->fetch()) {
+				
+				$uuid = $r["uuid"];
+				if ($uuid == "")
+					continue;
+
+				$dataStr = $r["data"];
+				if ($dataStr == "")
+					continue;
+
+				$item = array();
+				$item["data"] = json_decode($dataStr, true);
+				$item["modified"] = $r["modified"];
+				$item["removed"] = (int)$r["removed"] == 1;
+				
+				$items[$uuid] = $item;
+			}
+
+			$this->close();
+
+			$count = count($items);
+			$elapsed = $this->elapsed();
+			$log->debugLog("Retrieved {$count} items from $table in $elapsed ms", "DEBUG");
+
+			return $items;
+		}
+
+		// === Low level methods ===
 
 		// Bind a string
 		public function bindStr( $key, $str, $mandatory = false )
@@ -192,6 +252,18 @@
 			}
 
 			$this->query->bindValue( ":{$key}", $str, PDO::PARAM_STR );
+		}
+
+		// Bind many strings
+		public function bindStrings( $keys, $strings )
+		{
+			if (count($keys) != count($strings))
+				throw "The key and string count doesn't match";
+
+			for ($i = 0; $i < count($keys); $i++)
+			{
+				$this->bindStr( $keys[$i], $strings[$i]);
+			}
 		}
 
 		// Bind an int
@@ -317,6 +389,18 @@
 			$query = $db->prepare("VACUUM");
 			$query->execute();
 			$query->closeCursor();
+		}
+
+		// === PRIVATE ===
+
+		private function start_timer() {
+			$this->start_time = hrtime(true);
+		}
+
+		private function elapsed() {
+			$end_time = hrtime(true);
+			$elapsed = ($end_time-$this->start_time) / 1000000; // nanonsecs to millisecs
+			return (int)$elapsed;
 		}
 	}
 ?>

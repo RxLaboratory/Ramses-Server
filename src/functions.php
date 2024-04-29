@@ -558,44 +558,44 @@
         die( json_encode($reply, JSON_INVALID_UTF8_SUBSTITUTE ) );
     }
 
-        // Useful functions to handle cache
-        function loadCache($filePath)
+    // Useful functions to handle cache
+    function loadCache($filePath)
+    {
+        $file = fopen($filePath, "r");
+        if ($file)
         {
-            $file = fopen($filePath, "r");
-            if ($file)
-            {
-                // Lock shared
-                if (!flock($file, LOCK_SH))
-                    return array();
+            // Lock shared
+            if (!flock($file, LOCK_SH))
+                return array();
 
-                $dataStr = fread($file, filesize($filePath));
+            $dataStr = fread($file, filesize($filePath));
 
-                // Unlock
-                flock($file, LOCK_UN);
-                fclose($file);
-                
-                return json_decode($dataStr, true);
-            }
-            else return array();
-        }
-    
-        function saveCache($filePath, $rows)
-        {
-            $cacheStr = json_encode($rows);
-            $file = fopen($filePath, "w");
-            if ($file)
-            {
-                // Lock exclusive
-                if (!flock($file, LOCK_EX))
-                    return;
-
-                fwrite($file, $cacheStr);
-                fflush($file);
-
-                // Unlock
-                flock($file, LOCK_UN);
-                fclose($file);
-            }
+            // Unlock
+            flock($file, LOCK_UN);
+            fclose($file);
             
+            return json_decode($dataStr, true);
         }
+        else return array();
+    }
+
+    function saveCache($filePath, $rows)
+    {
+        $cacheStr = json_encode($rows);
+        $file = fopen($filePath, "w");
+        if ($file)
+        {
+            // Lock exclusive
+            if (!flock($file, LOCK_EX))
+                return;
+
+            fwrite($file, $cacheStr);
+            fflush($file);
+
+            // Unlock
+            flock($file, LOCK_UN);
+            fclose($file);
+        }
+        
+    }
 ?>

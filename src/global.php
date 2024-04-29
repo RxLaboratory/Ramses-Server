@@ -24,7 +24,7 @@
     // GLOBAL VARIABLES AND SETTINGS //
 
     // The version
-    $ramsesVersion = "0.9.2-Beta";
+    $ramsesVersion = "0.10.0-Beta";
 
     // Settings
     // Number of pages returned by fetch and pull
@@ -47,6 +47,7 @@
 	$sessionTimeout = 1800;
 	$cookieTimeout = 43200;
 	$clientKey = "drHSV2XQ";
+    $dbCleanFrequency = 86400;
 
     // Logs config
 

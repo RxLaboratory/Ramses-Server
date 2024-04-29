@@ -4,7 +4,7 @@
         
         This program is licensed under the GNU General Public License.
 
-        Copyright (C) 2020-2023 Nicolas Dufresne and Contributors.
+        Copyright (C) 2020-2024 Nicolas Dufresne and Contributors.
 
         This program is free software;
         you can redistribute it and/or modify it
@@ -22,15 +22,6 @@
 	*/
 
 	// Edit this configuration file before running the install script at /install/index.php
-
-	// === DEV MODE & DEBUG Info ===
-
-	// Activates printing the SQL & PHP errors.
-	// For security reasons, it is important to set this to false in production mode
-	$devMode = false;
-	// Sets the minimum level of the logs in the server replies sent to the clients
-	// One of: 'DATA', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'FATAL'
-	$logLevel = 'WARNING';
 
 	// ==== SQL SETTINGS ====
 
@@ -54,6 +45,16 @@
 	$sqlUser = "ramses";
 	// Password
 	$sqlpassword = "password";
+
+	// ==== Performance & Storage ====
+
+	// Frequency for database clean-up
+	// Clean-ups help reduce the database size and fix potential errors,
+	// But they may make the sync a bit longer,
+	// so they should not be run too often.
+	// The default is once a day and seems to be fine.
+	// Default: 24 hours (86400 s)
+	$dbCleanFrequency = 86400;
 
 	// ==== SESSION & SECURITY SETTINGS ====
 
@@ -83,4 +84,13 @@
 	// It can be used to make sure only your own client, built by yourself, can connect to your own server. In this case, keep it secret!
 	// It is used to hash passwords.
 	$clientKey = "drHSV2XQ";
+
+	// === DEV MODE & DEBUG Info ===
+
+	// Activates printing the SQL & PHP errors.
+	// For security reasons, it is important to set this to false in production mode
+	$devMode = false;
+	// Sets the minimum level of the logs in the server replies sent to the clients
+	// One of: 'DATA', 'DEBUG', 'INFO', 'WARNING', 'CRITICAL', 'FATAL'
+	$logLevel = 'WARNING';
 ?>
