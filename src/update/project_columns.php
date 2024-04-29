@@ -30,7 +30,7 @@
         {
             $table = $row[0];
 
-            set_time_limit(60);
+            update_time_limit(60);
 
             if (hasProjectColumn($table)) continue;
 

@@ -80,7 +80,7 @@
             $inUuids = array();
             if (!is_dir($tableCacheFolder))
             {
-                set_time_limit(30);
+                update_time_limit(30);
 
                 mkdir($tableCacheFolder);
 
@@ -125,7 +125,7 @@
                 $inUuids = loadCache($inUuidsCacheFile);
             }
 
-            set_time_limit(30);
+            update_time_limit(30);
 
             $log->debugLog("Got " . count($inRows) . " rows.", "DEBUG");
 
@@ -200,7 +200,7 @@
         $tableCacheFolders = glob($_SESSION["syncCachePath"] . "/" . "*/", GLOB_MARK);
         foreach( $tableCacheFolders as $tableCacheFolder )
         {
-            set_time_limit(30);
+            update_time_limit(30);
 
             // The table name is the name of the folder
             $tableName = basename($tableCacheFolder);

@@ -74,6 +74,25 @@
         else return "";
     }
 
+    /**
+     * Checks if a given PHP function is enabled on the server
+     * @param string $function_name The name of the function
+     * @return boolean
+     */
+    function is_function_enabled($function_name)
+    {
+        // False if the function is not in the list of disabled functions
+        return strpos(
+            ini_get('disable_functions'),
+            $function_name
+            ) === false;
+    }
+
+    /**
+     * Cleans the global $serverAddress value,
+     * i.e. removes the protocol if it is included.
+     * @return Array Strings: the domain (without port) and path.
+     */
     function cleanServerAddress()
     {
         global $serverAddress;
@@ -93,6 +112,28 @@
         if (!endsWith($path, "/")) $path = $path . "/";
 
         return [$domain, $path];
+    }
+
+    /**
+     * A safe way to set_time_limit
+     * i.e. No error if the server doesn't allow it,
+     * or if it is unlimited
+     * @param int $timeout
+     */
+    function update_time_limit($timeout)
+    {
+        $max = (int)ini_get('max_execution_time');
+        
+        //Don't bother if unlimited
+        if ($max == 0)
+            return;
+
+        // If the function is disabled, can't do
+        if (!is_function_enabled('set_time_limit'))
+            return;
+
+        // Ignore errors
+        @set_time_limit($timeout);
     }
 
     /**

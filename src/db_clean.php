@@ -377,7 +377,7 @@
         if (!db_clean_createTable()) return;
         if (!db_clean_checkDate()) return;
 
-        set_time_limit(60);
+        update_time_limit(60);
         db_clean_ramStatus();
 
         db_clean_ramSchedule();
