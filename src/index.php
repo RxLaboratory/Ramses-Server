@@ -53,6 +53,8 @@
 		printAndDie();
 	}
 
+	// ======== PUBLIC INTERFACE ========
+
 	//get request metadata
 	include("clientmetadata.php");
 
@@ -85,21 +87,38 @@
 	//login
 	include("login.php");
 
-	//secured operations, check token first
+	// ======== START PRIVATE INTERFACE ========
+	// >>>>>>>> Check token to get into the private area
 	$token = getArg("token");
 	if ($token != $_SESSION["token"]){
 		$log->debugLog("Disconnected (Invalid token).", "WARNING");
 		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
 	}
 
+	//regularly clean the db
 	include("db_clean.php");
+
+	// projects and users management
+	include("users_set_password.php");
+	include("projects_get.php");
+	include("projects_get_users.php");
+	include("projets_set_current.php");
+
+	// Sync methods
 	include("sync.php");
 	include("push.php");
 	include("fetch.php");
 	include("pull.php");
-	include("set_password.php");
+
+	// ========= ADMIN INTERFACE ========
+	// >>>>>>>> Check if we're admin to get into this area
+	// Admin
+	if (!isAdmin())
+		printAndDie();
+
 	include("clean.php");
+	include("projects_assign.php");
+	include("projects_unassign.php");
 
 	printAndDie();
-
 ?>

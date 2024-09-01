@@ -1,14 +1,11 @@
 <?php
 
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
-
     /*
         Ramses: Rx Asset Management System
         
         This program is licensed under the GNU General Public License.
 
-        Copyright (C) 20202-2021 Nicolas Dufresne and Contributors.
+        Copyright (C) 20202-2024 Nicolas Dufresne and Contributors.
 
         This program is free software;
         you can redistribute it and/or modify it
@@ -24,6 +21,9 @@
         You should have received a copy of the *GNU General Public License* along with this program.
         If not, see http://www.gnu.org/licenses/.
     */
+
+    require_once($__ROOT__."/functions.php");
+    require_once($__ROOT__."/reply.php");
 
     if ( acceptReply( "setPassword" ) )
     {
