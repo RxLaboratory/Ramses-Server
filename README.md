@@ -12,6 +12,11 @@ This server is used to sync data across *Ramses Clients*.
 
 This server is a simple REST API implemantation in *PHP* to store the data in a MySQL Database. See the [developer documentation](http://ramses.rxlab.io) for [the reference of the API](http://ramses.rxlab.guide/dev/server-reference/).
 
+## Python client
+
+We provide a very simple example implementation of client in Python, available in [py_client](py_client).  
+You can use this client to test the server from a terminal.
+
 ## Quick reference
 
 This is a quick overview as a reminder, the [developer documentation and all references](http://ramses.rxlab.io) being available on [ramses.rxlab.io](http://ramses.rxlab.io)
