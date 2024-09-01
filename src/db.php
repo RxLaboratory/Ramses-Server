@@ -185,6 +185,10 @@
 			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
 		}
 
+		public function assignUser($userId, $projectId) {
+			$this->assignUsers(array(array($userId, $projectId)));
+		}
+
 		public function assignUsers( $assignments ) {
 			global $SQLMaxRowPerRequest, $tablePrefix, $sqlMode, $log;
 

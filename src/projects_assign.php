@@ -35,8 +35,58 @@
             printAndDie();
         }
 
+        $userUuid = getArg("user");
+        $projectUuid = getArg("project");
+
+        if (strlen($userUuid) == 0)
+        {
+            $reply["message"] = "Missing user";
+            $reply["success"] = false;
+            $log->debugLog("Missing user", "WARNING");
+            printAndDie();
+        }
+
+        if (strlen($projectUuid) == 0)
+        {
+            $reply["message"] = "Missing project";
+            $reply["success"] = false;
+            $log->debugLog("Missing project", "WARNING");
+            printAndDie();
+        }
+
         // Get the project and the user id from their uuid
+        $q = new DBQuery();
+        $q->prepare("SELECT `id` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid;");
+        $q->bindStr( "userUuid", $userUuid );
+        $q->execute();
+        $userId = (int)$q->fetch()["id"] ?? -1;
+        $q->close();
+        if ($userId < 0) {
+            $reply["success"] = false;
+            $reply["message"] = "Can't find the user $userUuid in the database, sorry.";
+            $log->debugLog("Can't find user $userUuid.", "WARNING");
+            printAndDie();
+        }
+
+        $q = new DBQuery();
+        $q->prepare("SELECT `id` FROM `{$tablePrefix}RamProject` WHERE `uuid` = :projectUuid;");
+        $q->bindStr( "projectUuid", $projectUuid );
+        $q->execute();
+        $projectId = (int)$q->fetch()["id"] ?? -1;
+        $q->close();
+        if ($projectId < 0) {
+            $reply["success"] = false;
+            $reply["message"] = "Can't find the project $userUuid in the database, sorry.";
+            $log->debugLog("Can't find project $userUuid.", "WARNING");
+            printAndDie();
+        }
+
         // Update the ProjectUser table
+        $q->assignUser($userId, $projectId);
+
+        $reply["message"] = "User assigned!";
+        $reply["success"] = true;
+        printAndDie();
     }
 
 ?>

@@ -102,7 +102,7 @@
 	include("users_set_password.php");
 	include("projects_get.php");
 	include("projects_get_users.php");
-	include("projets_set_current.php");
+	include("projects_set_current.php");
 
 	// Sync methods
 	include("sync.php");
