@@ -27,6 +27,8 @@
 		{
 			$db = new PDO( 'sqlite:' .$__ROOT__."/data/ramses_data" );
 			$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+			// activate use of foreign key constraints
+			$db->exec( 'PRAGMA foreign_keys = ON;' );
 		}
 		else
 		{

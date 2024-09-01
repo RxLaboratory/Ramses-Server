@@ -502,13 +502,72 @@
                     `removed`	INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
         else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
-                    `id` int(11) PRIMARY KEY NOT NULL UNIQUE AUTO_INCREMENT,
+                    `id` INT PRIMARY KEY NOT NULL UNIQUE AUTO_INCREMENT,
                     `uuid` varchar(36) NOT NULL UNIQUE,
                     `data` mediumtext NOT NULL,
                     `project` mediumtext NULL,
                     `modified` timestamp NOT NULL,
-                    `removed` tinyint(4) NOT NULL DEFAULT 0
+                    `removed` tinyint(1) NOT NULL DEFAULT 0
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                ";
+        $q->prepare($qStr);
+
+        $q->execute();
+        $q->close();
+        return $q->isOK();
+    }
+
+    function createUserTable( $drop = false )
+    {
+        global $tablePrefix;
+
+        if ( !createTable("RamUser", $drop) )
+            return false;
+
+        // Add username and password rows
+        $q = new DBQuery();
+        $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
+            ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
+            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`;
+            ");
+
+        $q->execute();
+        $q->close();
+    }
+
+    function createProjectUserTable( $drop = false )
+    {
+        global $tablePrefix, $sqlMode;
+        
+        $name = "ServerProjectUser";
+        $q = new DBQuery();
+        $qStr = "";
+        if ($drop) $qStr = "DROP TABLE IF EXISTS `{$tablePrefix}{$name}`; ";
+        if ($sqlMode == 'sqlite') $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+                    `id`	INTEGER NOT NULL UNIQUE,
+                    `user_id`	INTEGER NOT NULL,
+                    `project_id`	INTEGER NOT NULL,
+                    PRIMARY KEY(`id` AUTOINCREMENT),
+                    CONSTRAINT `user` FOREIGN KEY(`user_id`) 
+                        REFERENCES `{$tablePrefix}RamUser`(`id`) 
+                        ON DELETE CASCADE ON UPDATE CASCADE,
+                    CONSTRAINT `project` FOREIGN KEY(`project_id`) 
+                        REFERENCES `{$tablePrefix}RamProject`(`id`) 
+                        ON DELETE CASCADE ON UPDATE CASCADE
+                    );";
+        else $qStr = $qStr . "CREATE TABLE IF NOT EXISTS `{$tablePrefix}{$name}` (
+                    `id` INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+                    `user_id` INT NOT NULL,
+                    `project_id` INT NOT NULL
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+                    ALTER TABLE `{$tablePrefix}{$name}` 
+                        ADD CONSTRAINT `user` FOREIGN KEY (`user_id`) 
+                            REFERENCES `{$tablePrefix}RamUser`(`id`) 
+                            ON DELETE CASCADE ON UPDATE CASCADE; 
+                    ALTER TABLE `ServerProjectUser` 
+                        ADD CONSTRAINT `project` FOREIGN KEY (`project_id`) 
+                            REFERENCES `{$tablePrefix}RamProject`(`id`) 
+                            ON DELETE CASCADE ON UPDATE CASCADE;
                 ";
         $q->prepare($qStr);
 

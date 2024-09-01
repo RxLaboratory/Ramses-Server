@@ -34,7 +34,7 @@
 
         if (!$ok)
         {
-            die( "Sorry, something went wrong while writing the database. Make sure the server has write access to its folder." );
+            die( "Sorry, something went wrong while writing the database. Make sure the server has write access to the data folder." );
         }
 
         echo ( "The new database is ready!<br />" );
@@ -58,7 +58,7 @@
     $encrypt_key = createEncryptionKey();
     if ($encrypt_key === ""){
         echo("<strong>> Can't create the encryption key!</strong><br>");
-        echo("Check the server has write permissions in the <code>condig</code> folder.");
+        echo("Check if the server has write permissions in the <code>config</code> folder.");
         die();
     }
     $encrypt_key_txt = base64_encode($encrypt_key);
@@ -67,58 +67,32 @@
 
     echo ( "Generating server identifier...<br />" );
     flush();
-    if (createServerUuid() != "") echo ( "The server universal has been saved.<br />" );
+    if (createServerUuid() != "") echo ( "The server universal id has been saved.<br />" );
     else echo( "<strong>Warning</strong>: The server UUID can't be generated.<br />");
     flush();
 
     include($__ROOT__."/config/config_security.php");
     include($__ROOT__."/config/config_server_uuid.php");
 
-    // Set the DB if MySQL (if SQLite, the file is already available)
-    if ($sqlMode != "sqlite")
-    {
-        echo ( "Writing the new database scheme (using MySQL)...<br />" );
-        flush();
+    // Set the DB
+    echo ( "Writing the new database scheme (using MySQL)...<br />" );
+    flush();
 
-        // Create the RamUser Table
-        createTable("RamUser", true);
+    // Create the needed tables
+    createTable("RamProject", true);
+    createUserTable(true);
+    createProjectUserTable(true);
 
-        // Add username and password rows
-        $q = new DBQuery();
-        $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
-            ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
-            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`;
-            ");
+    if ( !$q->isOK() )
+        die( "Sorry, something went wrong while writing the database." );
 
-        $q->execute();
-        $q->close();
+    echo ( "Database tables are ready!<br />" );
+    flush();
 
-        if ( !$q->isOK() )
-        {
-            die( "Sorry, something went wrong while writing the database." );
-        }
-
-        // Create the deletedData table
-                
-
-        echo ( "Database tables are ready!<br />" );
-    }
-    // Rename the user table to use the prefix
-    else
-    {
-        echo( "Preparing the database...<br />");
-        $q = new DBQuery();
-        $q->prepare("ALTER TABLE `RamUser` RENAME TO `{$tablePrefix}RamUser`;");
-        $q->execute();
-        $q->close();
-        if (!$q->isOK()) echo( "Something went wrong: Can't rename the users table.<br />");
-        else echo( "Successfully prepared the database.<br />");
-    }
-
+    //Setup admin user
     echo( "Setuping the administrator user...<br />" );
     flush();
-    
-    //Setup admin user
+
     $uuid = uuid();
     //Prepare password
     cleanServerAddress();
