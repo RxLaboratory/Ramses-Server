@@ -1,2 +1,3 @@
 - implement projects_*.php
 - use current project in sync method to filter ; make sure the project is not changed during a sync session (if so, abort)
+- add new endpoints to doc
