@@ -183,11 +183,11 @@
             $reply["success"] = true;
             $reply["message"] = "Accepted data. Waiting for commit.";
             $reply["content"]["commited"] = false;
-            $_SESSION["syncData"]["commited"] = false;
+            $_SESSION["syncCommited"] = false;
             printAndDie();
         }
 
-        if ($commit && $_SESSION["syncData"]["commited"] )
+        if ($commit && $_SESSION["syncCommited"] )
         {
             $reply["success"] = false;
             $reply["message"] = "This sync session has already been commited. Start a new session to commit new changes.";
