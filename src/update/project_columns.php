@@ -30,16 +30,38 @@
         {
             $table = $row[0];
 
+            if ($table == "{$tablePrefix}RamProject")
+                continue;
+
             update_time_limit(60);
 
-            if (hasProjectColumn($table)) continue;
+            if (hasColumn($table, 'project_id')) 
+                continue;
 
-            echo "Adding the 'project' column for table: <code>{$table}</code>.<br>";
+            if (hasColumn($table, 'project')) 
+            {
+                echo "Removing the 'project' uuid column for table: <code>{$table}</code>.<br>";
+                flush();
+
+                $qStr = "ALTER TABLE `{$table}`
+                            DROP COLUMN `project`;";
+
+                $q2 = new DBQuery();
+                $q2->prepare($qStr);
+                $q2->execute();
+                $q2->close();
+            }
+
+            echo "Adding the 'project_id' column for table: <code>{$table}</code>.<br>";
             flush();
 
-            if ($sqlMode == 'sqlite') $qStr = "ALTER TABLE `{$table}` ADD COLUMN 'project' TEXT;";
-            else $qStr = "ALTER TABLE `{$table}` ADD `project` TEXT NULL AFTER `data`;";
-
+            $qStr = "ALTER TABLE `{$table}`
+                        ADD COLUMN `project_id` INT;
+                    ALTER TABLE `{$table}` 
+                        ADD CONSTRAINT `project` FOREIGN KEY (`project_id`) 
+                            REFERENCES `{$tablePrefix}RamProject`(`id`) 
+                            ON DELETE CASCADE ON UPDATE CASCADE;";
+                        
             $q2 = new DBQuery();
             $q2->prepare($qStr);
             $q2->execute();
@@ -89,14 +111,21 @@
                         {
                             $otherDataStr = $r['data'];
                             $otherData = json_decode($otherDataStr, true);
-                            $projUuid = $otherData["project"];
+                            if($otherData)
+                                $projUuid = $otherData["project"];
                         }
 
                         $q3->close();
                     }
                 }
 
-                $qStr = "UPDATE `{$table}` SET `project` = :projectUuid WHERE `uuid` = :uuid;";
+                if ($projUuid == "")
+                    continue;
+
+                $qStr = "UPDATE `{$table}` SET `project_id` = (
+                    SELECT `id` FROM {$tablePrefix}RamProject WHERE `uuid` = :projectUuid
+                ) WHERE `uuid` = :uuid;";
+
                 $q3 = new DBQuery();
                 $q3->prepare($qStr);
                 $q3->bindStr("uuid", $uuid);
@@ -113,7 +142,7 @@
         $q->close();
     }
 
-    function hasProjectColumn( $table )
+    function hasColumn( $table, $colName)
     {
         global $sqlMode;
 
@@ -140,7 +169,7 @@
         }
         else
         {
-            $qStr = "SHOW COLUMNS FROM `{$table}` LIKE 'project';";
+            $qStr = "SHOW COLUMNS FROM `{$table}` LIKE '$colName';";
 
             $q = new DBQuery();
 
