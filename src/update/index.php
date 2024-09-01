@@ -11,8 +11,10 @@
     require_once($__ROOT__.'/global.php');
 	include($__ROOT__."/init.php");
 
-    //connect to database
+    // connect to database
 	require_once($__ROOT__.'/db.php');
+    // functions
+    require_once($__ROOT__.'/functions.php');
 
     echo "<strong>Updating database using {$sqlMode}...</strong>";
     flush();
@@ -24,6 +26,13 @@
 
     include($__ROOT__."/update/project_columns.php");
     addProjectColumns();
+
+    // Must have a Project-User table association
+    
+    echo "<p>Updating the project-user assignments table...</p>";
+    include($__ROOT__."/update/project_users_table.php");
+    createProjectUserTable(false);
+    updateProjectUserTable();
 
     // Run a database clean
     echo "<p>Cleaning database...</p>";

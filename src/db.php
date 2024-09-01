@@ -185,6 +185,68 @@
 			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
 		}
 
+		public function assignUsers( $assignments ) {
+			global $SQLMaxRowPerRequest, $tablePrefix, $sqlMode, $log;
+
+			$update = 0;
+			$updateCount = count($assignments);
+			$table = "ServerProjectUser";
+
+			$log->debugLog("Assigning users to projects. There are $updateCount assignments.", "DEBUG");
+
+            while ($update < $updateCount)
+            {
+                // The values to be added to the request
+                $vals = [];
+                $keys = [];
+
+                // The array of values for building the request
+                $valuesStr = [];
+
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    // Got all
+                    if ($update == $updateCount) break;
+
+					$useridkey = "userid$update";
+                    $keys[] = $useridkey;
+                    $vals[] = $assignments[$update][0];
+
+					$projectidkey = "projectid$update";
+                    $keys[] = $projectidkey;
+                    $vals[] = $assignments[$update][1];
+
+                    $valuesStr[] = "( :$useridkey, :$projectidkey )";
+
+                    $update++;
+                }
+
+                $valuesStr = implode(", ", $valuesStr);
+
+                if ($sqlMode == 'sqlite') 
+                    $qStr = "INSERT INTO `{$tablePrefix}$table` (`user_id`, `project_id`)
+							VALUES {$valuesStr}
+                            ON CONFLICT(uuid) DO UPDATE SET 
+                            `user_id` = `user_id`;";
+                else if ($sqlMode == 'mysql')
+                    $qStr = "INSERT INTO `{$tablePrefix}$table` (`user_id`, `project_id`)
+							VALUES {$valuesStr}
+                            ON DUPLICATE KEY UPDATE `user_id` = `user_id` ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}$table`  (`user_id`, `project_id`)
+							VALUES {$valuesStr}
+                        	ON DUPLICATE KEY UPDATE `user_id` = `user_id` ;";
+
+                $this->prepare($qStr);
+                $this->bindInts($keys, $vals);
+                $this->execute();
+                $this->close();
+            }
+
+			$elapsed = $this->elapsed();
+			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
+		}
+
 		/**
 		 * Get all items from a table
 		 * @param string $table The name of the table
@@ -197,7 +259,7 @@
 
 			$this->start_timer();
 
-			$qStr = "SELECT `uuid`, `data`, `modified`, `removed`
+			$qStr = "SELECT `id`, `uuid`, `data`, `modified`, `removed`
 					FROM {$tablePrefix}$table ";
 
 			if (!$includeRemoved)
@@ -220,6 +282,7 @@
 					continue;
 
 				$item = array();
+				$item["id"] = (int)$r["id"];
 				$item["data"] = json_decode($dataStr, true);
 				$item["modified"] = $r["modified"];
 				$item["removed"] = (int)$r["removed"] == 1;
@@ -289,6 +352,17 @@
 			else 
 			{
 				$this->query->bindValue( ":{$key}", $int, PDO::PARAM_INT );
+			}
+		}
+
+		public function bindInts( $keys, $ints )
+		{
+			if (count($keys) != count($ints))
+				throw "The key and int count doesn't match";
+
+			for ($i = 0; $i < count($keys); $i++)
+			{
+				$this->bindInt( $keys[$i], $ints[$i]);
 			}
 		}
 

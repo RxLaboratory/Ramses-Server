@@ -548,6 +548,7 @@
                     `user_id`	INTEGER NOT NULL,
                     `project_id`	INTEGER NOT NULL,
                     PRIMARY KEY(`id` AUTOINCREMENT),
+                    CONSTRAINT `projectUser` UNIQUE(`user_id`,`project_id`),
                     CONSTRAINT `user` FOREIGN KEY(`user_id`) 
                         REFERENCES `{$tablePrefix}RamUser`(`id`) 
                         ON DELETE CASCADE ON UPDATE CASCADE,
@@ -564,10 +565,12 @@
                         ADD CONSTRAINT `user` FOREIGN KEY (`user_id`) 
                             REFERENCES `{$tablePrefix}RamUser`(`id`) 
                             ON DELETE CASCADE ON UPDATE CASCADE; 
-                    ALTER TABLE `ServerProjectUser` 
+                    ALTER TABLE `{$tablePrefix}{$name}` 
                         ADD CONSTRAINT `project` FOREIGN KEY (`project_id`) 
                             REFERENCES `{$tablePrefix}RamProject`(`id`) 
                             ON DELETE CASCADE ON UPDATE CASCADE;
+                    ALTER TABLE `{$tablePrefix}{$name}`
+                        ADD UNIQUE `projectUser` (`user_id`, `project_id`); 
                 ";
         $q->prepare($qStr);
 
