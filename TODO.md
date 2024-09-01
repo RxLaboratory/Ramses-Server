@@ -1,0 +1,3 @@
+- update project columns to use INT & foreign key CASCADE
+- implement projects_*.php
+- use current project in sync method to filter ; make sure the project is not changed during a sync session (if so, abort)
