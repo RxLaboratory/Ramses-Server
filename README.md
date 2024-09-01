@@ -14,7 +14,7 @@ This server is a simple REST API implemantation in *PHP* to store the data in a 
 
 ## Python client
 
-We provide a very simple example implementation of client in Python, available in [py_client](py_client).  
+We provide a very simple example implementation of a client in Python, available in [py_client](py_client).  
 You can use this client to test the server from a terminal.
 
 ## Quick reference
