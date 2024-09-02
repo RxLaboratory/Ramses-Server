@@ -24,7 +24,9 @@ This is a quick overview as a reminder, the [developer documentation and all ref
 ### Sync session
 
 1. `https://server.tld/ramses/?ping` says "hi" to the server. This is mandatory to start a session.
-1. `https://server.tld/ramses/?login` tells who you are. This is mandatory to be able to sync data, the server will refuse if you're not logged in.
+1. `https://server.tld/ramses/?login` tells who you are. This is mandatory to be able to sync data, the server will refuse if you're not logged in.  
+    You can optionnaly get the list of projects you're assigned to with ``https://server.tld/ramses/?getProjects`,  
+    then set the current project with ``https://server.tld/ramses/?setCurrentProject`
 3. `https://server.tld/ramses/?sync` starts the sync session.
 4. `https://server.tld/ramses/?push` to push modified rows (or an empty list to download all table data)
 5. `https://server.tld/ramses/?fetch` to get some information, including the number of tables and rows available to pull
