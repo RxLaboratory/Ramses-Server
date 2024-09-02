@@ -26,6 +26,21 @@
 
     if ( acceptReply( "sync" ) )
     {
+        // Make sure we're working on the right project
+        $projectUuid = getArg("project");
+        if ($projectUuid == "" && $_SESSION["projectUuid"] == "") {
+            $reply["message"] = "The project UUID is required, or you must set the current project.";
+            $reply["success"] = false;
+            $log->debugLog("Missing project", "WARNING");
+            printAndDie();
+        }
+
+        if ($projectUuid == "")
+            $projectUuid = $_SESSION["projectUuid"];
+        else if ($projectUuid != $_SESSION["projectUuid"]) {
+            setCurrentProject($projectUuid);
+        }
+
         $q = new DBQuery();
         $q->vacuum();
 
@@ -70,7 +85,7 @@
         // Create a new cache folder
         $folderName = "";
         if (isset($_SESSION["userid"]) && $_SESSION["userid"] >= 0) {
-            $folderName = "".$_SESSION["userid"];
+            $folderName = "".$_SESSION["userid"]."-".$_SESSION["projectUuid"];
         }
         $folderName = $folderName . "-" . uniqid();
         $syncCacheFolder = $syncCachePath . "/" . $folderName;

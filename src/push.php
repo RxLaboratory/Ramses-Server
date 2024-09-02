@@ -86,12 +86,23 @@
 
                 // Get this table rows
                 $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
-                if ($table == "RamUser") $qStr = $qStr. ", `userName` ";
-                $qStr = $qStr . "FROM `{$tablePrefix}{$table}` WHERE `modified` >= :modified ;";
+
+                if ($table == "RamUser")
+                    $qStr = $qStr. ", `userName` ";
+
+                $qStr .= " FROM `{$tablePrefix}{$table}`
+                                WHERE `modified` >= :modified ";
+
+                if ($table != "RamUser" && $table != "RamProject") 
+                    $qStr .= " AND `project_id` = :projectid ";
+
+                $qStr .= ";";
 
                 $q = new DBQuery();
-                $q->prepare($qStr);
-                $q->bindStr("modified", $prevSync);
+                $q->prepare($qStr,true);
+                $q->bindStr("modified", $prevSync, true, true);
+                if ($table != "RamUser" && $table != "RamProject")
+                    $q->bindInt("projectid", $_SESSION["projectid"]);
                 $q->execute();
 
                 // Store
@@ -212,7 +223,8 @@
             $log->debugLog("Committing " . $tableName, "DEBUG");
 
             if ($tableName == "RamUser") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
-            else $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
+            else if ($tableName == "RamProject") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
+            else $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `project_id`) VALUES ";
             
             $log->debugLog("Found " . count( $in ) . " Rows", "DEBUG");
 
@@ -249,12 +261,19 @@
 
                         $values[] = "( $uuid, $data, $modified, $removed, '-', $userName )";
                     }
-                    else
+                    else if ($tableName == "RamProject")
                     {
                         // Escape data
                         $data = $db->quote($data);
 
                         $values[] = "( $uuid, $data, $modified, $removed )";
+                    }
+                    else
+                    {
+                        // Escape data
+                        $data = $db->quote($data);
+                        $projectId  = $_SESSION["projectid"];
+                        $values[] = "( $uuid, $data, $modified, $removed, $projectId)";
                     }
                 }
 

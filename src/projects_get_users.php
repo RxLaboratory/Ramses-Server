@@ -65,7 +65,7 @@
             $user["modified"] = $r["modified"];
             $user["removed"] = (int)$r["removed"];
             $user["userName"] = $r["userName"];
-            $user["data"] = json_decode(decrypt($r["data"]));
+            $user["data"] = decrypt($r["data"]);
             $users[] = $user;
         }
         $q->close();

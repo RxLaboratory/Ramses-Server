@@ -56,7 +56,7 @@
             $project["uuid"] = $r["uuid"];
             $project["modified"] = $r["modified"];
             $project["removed"] = (int)$r["removed"];
-            $project["data"] = json_decode($r["data"]);
+            $project["data"] = $r["data"];
             $projects[] = $project;
         }
         $q->close();

@@ -290,9 +290,9 @@
 					$item["id"] = (int)$r["id"];
 				
 				if ($table == "RamUser")
-					$item["data"] = json_decode(decrypt($dataStr), true);
+					$item["data"] = decrypt($dataStr);
 				else
-					$item["data"] = json_decode($dataStr, true);
+					$item["data"] = $dataStr;
 
 				$item["modified"] = $r["modified"];
 				$item["removed"] = (int)$r["removed"] == 1;
@@ -314,14 +314,17 @@
 		// Bind a string
 		public function bindStr( $key, $str, $mandatory = false )
 		{
-			global $reply;
+			global $reply, $log;
 
 			if ( !$this->ok ) return;
+
+			$log->debugLog("Binding string \"$str\" to :$key", "DEBUG");
 
 			if ($str == "" && $mandatory)
 			{
 				$reply["message"] = "Invalid request, missing value (string): '{$key}'";
             	$reply["success"] = false;
+				$log->debugLog("Missing string query parameter: $key", "WARNING");
 				$this->ok = false;
 				return;
 			}
@@ -344,14 +347,17 @@
 		// Bind an int
 		public function bindInt( $key, $int, $mandatory = false )
 		{
-			global $reply;
+			global $reply, $log;
 
 			if ( !$this->ok ) return;
+
+			$log->debugLog("Binding int \"$int\" to :$key", "DEBUG");
 
 			if ($int === "" && $mandatory)
 			{
 				$reply["message"] = "Invalid request, missing value (int): '{$key}'";
             	$reply["success"] = false;
+				$log->debugLog("Missing int query parameter: $key", "WARNING");
 				$this->ok = false;
 				return;
 			}
@@ -451,9 +457,9 @@
 			return $this->query->fetch();
 		}
 
-		public function prepare( $qstr, $debug = false )
+		public function prepare( $qstr )
 		{
-			global $db;
+			global $db, $log;
 
 			$this->query = $db->prepare($qstr);
 			if ($this->query) $this->ok = true;
@@ -463,9 +469,11 @@
 				$reply["message"] = "Could not prepare the Database query.";
         		$reply["success"] = false;
 				$this->ok = false;
-				if ($debug) echo( "Could not prepare the Database query." );
+				$log->debugLog( "Could not prepare the Database query:\n$qstr", "WARNING" );
 				printAndDie();
 			}
+
+			$log->debugLog("Preparing SQL request:\n$qstr", "DEBUG");
 		}
 
 		public function vacuum()

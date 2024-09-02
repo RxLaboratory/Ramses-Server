@@ -78,7 +78,9 @@
             if (!$enableLogs) return;
             if (!$debugLogs) return;
             
-            $this->appendDebugLog("{$date},{$level},{$message}");
+            //$escaped = str_replace("\r", "", $message);
+            //$escaped = str_replace("\n", "\\n", $message);
+            $this->appendDebugLog("{$date},{$level},\"{$message}\"");
         }
 
         public function requestLog($headers, $body)
