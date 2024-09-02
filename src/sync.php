@@ -69,8 +69,8 @@
 
         // Create a new cache folder
         $folderName = "";
-        if (isset($_SESSION["uuid"]) && $_SESSION["uuid"] != "") {
-            $folderName = $_SESSION["uuid"];
+        if (isset($_SESSION["userid"]) && $_SESSION["userid"] >= 0) {
+            $folderName = "".$_SESSION["userid"];
         }
         $folderName = $folderName . "-" . uniqid();
         $syncCacheFolder = $syncCachePath . "/" . $folderName;

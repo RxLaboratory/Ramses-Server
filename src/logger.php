@@ -55,17 +55,6 @@
             $this->appendConnexionLog("{$uuid},{$id},{$name},{$role},login");
         }
 
-        public function logout($uuid, $reason)
-        {
-            // Check if we're logging
-            global $enableLogs; 
-            global $connexionLogs;
-            if (!$enableLogs) return;
-            if (!$connexionLogs) return;
-
-            $this->appendConnexionLog("{$uuid},,,,{$reason}");
-        }
-
         public function debugLog($message, $level="INFO")
         {
             // Check if we're logging

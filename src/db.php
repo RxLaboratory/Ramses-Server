@@ -257,7 +257,7 @@
 		 * @param boolean $includeRemoved Whether to include removed items
 		 * @return array The items by uuid, as an associative array with uuid, data (decoded as an associative array), modified (as a string), removed (as a bool)
 		 */
-		public function get($table, $includeRemoved = false) {
+		public function get($table, $includeRemoved = false, $includeId = false) {
 
 			global $tablePrefix, $log;
 
@@ -286,8 +286,14 @@
 					continue;
 
 				$item = array();
-				$item["id"] = (int)$r["id"];
-				$item["data"] = json_decode($dataStr, true);
+				if ($includeId)
+					$item["id"] = (int)$r["id"];
+				
+				if ($table == "RamUser")
+					$item["data"] = json_decode(decrypt($dataStr), true);
+				else
+					$item["data"] = json_decode($dataStr, true);
+
 				$item["modified"] = $r["modified"];
 				$item["removed"] = (int)$r["removed"] == 1;
 				

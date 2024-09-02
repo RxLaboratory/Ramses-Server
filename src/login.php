@@ -36,7 +36,7 @@
             $reply["message"] = "Missing user name";
             $reply["success"] = false;
             $log->debugLog("Missing user name", "WARNING");
-            logout($username, "Connexion refused (invalid password)");
+            logout("Connexion refused (invalid password)");
         }
 
         if (strlen($password) == 0)
@@ -44,12 +44,12 @@
             $reply["message"] = "Missing password";
             $reply["success"] = false;
             $log->debugLog("Missing password", "WARNING");
-            logout($username, "Connexion refused (invalid password)");
+            logout("Connexion refused (invalid password)");
         }
 
         $q = new DBQuery();
         $q->vacuum();
-        $q->prepare( "SELECT `uuid`,`userName`,`password`,`data`, `modified` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
+        $q->prepare( "SELECT `id`, `uuid`,`userName`,`password`,`data`, `modified` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
         $q->bindStr( "username", $username );
         $q->execute();
 
@@ -70,7 +70,7 @@
             $reply["message"] = "Invalid password or username";
             $reply["success"] = false;
             $log->debugLog("Invalid username: {$username}", "WARNING");
-            logout($username, "Connexion refused (invalid username: {$username})");
+            logout("Connexion refused (invalid username: {$username})");
         }
         
         $ok = false;
@@ -78,6 +78,7 @@
         foreach($users as $user)
         {
             $uuid = $user["uuid"];
+            $userid = $user["id"];
             $dataStr = $user["data"];
             $tPassword = $user["password"];
             $modified = $user["modified"];
@@ -100,7 +101,7 @@
             $log->debugLog("{$name} has logged in as {$role}.", "INFO");
 
             // Login
-            $token = login($uuid, $role, $username, $name);
+            $token = login($userid, $uuid, $role, $username, $name);
 
             //reply content
             $content = array();
@@ -122,7 +123,7 @@
             $reply["message"] = "Invalid password or username";
             $reply["success"] = false;
             $log->debugLog("Invalid password", "WARNING");
-            logout($username, "Connexion refused (invalid password)");
+            logout("Connexion refused (invalid password)");
         }
         else if ($uuid != "")
         {

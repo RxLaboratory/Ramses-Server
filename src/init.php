@@ -67,7 +67,8 @@
 	if (!isset($_SESSION["token"])) $_SESSION["token"] = "";
 	if (!isset($_SESSION["clientVersion"])) $_SESSION["clientVersion"] = "unknown";
 	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
-	if (!isset($_SESSION["uuid"])) $_SESSION["uuid"] = "unknown";
+	if (!isset($_SESSION["userid"])) $_SESSION["userid"] = -1;
+	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "unknown";
 	
 	//add the "_" after table prefix if needed
 	setupTablePrefix();

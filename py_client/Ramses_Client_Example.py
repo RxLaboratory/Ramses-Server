@@ -12,8 +12,11 @@ for project in projects:
     projectName = projectData["name"]
     print(projectUuid + " >>> " + projectID + " | " + projectName)
 
-users = client.getTable("RamUser")
-for user in users:
+usersForFirstProj = client.getUsers(project = projects[0]["uuid"])
+
+for user in usersForFirstProj:
     userUuid = user["uuid"]
-    # User data is encrypted and the ramses python client can't decrypt it
-    print(userUuid)
+    userData = json.loads(user["data"])
+    userID = userData["shortName"]
+    userName = userData["name"]
+    print(userUuid + " >>> " + userID + " | " + userName)

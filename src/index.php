@@ -78,7 +78,7 @@
 	if ($sessionTimeout >= 0 && time() > $_SESSION['discard_after'])
 	{
 		$log->debugLog("Session has expired.", "WARNING");
-		logout("Disconnected (Session expired)", "Your session has expired, you need to log-in.");
+		logout("Your session has expired, you need to log-in.");
 	}
 
 	//connect to database
@@ -92,7 +92,7 @@
 	$token = getArg("token");
 	if ($token != $_SESSION["token"]){
 		$log->debugLog("Disconnected (Invalid token).", "WARNING");
-		logout("Disconnected (Invalid token)", "Invalid token! [Warning] This may be a security issue!");
+		logout("Invalid token! [Warning] This may be a security issue!");
 	}
 
 	//regularly clean the db

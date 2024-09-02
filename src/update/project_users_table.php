@@ -4,8 +4,8 @@
         // Parse all projects and users
         $q = new DBQuery();
 
-        $projects = $q->get("RamProject", true );
-        $users = $q->get("RamUser", true);
+        $projects = $q->get("RamProject", true, true );
+        $users = $q->get("RamUser", true, true);
 
         $assignments = array();
 

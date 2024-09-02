@@ -27,8 +27,55 @@
 
     if ( acceptReply( "getUsers" ) )
     {
+        global $tablePrefix;
+
+        $projectUuid = getArg("project");
+        if ($projectUuid == "")
+            $projectUuid = $_SESSION["projectUuid"];
+
         // List the users assigned to this project
-        // IF is admin or it's the current project,
+        // IF is admin or the current user is assigned to the current project
+        $q = new DBQuery();
+
+        $qstr = "SELECT `{$tablePrefix}RamUser`.`uuid`, `{$tablePrefix}RamUser`.`data`, `{$tablePrefix}RamUser`.`modified`, `{$tablePrefix}RamUser`.`userName`, `{$tablePrefix}RamUser`.`removed`
+                FROM `{$tablePrefix}RamUser`
+                LEFT JOIN `{$tablePrefix}ServerProjectUser`
+                    ON `{$tablePrefix}RamUser`.`id` = `{$tablePrefix}ServerProjectUser`.`user_id`
+                LEFT JOIN `{$tablePrefix}RamProject`
+                    ON `{$tablePrefix}ServerProjectUser`.`project_id` = `{$tablePrefix}RamProject`.`id`
+                WHERE `{$tablePrefix}RamUser`.`removed` = 0
+                    AND `{$tablePrefix}RamProject`.`uuid` = :projectUuid ";
+
+        $admin = isAdmin();
+
+        if (!$admin) {
+            $qstr .= "AND `{$tablePrefix}ServerProjectUser`.`user_id` = :userId ";
+        }
+
+        $qstr .= ";";
+
+        $q->prepare($qstr);
+        $q->bindStr("projectUuid", $projectUuid);
+        if (!$admin)
+            $q->bindStr("userId", $_SESSION["userid"]);
+
+        $users = array();
+        $q->execute();
+        while($r = $q->fetch()) {
+            $user = array();
+            $user["uuid"] = $r["uuid"];
+            $user["modified"] = $r["modified"];
+            $user["removed"] = (int)$r["removed"];
+            $user["userName"] = $r["userName"];
+            $user["data"] = decrypt($r["data"]);
+            $users[] = $user;
+        }
+        $q->close();
+
+        $reply["success"] = true;
+        $reply["message"] = "Got the list of users for project $projectUuid.";
+        $reply["content"] = $users;
+        printAndDie();
     }
 
 ?>

@@ -51,7 +51,7 @@
 
         // We need to check the role: only admins can set passwords without specifying the current one
         // if and only if they're not changing their own password
-        if ($_SESSION["uuid"] == $uuid || !isAdmin())
+        if ($_SESSION["userUuid"] == $uuid || !isAdmin())
         {
             if ($currentPassword == "")
             {

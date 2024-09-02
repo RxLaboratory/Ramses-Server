@@ -204,12 +204,13 @@
     /**
      * Logs in and returns the new session token
      */
-    function login($uuid, $role, $id, $name)
+    function login($userid, $uuid, $role, $id, $name)
     {
         global $log, $_SESSION;
 
         // Keep session info
-        $_SESSION["uuid"] = $uuid;
+        $_SESSION["userid"] = $userid;
+        $_SESSION["userUuid"] = $uuid;
         // Generate a new token
         $_SESSION["token"] = bin2hex(random_bytes(20));
         //Log
@@ -223,19 +224,17 @@
     /**
      * Logs out and reset the session token
      */
-    function logout($reason="logout", $message = "Logged out.")
+    function logout($message = "Logged out.")
     {
-        global $log, $reply, $_SESSION;
-
-        $uuid = "unknown";
-        if (isset($_SESSION["uuid"])) $uuid = $_SESSION["uuid"];
-        //Log
-        $log->logout($uuid, $reason);
+        global $reply, $_SESSION;
 
         $reply["message"] = $message;
         $reply["query"] = "loggedout";
         $reply["success"] = false;
         $reply["accepted"] = false;
+
+        $_SESSION["userid"] = -1;
+        $_SESSION["userUuid"] = "unknown";
 
         SessionManager::sessionEnd();
         
@@ -246,8 +245,8 @@
     {
         global $_SESSION, $tablePrefix;
         $q = new DBQuery();
-        $q->prepare("SELECT `data` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :uuid ;");
-        $q->bindStr("uuid", $_SESSION['uuid']);
+        $q->prepare("SELECT `data` FROM `{$tablePrefix}RamUser` WHERE `id` = :userid ;");
+        $q->bindStr("userid", $_SESSION["userid"]);
         $q->execute();
         $row = $q->fetch();
         $q->close();
