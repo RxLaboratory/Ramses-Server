@@ -251,6 +251,20 @@
 			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
 		}
 
+		public function unassignUser( $userId, $projectId) {
+			global $tablePrefix, $log;
+
+			$table = "ServerProjectUser";
+
+			$log->debugLog("Unassigning user $userId from project $projectId.", "DEBUG");
+
+			$this->prepare("DELETE FROM `{$tablePrefix}$table` WHERE `user_id` = :userid AND `project_id` = :projectid ;");
+			$this->bindInt("userid", $userId);
+			$this->bindInt("projectid", $projectId);
+			$this->execute();
+			$this->close();
+		}
+
 		/**
 		 * Get all items from a table
 		 * @param string $table The name of the table

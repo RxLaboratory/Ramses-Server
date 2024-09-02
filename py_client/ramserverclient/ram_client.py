@@ -104,6 +104,12 @@ class RamClient(object):
             "project": projectUuid
         })
 
+    def unassignUser(self, userUuid, projectUuid):
+        self.__get("unassignUser", {
+            "user": userUuid,
+            "project": projectUuid
+        })
+
     def __hashPassword(self, password:str):
         prefix = self._server_adress.replace("http://","").replace("https://","").replace("/","")
         password = prefix+password+RAMCLIENT_KEY

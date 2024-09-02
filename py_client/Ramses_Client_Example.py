@@ -37,3 +37,5 @@ for step in steps:
     stepID = stepData["shortName"]
     stepName = stepData["name"]
     print(stepUuid + " >>> " + stepID + " | " + stepName)
+
+#client.unassignUser("d0064bf7-0d33-54cd-8054-479b8e84b839", "98301af3-3b50-50ad-9803-82c44664c379")
