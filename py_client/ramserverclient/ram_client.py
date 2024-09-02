@@ -81,6 +81,10 @@ class RamClient(object):
             i = i+1
         return items
 
+    def getProjects(self):
+        response = self.__get("getProjects")
+        return response["content"]
+
     def getUsers(self, project = ""):
         data = {}
         if project != "":

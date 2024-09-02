@@ -29,6 +29,43 @@
     {
         // List the projects the user is assigned to,
         // or all projects if isAdmin()
+        $q = new DBQuery();
+        $qstr = "SELECT `{$tablePrefix}RamProject`.`uuid`, `{$tablePrefix}RamProject`.`data`, `{$tablePrefix}RamProject`.`modified`, `{$tablePrefix}RamProject`.`removed`
+                FROM `{$tablePrefix}RamProject` ";
+
+        $admin = isAdmin();
+        if (!$admin)
+            $qstr .= "LEFT JOIN `{$tablePrefix}ServerProjectUser`
+                    ON `{$tablePrefix}RamProject`.`id` = `{$tablePrefix}ServerProjectUser`.`project_id` ";
+
+        $qstr .= "WHERE `{$tablePrefix}RamProject`.`removed` = 0 ";
+
+        if (!$admin)
+            $qstr .= "AND `{$tablePrefix}ServerProjectUser`.`user_id` = :userid ";
+
+        $qstr .= ";";
+
+        $q->prepare($qstr);
+        if (!$admin)
+            $q->bindInt("userid", $_SESSION["userid"]);
+
+        $projects = array();
+        $q->execute();
+        while($r = $q->fetch()) {
+            $project = array();
+            $project["uuid"] = $r["uuid"];
+            $project["modified"] = $r["modified"];
+            $project["removed"] = (int)$r["removed"];
+            $project["data"] = json_decode($r["data"]);
+            $projects[] = $project;
+        }
+        $q->close();
+
+        $reply["success"] = true;
+        $reply["message"] = "Got the list of projects for the current user.";
+        $reply["content"] = $projects;
+        printAndDie();
+        
     }
 
 ?>
