@@ -91,6 +91,12 @@ class RamClient(object):
             data["project"] = project
         response = self.__get("getUsers", data)
         return response["content"]
+    
+    def setCurrentProject(self, project:str):
+        response = self.__get("setCurrentProject", {
+            "project": project
+        })
+        return response["content"]
 
     def assignUser(self, userUuid, projectUuid):
         self.__get("assignUser", {

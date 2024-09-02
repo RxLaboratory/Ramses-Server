@@ -27,8 +27,42 @@
 
     if ( acceptReply( "setCurrentProject" ) )
     {
+        $projectUuid = getArg("project");
+        if ($projectUuid == "") {
+            $reply["message"] = "The project UUID is required.";
+            $reply["success"] = false;
+            $log->debugLog("Missing project", "WARNING");
+            printAndDie();
+        }
+
         // Check if the current user is assigned to this project
-        // And keep the project id as a $_SESSION["project"]
+        // And keep the project in the session vars
+
+        $q = new DBQuery();
+        $qstr = "SELECT `{$tablePrefix}ServerProjectUser`.`project_id`, `{$tablePrefix}RamProject`.`uuid`
+                FROM `{$tablePrefix}ServerProjectUser`
+                LEFT JOIN `{$tablePrefix}RamProject`
+                    ON `{$tablePrefix}ServerProjectUser`.`project_id` = `{$tablePrefix}RamProject`.`id`
+                WHERE `{$tablePrefix}RamProject`.`uuid` = :projectUuid ;";
+        $q->prepare($qstr);
+        $q->bindStr("projectUuid", $projectUuid);
+        $q->execute();
+        $project = $q->fetch();
+        $q->close();
+        if (!$project) {
+            $reply["message"] = "Sorry, either this project doesn't exist or you're not assigned to it ($projectUuid).";
+            $reply["success"] = false;
+            $log->debugLog("User not assigned to project, or missing project $projectUuid", "WARNING");
+            printAndDie();
+        }
+
+        $_SESSION["projectUuid"] = $project["uuid"];
+        $_SESSION["projectid"] = $project["project_id"];
+
+        $reply["success"] = true;
+        $reply["message"] = "Current project set to $projectUuid.";
+        $reply["content"] = $_SESSION["projectUuid"];
+        printAndDie();
     }
 
 ?>

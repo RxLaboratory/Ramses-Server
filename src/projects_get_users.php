@@ -27,8 +27,6 @@
 
     if ( acceptReply( "getUsers" ) )
     {
-        global $tablePrefix;
-
         $projectUuid = getArg("project");
         if ($projectUuid == "")
             $projectUuid = $_SESSION["projectUuid"];

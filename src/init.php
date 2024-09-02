@@ -69,6 +69,8 @@
 	if (!isset($_SESSION["discard_after"])) $_SESSION["discard_after"] = 0;
 	if (!isset($_SESSION["userid"])) $_SESSION["userid"] = -1;
 	if (!isset($_SESSION["userUuid"])) $_SESSION["userUuid"] = "unknown";
+	if (!isset($_SESSION["projectUuid"])) $_SESSION["projectUuid"] = "unknown";
+	if (!isset($_SESSION["projectid"])) $_SESSION["projectid"] = -1;
 	
 	//add the "_" after table prefix if needed
 	setupTablePrefix();

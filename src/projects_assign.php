@@ -40,7 +40,7 @@
 
         if (strlen($userUuid) == 0)
         {
-            $reply["message"] = "Missing user";
+            $reply["message"] = "The user UUID is required";
             $reply["success"] = false;
             $log->debugLog("Missing user", "WARNING");
             printAndDie();
@@ -48,7 +48,7 @@
 
         if (strlen($projectUuid) == 0)
         {
-            $reply["message"] = "Missing project";
+            $reply["message"] = "The project UUID is required";
             $reply["success"] = false;
             $log->debugLog("Missing project", "WARNING");
             printAndDie();

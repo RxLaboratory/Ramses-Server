@@ -20,3 +20,6 @@ for user in usersForFirstProj:
     userID = userData["shortName"]
     userName = userData["name"]
     print(userUuid + " >>> " + userID + " | " + userName)
+
+currentProjectUuid = client.setCurrentProject(projects[1]["uuid"])
+print(currentProjectUuid)
