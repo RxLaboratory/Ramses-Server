@@ -270,17 +270,14 @@
     {
         global $_SESSION, $tablePrefix;
         $q = new DBQuery();
-        $q->prepare("SELECT `data` FROM `{$tablePrefix}RamUser` WHERE `id` = :userid ;");
+        $q->prepare("SELECT `role` FROM `{$tablePrefix}RamUser` WHERE `id` = :userid ;");
         $q->bindStr("userid", $_SESSION["userid"]);
         $q->execute();
         $row = $q->fetch();
         $q->close();
         
-        $data = decrypt( $row['data'] );
-        $data = json_decode($data, true);
-
-        if (!isset($data['role'])) return false;
-        return strtolower($data['role']) == 'admin';
+        $role = decrypt( $row['role'] );
+        return strtolower($role) == 'admin';
     }
 
     function setCurrentProject($projectUuid)

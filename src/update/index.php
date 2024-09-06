@@ -35,8 +35,8 @@
     updateProjectUserTable();
 
     // Must have an email column
-    include(RAMROOT."/update/user_email.php");
-    addEmailColumn(false);
+    include(RAMROOT."/update/user_table.php");
+    addEmailAndRoleColumns(false);
 
     // Run a database clean
     echo "<p>Cleaning database...</p>";

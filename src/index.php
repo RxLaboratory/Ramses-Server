@@ -120,5 +120,6 @@
 	include("projects_assign.php");
 	include("projects_unassign.php");
 	include("users_create.php");
+	include("users_role.php");
 
 	printAndDie();

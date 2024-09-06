@@ -14,11 +14,11 @@
 
         foreach( $projects as $project) {
             $projectUsers = $project["data"]["users"] ?? array();
+            $userIds = array();
             foreach ($projectUsers as $userUuid) {
                 $user = $users[$userUuid];
-                $assignments[] = array($user["id"], $project["id"]);
+                $userIds[] = (int)$user["id"];
             }
-        }
-
-        $q->assignUsers($assignments);
+            $q->assignUsers($userIds, (int)$project["id"]);
+        }        
     }

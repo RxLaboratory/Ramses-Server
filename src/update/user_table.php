@@ -2,7 +2,7 @@
     // If this file is called directly, abort.
     if (!defined('RAMROOT')) die;
 
-    function addEmailColumn()
+    function addEmailAndRoleColumns()
     {
         global $sqlMode, $tablePrefix;
 
@@ -20,17 +20,32 @@
             $q->close();
         }
 
-        echo "Updating email column for table: <code>RamUser</code>.<br>";
+        if (!hasColumn($tablePrefix . "RamUser", 'role')) 
+        {
+            echo "Adding the 'role' column for table: <code>RamUser</code>.<br>";
+            flush();
+
+            $qStr = "ALTER TABLE `{$tablePrefix}RamUser`
+                        ADD COLUMN `role` TEXT NULL;";
+
+            $q = new DBQuery();
+            $q->prepare($qStr);
+            $q->execute();
+            $q->close();
+        }
+
+        echo "Updating email and role columns for table: <code>RamUser</code>.<br>";
         flush();
 
-        $qStr = "SELECT `id`, `data`, `email` FROM `{$tablePrefix}RamUser`";
+        $qStr = "SELECT `id`, `data`, `email`,`role` FROM `{$tablePrefix}RamUser`";
         $q = new DBQuery();
         $q->prepare($qStr);
         $q->execute();
         while ($entry = $q->fetch())
         {
             $email = $entry["email"] ?? "";
-            if (trim($email) != "")
+            $role = $entry["role"] ?? "";
+            if (trim($email) != "" && trim($role) != "")
                 continue;
 
             $id = (int)$entry["id"];
@@ -40,21 +55,22 @@
                 true
             );
 
-            $email = $data["email"] ?? "";
-            if ($email == "")
-                continue;
-
-            echo "Setting email $email for user ID $id.<br>";
-            flush();
-            //$email = encrypt($email);
+            if($email == "")
+                $email = $data["email"] ?? "";
+            if($role == "")
+                $role = $data["role"] ?? "standard";
             
-            $qStr = "UPDATE `{$tablePrefix}RamUser` SET `email` = :email
+            $email = encrypt($email);
+            $role = encrypt($role);
+            
+            $qStr = "UPDATE `{$tablePrefix}RamUser` SET `email` = :email , `role` = :userRole
                      WHERE `id` = :id;";
 
             $q2 = new DBQuery();
             $q2->prepare($qStr);
             $q2->bindInt("id", $id);
             $q2->bindStr("email", $email);
+            $q2->bindStr("userRole", $role);
             $q2->execute();
             $q2->close();
         }

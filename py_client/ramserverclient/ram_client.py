@@ -127,6 +127,12 @@ class RamClient(object):
             "users": users
         })
 
+    def setUserRole(self, user:str, role="standard"):
+        self.__get("setUserRole",{
+            "user":user,
+            "role":role
+        })
+
     def createProject(self, projectData:str, projectUuid=""):
         self.__get('createProject', {
             "uuid": projectUuid,

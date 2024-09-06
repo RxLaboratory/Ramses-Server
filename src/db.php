@@ -482,6 +482,18 @@
 			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
 		}
 
+		public function setUserRole( $userUuid, $userRole) {
+			global $tablePrefix;
+
+			$this->prepare("UPDATE `{$tablePrefix}RamUser`
+					SET `role` = :userRole 
+					WHERE `uuid` = :userUuid ;");
+			$this->bindStr("userRole", encrypt($userRole));
+			$this->bindStr("userUuid", $userUuid);
+			$this->execute();
+			$this->close();
+		}
+
 		/**
 		 * Get all items from a table
 		 * @param string $table The name of the table
