@@ -90,6 +90,7 @@
             $dataStr = decrypt( $dataStr );
             $dataArr = json_decode( $dataStr, true);
             $temail = decrypt($temail);
+            $role = decrypt($role);
 
             // check email
             if ($temail != $email)
@@ -118,6 +119,7 @@
             $content["token"] = $token;
             $content["data"] = $dataStr;
             $content["modified"] = $modified;
+            $content["role"] = $role;
             $reply["content"] = $content;
             $reply["message"] = "Successful login. Welcome " . $name . "!";
             $reply["success"] = true;
