@@ -5,7 +5,7 @@ client = ram_client.RamClient("https://ramses.rxlab.io/sic4", showReceivedData=T
 client.login()
 client.createUsers((
     {
-        'email': "duduf@duduf.com",
+        'email': "user@example.com",
         'username': "duduf",
         'data' : json.dumps({
             'shortName': "duduf",
@@ -14,7 +14,7 @@ client.createUsers((
         })
     },
     {
-        'email': "duduf@rxlaboratory.org",
+        'email': "other@example.comg",
         'username': "duf-rxlab",
         'data' : json.dumps({
             'shortName': "duf-rxlab",
