@@ -492,6 +492,52 @@
 			$this->close();
 		}
 
+		public function userRole( $userUuid ) {
+			global $tablePrefix;
+
+			$q = new DBQuery();
+				$q->prepare("SELECT `role` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid ;");
+				$q->bindStr("userUuid", $userUuid);
+				$q->execute();
+				$row = $q->fetch();
+				$q->close();
+
+				if (!$row)
+					return "";
+				
+				$role = decrypt( $row['role'] );
+				return $role;
+		}
+
+		public function setEmail($userUuid, $email) {
+			global $tablePrefix;
+
+			$this->prepare("UPDATE `{$tablePrefix}RamUser`
+					SET `email` = :email 
+					WHERE `uuid` = :userUuid ;");
+			$this->bindStr("email", encrypt($email));
+			$this->bindStr("userUuid", $userUuid);
+			$this->execute();
+			$this->close();
+		}
+
+		public function userEmail( $userUuid ) {
+			global $tablePrefix;
+
+			$q = new DBQuery();
+				$q->prepare("SELECT `email` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid ;");
+				$q->bindStr("userUuid", $userUuid);
+				$q->execute();
+				$row = $q->fetch();
+				$q->close();
+
+				if (!$row)
+					return "";
+				
+				$email = decrypt( $row['email'] );
+				return $email;
+		}
+
 		/**
 		 * Get all items from a table
 		 * @param string $table The name of the table

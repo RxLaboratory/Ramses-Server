@@ -28,7 +28,121 @@
     require_once(RAMROOT."/functions.php");
     require_once(RAMROOT."/reply.php");
 
+    if ( acceptReply( "getEmail" ) )
+    {
+        $uuid = getArg("uuid");
+        $log->debugLog("Getting email for {$uuid}.", "INFO");
+
+        if ($uuid == "")
+        {
+            $reply["message"] = "The uuid can't be empty, sorry!";
+            $reply["success"] = false;
+            $log->debugLog("Refused: empty uuid.", "WARNING");
+            printAndDie();
+        }
+
+        // We need to check the role: only admins can get emails
+        // or a user if it's his own
+        if ($_SESSION["userUuid"] != $uuid || !isAdmin())
+        {
+            $reply["message"] = "You need to be an administrator to get the email of another user.";
+            $reply["success"] = false;
+            $log->debugLog("Refused: {$_SESSION["userUuid"]} is trying to get the email of another user.", "WARNING");
+            printAndDie();
+        }
+
+        $q = new DBQuery();
+        $currentEmail = $q->userEmail($uuid);
+
+        $reply["success"] = true;
+        $reply["message"] = "Got the user email $currentEmail.";
+        $reply["content"] = $currentEmail;
+        printAndDie();
+    }
+
     if ( acceptReply( "setEmail" ) )
     {
+        $newEmail = getArg("email");
+        $uuid = getArg("uuid");
 
+        $log->debugLog("Changing email for {$uuid}.", "INFO");
+
+        if ($newEmail == "")
+        {
+            $reply["message"] = "The email can't be empty, sorry!";
+            $reply["success"] = false;
+            $log->debugLog("Refused: empty email.", "WARNING");
+            printAndDie();
+        }
+
+        if ($uuid == "")
+        {
+            $reply["message"] = "The uuid can't be empty, sorry!";
+            $reply["success"] = false;
+            $log->debugLog("Refused: empty uuid.", "WARNING");
+            printAndDie();
+        }
+
+        // We need to check the role: only admins can set emails
+        // or a user if it's his own
+        if ($_SESSION["userUuid"] != $uuid || !isAdmin())
+        {
+            $reply["message"] = "You need to be an administrator to change the email of another user.";
+            $reply["success"] = false;
+            $log->debugLog("Refused: {$_SESSION["userUuid"]} is trying to set the email of another user.", "WARNING");
+            printAndDie();
+        }
+
+        
+        $q = new DBQuery();
+        $currentEmail = $q->userEmail($uuid);
+
+        if ($currentEmail == $newEmail) {
+            $reply["success"] = true;
+            $reply["message"] = "Nothing to change, this is the same email as the previous one.";
+            printAndDie();
+        }
+
+        $q->setEmail($uuid, $newEmail);
+
+        $reply["success"] = true;
+        $reply["message"] = "User email changed fromn '$currentEmail' to '$newEmail' for user $uuid.";
+
+        $adminEmail = EMAIL_ADMIN;
+
+        sendMail(
+            $currentEmail,
+            "Ramses user",
+            "Security notice: Your Ramses account email address has been changed",
+"Saluton,
+
+This is a security notice.
+
+The email address associated to your Ramses account at $serverAddress has been changed from $currentEmail to $newEmail.
+
+If you did not request this change, please contact a Ramses administrator as soon as possible.
+You can also warn $adminEmail.
+
+Koran dankon,
+Via Ramses Server."
+        );
+
+        sendMail(
+            $newEmail,
+            "Ramses user",
+            "Security notice: Your Ramses account email address has been changed",
+"Saluton,
+
+This is a security notice.
+
+You have successfully changed the email address associated to your Ramses account at $serverAddress to this current address ($newEmail).
+
+If you did not request this change, please contact a Ramses administrator as soon as possible.
+You can also warn $adminEmail.
+
+Koran dankon,
+Via Ramses Server."
+        );
+
+        printAndDie();
     }

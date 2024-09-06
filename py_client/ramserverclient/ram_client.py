@@ -40,8 +40,11 @@ class RamClient(object):
     def ping(self):
         self.__get("ping")
 
-    def login(self):
-        email = input("E-mail: ")
+    def login(self, email=""):
+        if email == "":
+            email = input("E-mail: ")
+        else:
+            print("logging in as "+email)
         password = getpass()
         # hash password
         password = self.__hashPassword(password)
@@ -145,6 +148,18 @@ class RamClient(object):
         self.__get('createProject', {
             "uuid": projectUuid,
             "data": projectData
+        })
+
+    def getEmail(self, uuid:str):
+        response = self.__get("getEmail", {
+            "uuid": uuid
+        })
+        return response['content']
+    
+    def setEmail(self, uuid:str, email:str):
+        self.__get("setEmail", {
+            "email" : email,
+            "uuid" : uuid
         })
 
     def __hashPassword(self, password:str):

@@ -268,15 +268,8 @@
 
     function isAdmin()
     {
-        global $_SESSION, $tablePrefix;
-        $q = new DBQuery();
-        $q->prepare("SELECT `role` FROM `{$tablePrefix}RamUser` WHERE `id` = :userid ;");
-        $q->bindStr("userid", $_SESSION["userid"]);
-        $q->execute();
-        $row = $q->fetch();
-        $q->close();
-        
-        $role = decrypt( $row['role'] );
+        $q = new DBQuery();        
+        $role = $q->userRole($_SESSION["userUuid"]);
         return strtolower($role) == 'admin';
     }
 
