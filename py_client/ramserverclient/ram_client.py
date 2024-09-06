@@ -115,6 +115,12 @@ class RamClient(object):
             "users": users
         })
 
+    def createProject(self, projectData:str, projectUuid=""):
+        self.__get('createProject', {
+            "uuid": projectUuid,
+            "data": projectData
+        })
+
     def __hashPassword(self, password:str):
         prefix = self._server_adress.replace("http://","").replace("https://","").replace("/","")
         password = prefix+password+RAMCLIENT_KEY
@@ -148,4 +154,3 @@ class RamClient(object):
             return response.json()
         except:
             return {}
-

@@ -116,6 +116,7 @@
 		printAndDie();
 
 	include("clean.php");
+	include("projects_create.php");
 	include("projects_assign.php");
 	include("projects_unassign.php");
 	include("users_create.php");

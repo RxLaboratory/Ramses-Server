@@ -269,6 +269,35 @@
             }
 		}
 
+		public function createProject($uuid, $data) {
+			global $tablePrefix, $sqlMode;
+
+			if ($uuid == "") $uuid = uuid();
+			$modified = gmdate("Y-m-d H:i:s", time());
+
+			$qstr = "INSERT INTO `{$tablePrefix}RamProject` (`uuid`, `data`, `modified`, `removed`) 
+					 VALUES ( :projectUuid, :projectData, :modified, 0 )";
+
+			if ($sqlMode == 'sqlite') $qstr .= " ON CONFLICT(uuid) DO UPDATE SET ";
+			else if ($sqlMode == 'mysql') $qstr .= " AS excluded ON DUPLICATE KEY UPDATE ";
+			else $qstr .= " ON DUPLICATE KEY UPDATE ";
+
+			if ($sqlMode == 'mariadb') $qstr .= "`data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = 0 ;";
+			else $qstr .= "`data` = excluded.data, `modified` = excluded.modified, `removed` = 0 ;";
+
+			$this->prepare($qstr);
+			$this->bindStr('projectUuid', $uuid);
+			$this->bindStr('projectData', $data);
+			$this->bindStr('modified', $modified);
+			$this->execute();
+			$this->close();
+
+			if ($this->ok)
+				return $uuid;
+			
+			return "";
+		}
+
 		public function assignUser($userId, $projectId) {
 			$this->assignUsers(array(array($userId, $projectId)));
 		}
@@ -530,7 +559,7 @@
 			if (!$this->ok)
 			{
 				$this->errorInfo = $this->query->errorInfo();
-				$reply["message"] = "Database query failed. Here's the error\n\n" . $this->query->errorInfo()[2];
+				$reply["message"] = "Warning! Database query failed. Here's the error\n\n" . $this->query->errorInfo()[2];
 				$reply["success"] = false;
 			}
 			else if ($successMessage != "")
