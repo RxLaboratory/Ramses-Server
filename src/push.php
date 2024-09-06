@@ -96,7 +96,7 @@
                 $qStr .= " FROM `{$tablePrefix}{$table}`
                                 WHERE `modified` >= :modified ";
 
-                if ($table != "RamUser" && $table != "RamProject") 
+                if ($table != "RamUser" && $table != "RamProject")
                     $qStr .= " AND `project_id` = :projectid ";
 
                 $qStr .= ";";
@@ -119,7 +119,7 @@
                     if ($table == "RamUser")
                     {
                         $row["data"] = decrypt($row["data"]);
-                        $row["role"] = decrypt($row["role"]);
+                        $row["role"] = decrypt($r["role"]);
                     }
                     $current[$row["uuid"]] = $row;
                 }
