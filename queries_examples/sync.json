@@ -42,14 +42,14 @@
             "modifiedRows": [
                 {
                     "uuid": "123456",
-                    "userName": "Duf",
+                    "role": "standard",
                     "data": "{some data}",
                     "modified": "2022-07-15 15:44:23",
                     "removed": 0
                 },
                 {
                     "uuid": "789123",
-                    "userName": "Ana",
+                    "role": "admin",
                     "data": "{some other data}",
                     "modified": "2022-08-24 15:44:23",
                     "removed": 1

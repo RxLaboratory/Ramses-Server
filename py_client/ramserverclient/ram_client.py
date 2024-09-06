@@ -41,15 +41,16 @@ class RamClient(object):
         self.__get("ping")
 
     def login(self):
-        username = input("Username: ")
+        email = input("E-mail: ")
         password = getpass()
         # hash password
         password = self.__hashPassword(password)
 
-        response = self.__get("login", {"username": username, "password": password})
+        response = self.__get("login", {"email": email, "password": password})
         # keep token
         if response["success"]:
             self._token = response["content"]["token"]
+        return response
 
     def getTable(self,table:str):
         # Start sync session
@@ -131,6 +132,13 @@ class RamClient(object):
         self.__get("setUserRole",{
             "user":user,
             "role":role
+        })
+
+    def setPassword(self, current:str, new:str, userUuid:str):
+        self.__get("setPassword",{
+            "newPassword": self.__hashPassword(new),
+            "currentPassword": self.__hashPassword(current),
+            "uuid": userUuid
         })
 
     def createProject(self, projectData:str, projectUuid=""):

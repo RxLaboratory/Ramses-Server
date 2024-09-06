@@ -6,7 +6,6 @@ client.login()
 client.createUsers((
     {
         'email': "user@example.com",
-        'username': "duduf",
         'data' : json.dumps({
             'shortName': "duduf",
             'name': "Duduf",
@@ -15,7 +14,6 @@ client.createUsers((
     },
     {
         'email': "other@example.comg",
-        'username': "duf-rxlab",
         'data' : json.dumps({
             'shortName': "duf-rxlab",
             'name': "Duduf RxLab",

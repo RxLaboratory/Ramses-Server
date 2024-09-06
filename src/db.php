@@ -221,10 +221,6 @@
 					$userUuid = $user['uuid'] ?? uuid();
                     $vals[] = $userUuid;
 
-					$usernamekey = "username$update";
-                    $keys[] = $usernamekey;
-                    $vals[] = $user['username'];
-
 					$passwordkey = "password$update";
                     $keys[] = $passwordkey;
 					// Password must be encrypted
@@ -240,7 +236,9 @@
 					// Data must be encrypted
                     $vals[] = encrypt($user['data']);
 
-                    $valuesStr[] = "( :$uuidkey, :$usernamekey, :$passwordkey, :$emailkey, :$datakey, '$modified' )";
+					$role = encrypt("standard");
+
+                    $valuesStr[] = "( :$uuidkey, :$passwordkey, :$emailkey, :$datakey, '$modified', '$role' )";
 
                     $update++;
                 }
@@ -248,17 +246,17 @@
                 $valuesStr = implode(", ", $valuesStr);
 
                 if ($sqlMode == 'sqlite') 
-                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `userName`, `password`, `email`, `data`, `modified`)
+                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `password`, `email`, `data`, `modified`, `role`)
 							VALUES {$valuesStr}
                             ON CONFLICT(uuid) DO UPDATE SET 
                             `data` = excluded.data, `modified` = excluded.modified ;";
                 else if ($sqlMode == 'mysql')
-                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `userName`, `password`, `email`, `data`, `modified`)
+                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `password`, `email`, `data`, `modified`, `role`)
 							VALUES {$valuesStr}
 							AS new 
                             ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified ;";
                 else
-                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `userName`, `password`, `email`, `data`, `modified`)
+                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `password`, `email`, `data`, `modified`, `role`)
 							VALUES {$valuesStr}
                         	ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`) ;";
 

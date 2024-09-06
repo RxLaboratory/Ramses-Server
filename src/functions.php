@@ -214,7 +214,7 @@
     /**
      * Logs in and returns the new session token
      */
-    function login($userid, $uuid, $role, $id, $name)
+    function login($userid, $uuid, $role, $email, $name)
     {
         global $log, $_SESSION;
 
@@ -224,7 +224,7 @@
         // Generate a new token
         $_SESSION["token"] = bin2hex(openssl_random_pseudo_bytes(20));
         //Log
-        $log->login($uuid, $role, $id, $name);
+        $log->login($uuid, $role, $email, $name);
 
         SessionManager::regenerateSession();
 
@@ -557,7 +557,7 @@
                     `id`	INTEGER NOT NULL UNIQUE,
                     `uuid`	TEXT NOT NULL UNIQUE,
                     `data`	TEXT NOT NULL DEFAULT '{}',
-                    `project`	TEXT,
+                    `project_id`	INT NULL,
                     `modified`	timestamp NOT NULL,
                     `removed`	INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY(`id` AUTOINCREMENT) );";
@@ -565,7 +565,7 @@
                     `id` INT PRIMARY KEY NOT NULL UNIQUE AUTO_INCREMENT,
                     `uuid` varchar(36) NOT NULL UNIQUE,
                     `data` mediumtext NOT NULL,
-                    `project` mediumtext NULL,
+                    `project_id`	INT NULL,
                     `modified` timestamp NOT NULL,
                     `removed` tinyint(1) NOT NULL DEFAULT 0
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
@@ -584,11 +584,12 @@
         if ( !createTable("RamUser", $drop) )
             return false;
 
-        // Add username and password rows
+        // Add email, role and password rows
         $q = new DBQuery();
         $q->prepare("ALTER TABLE `{$tablePrefix}RamUser`
-            ADD  `userName` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
-            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `userName`;
+            ADD  `email` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `uuid`,
+            ADD  `role` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NULL AFTER `email`,
+            ADD  `password` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL AFTER `role`;
             ");
 
         $q->execute();

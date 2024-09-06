@@ -99,6 +99,7 @@
 
 	// projects and users management
 	include("users_set_password.php");
+	include("users_email.php");
 	include("projects_get.php");
 	include("projects_get_users.php");
 	include("projects_set_current.php");

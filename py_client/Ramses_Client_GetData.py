@@ -23,7 +23,8 @@ for user in usersForFirstProj:
     userData = json.loads(user["data"])
     userID = userData["shortName"]
     userName = userData["name"]
-    print(userUuid + " >>> " + userID + " | " + userName)
+    userRole = user["role"]
+    print(userUuid + " >>> " + userID + " | " + userName + "(" + userRole +")")
 
 currentProjectUuid = client.setCurrentProject(projects[0]["uuid"])
 print(currentProjectUuid)

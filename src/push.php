@@ -225,7 +225,7 @@
 
             $log->debugLog("Committing " . $tableName, "DEBUG");
 
-            if ($tableName == "RamUser") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `userName` ) VALUES ";
+            if ($tableName == "RamUser") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `password`, `email` ) VALUES ";
             else if ($tableName == "RamProject") $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`) VALUES ";
             else $qStrHeader = "INSERT INTO `{$tablePrefix}{$tableName}` (`uuid`, `data`, `modified`, `removed`, `project_id`) VALUES ";
             

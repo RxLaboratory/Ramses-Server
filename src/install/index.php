@@ -5,7 +5,7 @@
 		Installs the SQL Database
 	*/
 
-    define('RAMROOT',dirname(__FILE__));
+    define('RAMROOT',dirname(dirname(__FILE__)));
 
     echo ("Beginning installation...<br/>");
     flush();
@@ -14,6 +14,13 @@
 	require_once(RAMROOT."/global.php");
     // config
     require_once(RAMROOT."/config/config.php");
+    // functions
+    require_once(RAMROOT."/functions.php");
+    // logs
+    require_once(RAMROOT."/logger.php");
+
+    //prepare log
+	$log = new Logger();
 
     // Get current address
     /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -44,7 +51,6 @@
     echo ( "Connecting to the database...<br />" );
     flush();
 
-    require_once(RAMROOT."/functions.php");
     require_once(RAMROOT."/db.php");
 
     echo ( "Database found and working!<br />" );
@@ -83,9 +89,6 @@
     createUserTable(true);
     createProjectUserTable(true);
 
-    if ( !$q->isOK() )
-        die( "Sorry, something went wrong while writing the database." );
-
     echo ( "Database tables are ready!<br />" );
     flush();
 
@@ -100,16 +103,20 @@
     $pswd = preHashPassword($clearPassword);
     $pswd = hashPassword($pswd, $uuid);
     $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
-    
+    $email = EMAIL_ADMIN;
+
+
     $q = new DBQuery();
-    $qStr = "REPLACE INTO `{$tablePrefix}RamUser` ( `uuid`, `userName`, `password`, `data`, `modified` )
-		VALUES ( :uuid, 'Admin', :password, :data, '1970-01-01 12:00:00' );
+    $qStr = "REPLACE INTO `{$tablePrefix}RamUser` ( `uuid`, `email`, `password`, `data`, `modified`, `role` )
+		VALUES ( :uuid, :email, :password, :data, '1970-01-01 12:00:00', :role );
 		COMMIT;";
     $q->prepare( $qStr );
 
     $q->bindStr('uuid', $uuid);
     $q->bindStr('data', $data);
     $q->bindStr('password', $pswd);
+    $q->bindStr('email', encrypt($email));
+    $q->bindStr('role', encrypt('admin'));
     
     $q->execute();
     $q->close();
@@ -129,10 +136,11 @@
 
 Ramses has been correctly installed, you can now remove the 'install' directory.
 
-The default user is \"Admin\" with password:
-$clearPassword
+Here's your login info:
+Login: $email
+Password: $clearPassword
 
-Do not forget to change this name and password!
+Do not forget to change this password!
 
 Koran dankon,
 Your new Ramses Server."
@@ -140,7 +148,7 @@ Your new Ramses Server."
 
     echo (
         "<p>Ramses has been correctly installed, you can now <strong>remove the <code>install</code> directory</strong>.</p>
-        <p>The default user is <strong>\"Admin\" with password <code>$clearPassword</code></strong>.
-        <br />Do not forget to change this name and password!</p>"
+        <p>Here's your login info:<br><strong>\"$email\" with password <code>$clearPassword</code></strong>.
+        <br />Do not forget to change this password!</p>"
         );
 ?>

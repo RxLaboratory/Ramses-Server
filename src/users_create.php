@@ -61,8 +61,7 @@
             // Parse user data
             $userPassword = $user['password'] ?? "";
             $userMail = $user['email'] ?? "";
-            $userShortName = $user['username'] ?? "";
-            $userName = $userShortName;
+            $userName = "";
             $userData = $user['data'] ?? "";
             $userUuid = $user['uuid'] ?? uuid();
 
@@ -70,17 +69,15 @@
                 $userData = json_decode($userData, true);
                 if ($userMail =="")
                     $userMail = $userData["email"] ?? "";
-                if ($userShortName == "")
-                    $userShortName = $userData["shortName"] ?? "";
-                $userName = $userData["name"] ?? $userShortName;
+                $userName = $userData["name"] ?? "";
             }
             else
                 $userData = array();
 
-            if ($userShortName == "") {
+            if ($userMail == "") {
                 $reply["success"] = false;
-                $reply["message"] = "Warning! Missing username.";
-                $log->debugLog("createUsers: Some users are missing their username.", "WARNING");
+                $reply["message"] = "Warning! Missing email.";
+                $log->debugLog("createUsers: Some users are missing their email.", "WARNING");
                 printAndDie();
             }
 
@@ -99,7 +96,7 @@
 
 You've been invited to a Ramses server at $serverAddress.
 
-Your username is: $userShortName
+Your username is: $userMail
 Your temporary password is: $userPassword
 
 Do not forget to change this password!
@@ -113,7 +110,6 @@ Via Ramses Server."
 
             $parsedUser = array();
             $parsedUser['uuid'] = $userUuid;
-            $parsedUser['username'] = $userShortName;
             $parsedUser['password'] = preHashPassword($userPassword);
             $parsedUser['email'] = $userMail;
             $parsedUser['data'] = json_encode($userData);

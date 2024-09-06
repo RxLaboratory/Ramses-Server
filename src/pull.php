@@ -56,7 +56,7 @@
             createTable( $table );
 
             $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
-            if ($table == "RamUser") $qStr = $qStr . ", `userName` ";
+            if ($table == "RamUser") $qStr = $qStr . ", `role` ";
             $qStr = $qStr . " FROM `{$tablePrefix}{$table}` WHERE `uuid` = :uuid ;";
 
             $q = new DBQuery();
@@ -73,7 +73,7 @@
 
                 if ($table == "RamUser")
                 {
-                    $reply["content"]["userName"] = $r["userName"];
+                    $reply["content"]["role"] = decrypt($r["role"]);
                     // We need to decrypt the user data
                     $data = $r["data"];
                     $reply["content"]["data"] = decrypt( $data );
@@ -93,7 +93,7 @@
                 $reply["content"]["removed"] = 0;
                 $reply["content"]["data"] = "";
 
-                if ($table == "RamUser") $reply["content"]["userName"] = "";
+                if ($table == "RamUser") $reply["content"]["role"] = "";
 
                 $reply["success"] = true;
                 $reply["message"] = "Pulled data: this object doesn't exist.";

@@ -4,7 +4,6 @@
     "message": "Successful login. Welcome Duf!",
     "query": "login",
     "content": {
-        "username": "Duf",
         "uuid": "uuid",
         "token": "token"
     }

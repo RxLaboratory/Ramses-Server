@@ -29,17 +29,17 @@
 
     if ( acceptReply( "login" ) )
     {
-        $username = getArg( "username" );
+        $email = getArg( "email" );
         $password = getArg( "password" );
 
         $log->debugLog("Login...", "INFO");
 
-        if (strlen($username) == 0)
+        if (strlen($email) == 0)
         {
-            $reply["message"] = "Missing user name";
+            $reply["message"] = "Missing email";
             $reply["success"] = false;
-            $log->debugLog("Missing user name", "WARNING");
-            logout("Connexion refused (invalid password)");
+            $log->debugLog("Missing email", "WARNING");
+            logout("Connexion refused (missing email)");
         }
 
         if (strlen($password) == 0)
@@ -47,16 +47,15 @@
             $reply["message"] = "Missing password";
             $reply["success"] = false;
             $log->debugLog("Missing password", "WARNING");
-            logout("Connexion refused (invalid password)");
+            logout("Connexion refused (missing password)");
         }
 
         $q = new DBQuery();
         $q->vacuum();
-        $q->prepare( "SELECT `id`, `uuid`,`userName`,`password`,`data`, `modified` FROM `{$tablePrefix}RamUser` WHERE `userName` = :username AND removed = 0;" );
-        $q->bindStr( "username", $username );
+        $q->prepare( "SELECT `id`, `uuid`,`email`,`password`, `data`, `modified`, `role` FROM `{$tablePrefix}RamUser` WHERE removed = 0;" );
         $q->execute();
 
-        // In case there are multiple users with the same name, find the one with the right password
+        // In case there are multiple users with the same email, find the one with the right password
         // and remove the others
         $ok = false;
         $users = [];
@@ -70,10 +69,10 @@
 
         if (!$ok)
         {
-            $reply["message"] = "Invalid password or username";
+            $reply["message"] = "Invalid password or email";
             $reply["success"] = false;
-            $log->debugLog("Invalid username: {$username}", "WARNING");
-            logout("Connexion refused (invalid username: {$username})");
+            $log->debugLog("Invalid email: {$email}", "WARNING");
+            logout("Invalid password or email");
         }
         
         $ok = false;
@@ -85,9 +84,18 @@
             $dataStr = $user["data"];
             $tPassword = $user["password"];
             $modified = $user["modified"];
+            $temail = $user["email"];
+            $role = $user["role"];
             // decrypt data
             $dataStr = decrypt( $dataStr );
             $dataArr = json_decode( $dataStr, true);
+            $temail = decrypt($temail);
+
+            // check email
+            if ($temail != $email)
+            {
+                continue;
+            }
 
             //check password
             if ( !checkPassword($password, $uuid, $tPassword ) )
@@ -96,25 +104,22 @@
             }
 
             // Get other data for the log
-            $name = "unknown";
+            $name = "Unknown User";
             if ( isset($dataArr["name"]) ) $name = $dataArr["name"];
-            $role = "unknown";
-            if ( isset($dataArr["role"]) ) $role = $dataArr["role"];
 
             $log->debugLog("{$name} has logged in as {$role}.", "INFO");
 
             // Login
-            $token = login($userid, $uuid, $role, $username, $name);
+            $token = login($userid, $uuid, $role, $email, $name);
 
             //reply content
             $content = array();
-            $content["username"] = $username;
             $content["uuid"] = $uuid;
             $content["token"] = $token;
             $content["data"] = $dataStr;
             $content["modified"] = $modified;
             $reply["content"] = $content;
-            $reply["message"] = "Successful login. Welcome " . $content["username"] . "!";
+            $reply["message"] = "Successful login. Welcome " . $name . "!";
             $reply["success"] = true;
 
             $ok = true;
@@ -123,20 +128,33 @@
 
         if (!$ok)
         {
-            $reply["message"] = "Invalid password or username";
+            $reply["message"] = "Invalid password or email";
             $reply["success"] = false;
-            $log->debugLog("Invalid password", "WARNING");
-            logout("Connexion refused (invalid password)");
+            $log->debugLog("Invalid password or email", "WARNING");
+            logout("Invalid password or email");
         }
         else if ($uuid != "")
         {
-            // Remove other users with the same username if any
-            $q->prepare( "UPDATE `{$tablePrefix}RamUser` SET `removed` = 1, `modified` = :modified WHERE `userName` = :username AND `uuid` != :uuid;" );
-            $q->bindStr( "username", $username );
-            $q->bindStr( "uuid", $uuid );
-            $q->bindStr( "modified", gmdate("Y-m-d H:i:s") );
-            $q->execute();
-            $q->close();
+            // Remove other users with the same email if any
+            $removeUuids = [];
+            $i = 0;
+            foreach($users as $user) {
+                $temail = $user["email"];
+                $temail = decrypt($temail);
+                $tuuid = $user["uuid"];
+
+                if ($temail == $email && $tuuid != $uuid) {
+                    $removeUuids[] = " `uuid` = '$tuuid' ";
+                }
+            }
+
+            if (!empty($removeUuids)) {
+                $removeUuids = join(" OR ", $removeUuids);
+                $q->prepare( "UPDATE `{$tablePrefix}RamUser` SET `removed` = 1, `modified` = :modified WHERE $removeUuids ;" );
+                $q->bindStr( "modified", gmdate("Y-m-d H:i:s") );
+                $q->execute();
+                $q->close();
+            }
         }
 
         printAndDie();

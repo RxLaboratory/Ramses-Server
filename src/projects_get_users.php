@@ -38,7 +38,7 @@
         // IF is admin or the current user is assigned to the current project
         $q = new DBQuery();
 
-        $qstr = "SELECT `{$tablePrefix}RamUser`.`uuid`, `{$tablePrefix}RamUser`.`data`, `{$tablePrefix}RamUser`.`modified`, `{$tablePrefix}RamUser`.`userName`, `{$tablePrefix}RamUser`.`removed`
+        $qstr = "SELECT `{$tablePrefix}RamUser`.`uuid`, `{$tablePrefix}RamUser`.`data`, `{$tablePrefix}RamUser`.`modified`, `{$tablePrefix}RamUser`.`role`, `{$tablePrefix}RamUser`.`removed`
                 FROM `{$tablePrefix}RamUser`
                 LEFT JOIN `{$tablePrefix}ServerProjectUser`
                     ON `{$tablePrefix}RamUser`.`id` = `{$tablePrefix}ServerProjectUser`.`user_id`
@@ -67,7 +67,7 @@
             $user["uuid"] = $r["uuid"];
             $user["modified"] = $r["modified"];
             $user["removed"] = (int)$r["removed"];
-            $user["userName"] = $r["userName"];
+            $user["role"] = decrypt($r["role"]);
             $user["data"] = decrypt($r["data"]);
             $users[] = $user;
         }

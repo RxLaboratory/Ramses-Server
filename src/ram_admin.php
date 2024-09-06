@@ -12,7 +12,7 @@
 <form method="post" action="index.php?login">
  
 <p>
-    <input type="text" name="username" />
+    <input type="text" name="email" />
 	<input type="password" name="password" />
 	<input type="submit" value="Log in" />
 </p>
