@@ -28,6 +28,43 @@
     require_once(RAMROOT."/functions.php");
     require_once(RAMROOT."/reply.php");
 
+    function assignUsers($users, $projectUuid) {
+        global $log, $reply;
+
+        if (strlen($projectUuid) == 0)
+        {
+            $reply["message"] = "The project UUID is required";
+            $reply["success"] = false;
+            $log->debugLog("Missing project", "WARNING");
+            printAndDie();
+        }
+
+        // Get the project and the user ids from their uuid
+        $q = new DBQuery();
+        $userIds = $q->getUserIds($users);
+        if (empty($userIds)) {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! Can't find any user id from these uuids.";
+            $log->debugLog("assignUsers: Can't get any user id.", "WARNING");
+            printAndDie();
+        }
+
+        $projectId = $q->getProjectId($projectUuid);
+        if ($projectId < 0) {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! Can't find the project $projectUuid in the database, sorry.";
+            $log->debugLog("Can't find project $projectUuid.", "WARNING");
+            printAndDie();
+        }
+
+        // Update the ProjectUser table
+        $q->assignUsers($userIds, $projectId);
+
+        $reply["message"] = "Users assigned!";
+        $reply["success"] = true;
+        printAndDie();
+    }
+
     if ( acceptReply( "assignUser" ) )
     {
         if (!isAdmin())
@@ -49,46 +86,36 @@
             printAndDie();
         }
 
-        if (strlen($projectUuid) == 0)
+        assignUsers([$userUuid], $projectUuid);
+    }
+
+    if ( acceptReply( "assignUsers" ) )
+    {
+        if (!isAdmin())
         {
-            $reply["message"] = "The project UUID is required";
             $reply["success"] = false;
-            $log->debugLog("Missing project", "WARNING");
+            $reply["message"] = "Warning! Missing privileges. You must be an administrator to assign users to projects.";
+            $log->debugLog("Refused: not admin.", "WARNING");
             printAndDie();
         }
 
-        // Get the project and the user id from their uuid
-        $q = new DBQuery();
-        $q->prepare("SELECT `id` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid;");
-        $q->bindStr( "userUuid", $userUuid );
-        $q->execute();
-        $userId = (int)$q->fetch()["id"] ?? -1;
-        $q->close();
-        if ($userId < 0) {
+        $users = getArg("users", array());
+        $projectUuid = getArg("project");
+
+        if (!is_array($users)) {
             $reply["success"] = false;
-            $reply["message"] = "Can't find the user $userUuid in the database, sorry.";
-            $log->debugLog("Can't find user $userUuid.", "WARNING");
+            $reply["message"] = "Warning! You must provide a user list (a JSON Array) to assign users.";
+            $log->debugLog("createUsers: 'users' is not an Array.", "WARNING");
             printAndDie();
         }
 
-        $q = new DBQuery();
-        $q->prepare("SELECT `id` FROM `{$tablePrefix}RamProject` WHERE `uuid` = :projectUuid;");
-        $q->bindStr( "projectUuid", $projectUuid );
-        $q->execute();
-        $projectId = (int)$q->fetch()["id"] ?? -1;
-        $q->close();
-        if ($projectId < 0) {
+        if (empty($users)) {
             $reply["success"] = false;
-            $reply["message"] = "Can't find the project $userUuid in the database, sorry.";
-            $log->debugLog("Can't find project $userUuid.", "WARNING");
+            $reply["message"] = "Warning! You must provide a non-empty user list (a JSON Array) to assign users.";
+            $log->debugLog("createUsers: 'users' is empty.", "WARNING");
             printAndDie();
         }
 
-        // Update the ProjectUser table
-        $q->assignUser($userId, $projectId);
-
-        $reply["message"] = "User assigned!";
-        $reply["success"] = true;
-        printAndDie();
+        assignUsers($users, $projectUuid);
     }
 

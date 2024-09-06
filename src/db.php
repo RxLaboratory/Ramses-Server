@@ -298,18 +298,81 @@
 			return "";
 		}
 
-		public function assignUser($userId, $projectId) {
-			$this->assignUsers(array(array($userId, $projectId)));
+		public function getProjectId($projectUuid) {
+			global $tablePrefix;
+
+			$this->prepare("SELECT `id` FROM `{$tablePrefix}RamProject` WHERE `uuid` = :projectUuid;");
+			$this->bindStr( "projectUuid", $projectUuid );
+			$this->execute();
+			$projectId = (int)$this->fetch()["id"] ?? -1;
+			$this->close();
+			return $projectId;
 		}
 
-		public function assignUsers( $assignments ) {
+		public function getUserIds($uuids) {
+			global $tablePrefix, $SQLMaxRowPerRequest, $log;
+
+			$update = 0;
+			$updateCount = count($uuids);
+
+			$ids = array();
+
+			while ($update < $updateCount)
+            {
+				// The values to be added to the request
+				$vals = [];
+				$keys = [];
+				// The array of values for building the request
+                $valuesStr = [];
+
+				for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    // Got all
+                    if ($update == $updateCount) break;
+
+					$key = "uuid$update";
+                    $keys[] = $key;
+                    $vals[] = $uuids[$update];
+
+                    $valuesStr[] = "`uuid` = :$key";
+
+                    $update++;
+                }
+
+				$valuesStr = implode(" OR ", $valuesStr);
+
+				$qStr = "SELECT `id` FROM `{$tablePrefix}RamUser` WHERE $valuesStr ;";
+                $this->prepare($qStr);
+                $this->bindStrings($keys, $vals);
+                $this->execute();
+				while($r = $this->fetch()) {
+					$id = (int)$r['id'] ?? -1;
+					if ($id >= 0)
+						$ids[] = $id;
+				}
+                $this->close();
+			}
+
+			$elapsed = $this->elapsed();
+			$log->debugLog("Got {$updateCount} user ids $elapsed ms", "DEBUG");
+
+			return $ids;
+		}
+
+		public function assignUser($userId, $projectId) {
+			$userIds = array();
+			$userIds[] = $userId;
+			$this->assignUsers($userIds, $projectId);
+		}
+
+		public function assignUsers( $userIds, $projectId ) {
 			global $SQLMaxRowPerRequest, $tablePrefix, $sqlMode, $log;
 
 			$update = 0;
-			$updateCount = count($assignments);
+			$updateCount = count($userIds);
 			$table = "ServerProjectUser";
 
-			$log->debugLog("Assigning users to projects. There are $updateCount assignments.", "DEBUG");
+			$log->debugLog("Assigning users to project. There are $updateCount assignments.", "DEBUG");
 
             while ($update < $updateCount)
             {
@@ -327,11 +390,11 @@
 
 					$useridkey = "userid$update";
                     $keys[] = $useridkey;
-                    $vals[] = $assignments[$update][0];
+                    $vals[] = $userIds[$update];
 
 					$projectidkey = "projectid$update";
                     $keys[] = $projectidkey;
-                    $vals[] = $assignments[$update][1];
+                    $vals[] = $projectId;
 
                     $valuesStr[] = "( :$useridkey, :$projectidkey )";
 

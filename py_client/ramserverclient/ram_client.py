@@ -104,9 +104,21 @@ class RamClient(object):
             "project": projectUuid
         })
 
+    def assignUsers(self, users:list, projectUuid:str):
+        self.__get("assignUsers", {
+            "users": users,
+            "project": projectUuid
+        })
+
     def unassignUser(self, userUuid:str, projectUuid:str):
         self.__get("unassignUser", {
             "user": userUuid,
+            "project": projectUuid
+        })
+
+    def unassignUsers(self, users:list, projectUuid:str):
+        self.__get("unassignUsers", {
+            "user": users,
             "project": projectUuid
         })
 
