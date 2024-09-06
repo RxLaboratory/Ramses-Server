@@ -1,8 +1,14 @@
 <?php
-    require_once($__ROOT__."/config/config.php");
-    require_once($__ROOT__."/logger.php");
-    require_once($__ROOT__."/session_manager.php");
-    require_once($__ROOT__."/reply.php");
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
+    use PHPMailer\PHPMailer\PHPMailer;
+	use PHPMailer\PHPMailer\Exception;
+
+    require_once(RAMROOT."/config/config.php");
+    require_once(RAMROOT."/logger.php");
+    require_once(RAMROOT."/session_manager.php");
+    require_once(RAMROOT."/reply.php");
 
     if (!function_exists('getallheaders')) {
         function getallheaders() {
@@ -27,7 +33,6 @@
 
     function createEncryptionKey ()
     {
-        global $__ROOT__;
         // Compute appropriate cost for passwords
         $timeTarget = 0.1; // 100 milliseconds 
         $cost = 7;
@@ -43,13 +48,13 @@
         $key_size = 32; // 256 bits
         $encryption_key = openssl_random_pseudo_bytes($key_size, $strong);
 
-        $configSecFile = fopen($__ROOT__."/config/config_security.php", "w");
+        $configSecFile = fopen(RAMROOT."/config/config_security.php", "w");
         if (!$configSecFile) return "";
         $encryption_key_txt = base64_encode($encryption_key);
         $ok = fwrite($configSecFile, "<?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?>");
         fclose($configSecFile);
 
-        if (!$ok || !file_exists($__ROOT__."/config/config_security.php"))
+        if (!$ok || !file_exists(RAMROOT."/config/config_security.php"))
         {
             echo( "    ▫ Failed. Could not write the key file. We need write permissions in the ramses folder." );
             echo("<p>If you can't grant this permission, copy the code below, and paste it in a new <strong>config/config_security.php</strong> file,");
@@ -57,16 +62,15 @@
             die("<strong><code>&lt;?php\n\$encrypt_key = base64_decode('{$encryption_key_txt}');\n\$pass_cost = {$cost};\n?&gt;</strong></code>");
         }
 
-        chmod( $__ROOT__."/config/config_security.php", 0600 );
+        chmod( RAMROOT."/config/config_security.php", 0600 );
 
         return $encryption_key;
     }
 
     function createServerUuid()
     {
-        global $__ROOT__;
         // Create this server's UUID
-        $configUUIDFile = fopen($__ROOT__."/config/config_server_uuid.php", "w");
+        $configUUIDFile = fopen(RAMROOT."/config/config_server_uuid.php", "w");
         $server_uuid = uuid();
         $ok = fwrite($configUUIDFile, "<?php\n\$server_uuid = \"{$server_uuid}\";\n?>");
         fclose($configUUIDFile);
@@ -134,6 +138,12 @@
 
         // Ignore errors
         @set_time_limit($timeout);
+    }
+
+    function generatePassword($num_bytes = 4) {
+        $bytes = openssl_random_pseudo_bytes($num_bytes);
+        $password = bin2hex($bytes);
+        return $password;
     }
 
     /**
@@ -212,7 +222,7 @@
         $_SESSION["userid"] = $userid;
         $_SESSION["userUuid"] = $uuid;
         // Generate a new token
-        $_SESSION["token"] = bin2hex(random_bytes(20));
+        $_SESSION["token"] = bin2hex(openssl_random_pseudo_bytes(20));
         //Log
         $log->login($uuid, $role, $id, $name);
 
@@ -239,6 +249,21 @@
         SessionManager::sessionEnd();
         
         printAndDie();
+    }
+
+    function sendMail($to, $toName, $subject, $body, $exceptions = false) {
+        global $log;
+
+        $mail = new PHPMailer($exceptions);
+
+        $mail->setFrom(EMAIL_FROM, 'Ramses');
+        $mail->addAddress($to, $toName);
+        $mail->addReplyTo(EMAIL_REPLYTO, 'Ramses');
+        $mail->Subject = $subject;
+        $mail->Body = $body;
+        $mail->send();
+
+        $log->mailLog($to, $subject, $body);
     }
 
     function isAdmin()
@@ -287,6 +312,14 @@
         $_SESSION["projectid"] = $project["project_id"];
 
         return $_SESSION["projectUuid"];
+    }
+
+    function preHashPassword($password)
+    {
+        global $serverAddress, $clientKey;
+        $pswd = str_replace("/", "", $serverAddress) . $password . $clientKey;
+        $pswd = hash("sha3-512", $pswd);
+        return $pswd;
     }
 
     /**
@@ -690,4 +723,4 @@
         }
         
     }
-?>
+

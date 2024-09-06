@@ -1,11 +1,15 @@
 <?php
-    require_once($__ROOT__."/config/config_logs.php");
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
+    require_once(RAMROOT."/config/config_logs.php");
 
     class Logger
     {
         private $logsPath = "";
         private $connexionLogFile = "";
         private $debugLogFile = "";
+        private $mailLogFile = "";
         private $requestPath = "";
         private $levels = Array (
             'DATA' => 0,
@@ -39,6 +43,9 @@
 
             $this->debugLogFile = $this->logsPath . gmdate("Y/m/") . gmdate("Y-m-d") . "_debugLog.csv";
             $this->initDebugLog();
+
+            $this->mailLogFile = $this->logsPath . gmdate("Y/m/") . gmdate("Y-m-d") . "_mailLog.csv";
+            $this->initMailLog();
 
             // Delete old logs
             $this->cleanLogs();
@@ -81,6 +88,22 @@
             //$escaped = str_replace("\r", "", $message);
             //$escaped = str_replace("\n", "\\n", $message);
             $this->appendDebugLog("{$date},{$level},\"{$message}\"");
+        }
+
+        public function mailLog($to, $subject, $body)
+        {
+            // Check if we're logging
+            global $enableLogs; 
+            global $reply;
+
+            $date = gmdate("Y/m/d H:i:s");
+
+            if (!$enableLogs) return;
+            if (!EMAIL_LOGS) return;
+            
+            //$escaped = str_replace("\r", "", $message);
+            //$escaped = str_replace("\n", "\\n", $message);
+            $this->appendMailLog("$date,$to,$subject,\"{$body}\"");
         }
 
         public function requestLog($headers, $body)
@@ -165,9 +188,27 @@
             $this->appendDebugLog("Date, Level, Message");
         }
 
+        private function initMailLog()
+        {
+            if (is_file($this->mailLogFile)) return;
+            $this->appendDebugLog("Date, To, Subject, Body");
+        }
+
         private function appendDebugLog($text)
         {
             $file = fopen($this->debugLogFile, "a");
+            if (!$file) return;
+            // Lock exclusive
+            if (!flock($file, LOCK_EX))
+                return;
+            fwrite($file, "{$text}\n");
+            flock($file, LOCK_UN);
+            fclose($file);
+        }
+
+        private function appendMailLog($text)
+        {
+            $file = fopen($this->mailLogFile, "a");
             if (!$file) return;
             // Lock exclusive
             if (!flock($file, LOCK_EX))
@@ -223,4 +264,3 @@
             
         }
     }
-?>

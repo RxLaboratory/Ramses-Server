@@ -5,15 +5,15 @@
 		Installs the SQL Database
 	*/
 
-    $__ROOT__ = dirname(dirname(__FILE__));
+    define('RAMROOT',dirname(__FILE__));
 
     echo ("Beginning installation...<br/>");
     flush();
 
     // global constants
-	require_once($__ROOT__."/global.php");
+	require_once(RAMROOT."/global.php");
     // config
-    require_once($__ROOT__."/config/config.php");
+    require_once(RAMROOT."/config/config.php");
 
     // Get current address
     /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -29,8 +29,8 @@
         echo ( "Writing the new database scheme (using SQLite)...<br />" );
         flush();
 
-        if (!is_dir($__ROOT__."/data")) mkdir($__ROOT__."/data");
-        $ok = copy($__ROOT__."/install/ramses.sqlite", $__ROOT__."/data/ramses_data");
+        if (!is_dir(RAMROOT."/data")) mkdir(RAMROOT."/data");
+        $ok = copy(RAMROOT."/install/ramses.sqlite", RAMROOT."/data/ramses_data");
 
         if (!$ok)
         {
@@ -44,8 +44,8 @@
     echo ( "Connecting to the database...<br />" );
     flush();
 
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/db.php");
+    require_once(RAMROOT."/functions.php");
+    require_once(RAMROOT."/db.php");
 
     echo ( "Database found and working!<br />" );
     flush();
@@ -71,8 +71,8 @@
     else echo( "<strong>Warning</strong>: The server UUID can't be generated.<br />");
     flush();
 
-    include($__ROOT__."/config/config_security.php");
-    include($__ROOT__."/config/config_server_uuid.php");
+    include(RAMROOT."/config/config_security.php");
+    include(RAMROOT."/config/config_server_uuid.php");
 
     // Set the DB
     echo ( "Writing the new database scheme (using MySQL)...<br />" );
@@ -96,8 +96,8 @@
     $uuid = uuid();
     //Prepare password
     cleanServerAddress();
-    $pswd = str_replace("/", "", $serverAddress) . "password" . $clientKey;
-    $pswd = hash("sha3-512", $pswd);
+    $clearPassword = generatePassword(5);
+    $pswd = preHashPassword($clearPassword);
     $pswd = hashPassword($pswd, $uuid);
     $data = encrypt("{\"name\":\"Administrator\",\"shortName\":\"Admin\",\"comment\":\"The default Administrator user. Don't forget to rename it and change its password!\",\"color\":\"#b3b3b3\",\"role\":\"admin\"}");
     
@@ -120,5 +120,27 @@
         die( print_r($q->errorInfo(), true) );
     }
     
-    echo ( "<p>Ramses has been correctly installed, you can now <strong>remove the <code>install</code> directory</strong>.</p><p>The default user is <strong>\"Admin\" with password <code>password</code></strong>.<br />Do not forget to change this name and password!</p>" );
+    // Send an email to the admin
+    sendMail(
+        EMAIL_ADMIN,
+        "Ramses Administrator",
+        "Your Ramses server has been installed",
+"Saluton!
+
+Ramses has been correctly installed, you can now remove the 'install' directory.
+
+The default user is \"Admin\" with password:
+$clearPassword
+
+Do not forget to change this name and password!
+
+Koran dankon,
+Your new Ramses Server."
+    );
+
+    echo (
+        "<p>Ramses has been correctly installed, you can now <strong>remove the <code>install</code> directory</strong>.</p>
+        <p>The default user is <strong>\"Admin\" with password <code>$clearPassword</code></strong>.
+        <br />Do not forget to change this name and password!</p>"
+        );
 ?>

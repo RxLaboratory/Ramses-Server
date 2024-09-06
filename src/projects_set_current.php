@@ -1,4 +1,7 @@
 <?php
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
 
     /*
         Ramses: Rx Asset Management System
@@ -22,8 +25,8 @@
         If not, see http://www.gnu.org/licenses/.
     */
 
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
+    require_once(RAMROOT."/functions.php");
+    require_once(RAMROOT."/reply.php");
 
     if ( acceptReply( "setCurrentProject" ) )
     {
@@ -43,4 +46,3 @@
         printAndDie();
     }
 
-?>

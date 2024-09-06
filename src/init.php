@@ -1,5 +1,8 @@
 <?php
-	require_once($__ROOT__."/config/config.php");
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
+	require_once(RAMROOT."/config/config.php");
 
 	// Enable compression if the client supports it
 	$useGzip = substr_count($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip');
@@ -13,9 +16,9 @@
 		ob_start();
 	}
 
-	require_once($__ROOT__."/functions.php");
-	require_once($__ROOT__."/logger.php");
-	require_once($__ROOT__."/session_manager.php");
+	require_once(RAMROOT."/functions.php");
+	require_once(RAMROOT."/logger.php");
+	require_once(RAMROOT."/session_manager.php");
 
 	// Get the server address
 	/*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
@@ -23,17 +26,17 @@
 	$serverAddress = $currentURL;
 	debugLog("This is the current server address: " . $serverAddress);*/
 
-	$installed = file_exists($__ROOT__."/config/config_security.php");
-	$maintenance = file_exists($__ROOT__."/maintenance");
+	$installed = file_exists(RAMROOT."/config/config_security.php");
+	$maintenance = file_exists(RAMROOT."/maintenance");
 
 	// Set the timezone to UTC so it matches the SQL db
 	date_default_timezone_set('UTC');
 
 	// The encryption key
-	if( $installed ) include( $__ROOT__."/config/config_security.php" );
+	if( $installed ) include( RAMROOT."/config/config_security.php" );
 	else $encrypt_key = '';
 
-	if (file_exists($__ROOT__."/config/config_server_uuid.php")) include( $__ROOT__."/config/config_server_uuid.php" );
+	if (file_exists(RAMROOT."/config/config_server_uuid.php")) include( RAMROOT."/config/config_server_uuid.php" );
 	else $server_uuid = createServerUuid();
 
 	// Enable dev mode
@@ -123,4 +126,3 @@
 		$log->debugLog("Malformed request, Content-Type is not application/json.", "WARNING");
 		printAndDie();
 	}
-?>

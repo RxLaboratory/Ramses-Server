@@ -1,6 +1,9 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
+    require_once(RAMROOT."/functions.php");
+    require_once(RAMROOT."/reply.php");
 
     /*
         Ramses: Rx Asset Management System
@@ -45,7 +48,7 @@
         $q->vacuum();
 
         // Create the sync cache folder
-        $syncCachePath = $__ROOT__."/sync_cache";
+        $syncCachePath = RAMROOT."/sync_cache";
         if (!is_dir($syncCachePath)) {
             $log->debugLog("Creating the '{$syncCachePath}' folder.", "DEBUG");
             if (!mkdir($syncCachePath)) {
@@ -106,4 +109,3 @@
         $reply["message"] = "Sync session started. You can now push your changes.";
         printAndDie();
     }
-?>

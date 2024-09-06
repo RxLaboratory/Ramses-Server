@@ -1,6 +1,9 @@
 <?php
-    require_once($__ROOT__."/functions.php");
-    require_once($__ROOT__."/reply.php");
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
+    require_once(RAMROOT."/functions.php");
+    require_once(RAMROOT."/reply.php");
 
     /*
         Ramses: Rx Asset Management System
@@ -138,4 +141,3 @@
 
         printAndDie();
     }
-?>

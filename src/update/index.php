@@ -5,16 +5,16 @@
 		Updates the SQL Database
 	*/
 
-    $__ROOT__ = dirname(__FILE__, 2);
+    define('RAMROOT',dirname(dirname(__FILE__)));
 
     // INIT
-    require_once($__ROOT__.'/global.php');
-	include($__ROOT__."/init.php");
+    require_once(RAMROOT.'/global.php');
+	include(RAMROOT."/init.php");
 
     // connect to database
-	require_once($__ROOT__.'/db.php');
+	require_once(RAMROOT.'/db.php');
     // functions
-    require_once($__ROOT__.'/functions.php');
+    require_once(RAMROOT.'/functions.php');
 
     echo "<strong>Updating database using {$sqlMode}...</strong>";
     flush();
@@ -24,23 +24,25 @@
     echo "<p>Updating project data...</p>";
     flush();
 
-    include($__ROOT__."/update/project_columns.php");
+    include(RAMROOT."/update/project_columns.php");
     addProjectColumns();
 
     // Must have a Project-User table association
     
     echo "<p>Updating the project-user assignments table...</p>";
-    include($__ROOT__."/update/project_users_table.php");
+    include(RAMROOT."/update/project_users_table.php");
     createProjectUserTable(false);
     updateProjectUserTable();
+
+    // Must have an email column
+    include(RAMROOT."/update/user_email.php");
+    addEmailColumn(false);
 
     // Run a database clean
     echo "<p>Cleaning database...</p>";
     flush();
-    require_once($__ROOT__."/db_clean.php");
+    require_once(RAMROOT."/db_clean.php");
     db_clean(true);
 
     echo "<p><strong>Update finished</strong></p>";
     flush();
-
-?>

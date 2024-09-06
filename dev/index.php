@@ -1,13 +1,13 @@
 <?php
-    $__ROOT__ = dirname(dirname(__FILE__)); 
+    RAMROOT = dirname(dirname(__FILE__)); 
 
     //configuration and init
-    require_once ($__ROOT__."/config/config.php");
-    require_once ($__ROOT__."/config/config_security.php");
-    require_once ($__ROOT__."/functions.php");
-    require_once ($__ROOT__."/logger.php");
-    require_once ($__ROOT__."/session_manager.php");
-    require_once ($__ROOT__."/init.php");
+    require_once (RAMROOT."/config/config.php");
+    require_once (RAMROOT."/config/config_security.php");
+    require_once (RAMROOT."/functions.php");
+    require_once (RAMROOT."/logger.php");
+    require_once (RAMROOT."/session_manager.php");
+    require_once (RAMROOT."/init.php");
 
     /*$currentURL = $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
 	$currentURL = explode("?", $currentURL)[0];

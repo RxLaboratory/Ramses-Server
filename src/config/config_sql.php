@@ -1,4 +1,4 @@
-<?php
+<?php 
     // If this file is called directly, abort.
     if (!defined('RAMROOT')) die;
 
@@ -7,7 +7,7 @@
         
         This program is licensed under the GNU General Public License.
 
-        Copyright (C) 2020-2023 Nicolas Dufresne and Contributors.
+        Copyright (C) 2020-2024 Nicolas Dufresne and Contributors.
 
         This program is free software;
         you can redistribute it and/or modify it
@@ -24,19 +24,28 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	// Edit this configuration file to adjust server logging
+    // Edit this configuration file before running the install script at /install/index.php
+    
+	// ==== SQL SETTINGS ====
 
-	// === GLOBALLY ENABLE LOGS ===
-	$enableLogs = false;
 
-    // Connexion logs
-    $connexionLogs = false;
-    // Requests logs
-    $requestLogs = false;
-    // Debug logs
-    $debugLogs = false;
-    // Email logs
-    define('EMAIL_LOGS', false);
+	// either 'mysql', 'mariadb' or 'sqlite'
+	// Note: with 'mysql', the minimum version of MySQL is 8.0.19
+	$sqlMode = 'sqlite';
+	// Table prefix
+	// should be a random character string (use https://duckduckgo.com/?q=generate+password)
+	// you can setup multiple instances on the same DB
+	// if each use a different prefix
+	$tablePrefix = "5H3VBzSY";
 
-    // How long do we keep logs? (days)
-    $logsExpiration = 2;
+	// ==== MySQL/MariaDB SETTINGS ====
+
+	// Host URL
+	$sqlHost = "db";
+	$sqlPort = 3306;
+	// Database name
+	$sqlDBName = "ramses";
+	// User
+	$sqlUser = "ramses";
+	// Password
+	$sqlpassword = "password";

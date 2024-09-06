@@ -1,4 +1,7 @@
 <?php
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
     /*
         Ramses: Rx Asset Management System
         
@@ -57,4 +60,3 @@
     $debugLogs = false;
     $logsExpiration = 2;
 
-?>

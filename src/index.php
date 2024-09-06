@@ -22,7 +22,7 @@
         If not, see http://www.gnu.org/licenses/.
 	*/
 
-	$__ROOT__ = dirname(__FILE__);
+	define('RAMROOT',dirname(__FILE__));
 
 	// Measure time spent by the script
 	$scriptStartTime = time();
@@ -32,7 +32,6 @@
 
 	//configuration and init 
 	require_once("config/config.php");
-	require_once("config/config_logs.php");
 	require_once("functions.php");
 	require_once("logger.php");
 	require_once("session_manager.php");
@@ -119,6 +118,6 @@
 	include("clean.php");
 	include("projects_assign.php");
 	include("projects_unassign.php");
+	include("users_create.php");
 
 	printAndDie();
-?>

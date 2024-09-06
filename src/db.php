@@ -1,5 +1,8 @@
 <?php
-	require_once($__ROOT__."/config/config.php");
+    // If this file is called directly, abort.
+    if (!defined('RAMROOT')) die;
+
+	require_once(RAMROOT."/config/config.php");
 	
 	/*
 		Rainbox Asset Manager
@@ -10,7 +13,7 @@
 	if (!isset($sqlMode)) $sqlMode = 'sqlite';
 
 	// Security, chmod the data file
-	if (is_file($__ROOT__."/data/ramses_data")) chmod($__ROOT__."/data/ramses_data", 0600);
+	if (is_file(RAMROOT."/data/ramses_data")) chmod(RAMROOT."/data/ramses_data", 0600);
 
 	// In SQLite, no more than a 1000 rows at once (let's set 900)
 	if ($sqlMode == "sqlite" && $SQLMaxRowPerRequest > 900) $SQLMaxRowPerRequest = 900; 
@@ -25,7 +28,7 @@
 			
 		else if ( $sqlMode == 'sqlite' )
 		{
-			$db = new PDO( 'sqlite:' .$__ROOT__."/data/ramses_data" );
+			$db = new PDO( 'sqlite:' .RAMROOT."/data/ramses_data" );
 			$db->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 			// activate use of foreign key constraints
 			$db->exec( 'PRAGMA foreign_keys = ON;' );
@@ -183,6 +186,87 @@
 
 			$elapsed = $this->elapsed();
 			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
+		}
+
+		public function createUsers($users) {
+			global $SQLMaxRowPerRequest, $tablePrefix, $sqlMode, $log;
+
+			$this->start_timer();
+
+			$update = 0;
+			$updateCount = count($users);
+
+			$log->debugLog("Updating {$updateCount} items from RamUser.", "DEBUG");
+
+			$modified = gmdate("Y-m-d H:i:s", time());
+
+			while ($update < $updateCount)
+            {
+                // The values to be added to the request
+                $vals = [];
+                $keys = [];
+
+                // The array of values for building the request
+                $valuesStr = [];
+
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    // Got all
+                    if ($update == $updateCount) break;
+
+					$user = $users[$update];
+
+					$uuidkey = "uuid$update";
+                    $keys[] = $uuidkey;
+					$userUuid = $user['uuid'] ?? uuid();
+                    $vals[] = $userUuid;
+
+					$usernamekey = "username$update";
+                    $keys[] = $usernamekey;
+                    $vals[] = $user['username'];
+
+					$passwordkey = "password$update";
+                    $keys[] = $passwordkey;
+					// Password must be encrypted
+                    $vals[] = hashPassword($user['password'], $userUuid);
+
+					$emailkey = "email$update";
+                    $keys[] = $emailkey;
+					// Email must be encrypted
+                    $vals[] = encrypt($user['email']);
+
+					$datakey = "data$update";
+                    $keys[] = $datakey;
+					// Data must be encrypted
+                    $vals[] = encrypt($user['data']);
+
+                    $valuesStr[] = "( :$uuidkey, :$usernamekey, :$passwordkey, :$emailkey, :$datakey, '$modified' )";
+
+                    $update++;
+                }
+
+                $valuesStr = implode(", ", $valuesStr);
+
+                if ($sqlMode == 'sqlite') 
+                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `userName`, `password`, `email`, `data`, `modified`)
+							VALUES {$valuesStr}
+                            ON CONFLICT(uuid) DO UPDATE SET 
+                            `data` = excluded.data, `modified` = excluded.modified ;";
+                else if ($sqlMode == 'mysql')
+                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `userName`, `password`, `email`, `data`, `modified`)
+							VALUES {$valuesStr}
+							AS new 
+                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `userName`, `password`, `email`, `data`, `modified`)
+							VALUES {$valuesStr}
+                        	ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`) ;";
+
+                $this->prepare($qStr);
+                $this->bindStrings($keys, $vals);
+                $this->execute();
+                $this->close();
+            }
 		}
 
 		public function assignUser($userId, $projectId) {
@@ -511,4 +595,3 @@
 			return (int)$elapsed;
 		}
 	}
-?>

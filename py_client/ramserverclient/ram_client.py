@@ -9,7 +9,7 @@ from .ram_meta import (
 
 class RamClient(object):
 
-    def __init__(self, server_adress:str, server_port=0):
+    def __init__(self, server_adress:str, server_port=0, showReceivedData=False):
 
         # Parse address to add server port if needed
 
@@ -28,13 +28,13 @@ class RamClient(object):
 
         # Prepare token
         self._token = ""
-        self._showData = True
+        self._showData = showReceivedData
 
         print("Connecting to: "+self._server_adress)
         self._session = requests.Session()
         self.ping()
 
-    def setShowDataReceived(self, show:bool):
+    def setShowReceivedData(self, show:bool):
         self._showData = show
 
     def ping(self):
@@ -98,16 +98,21 @@ class RamClient(object):
         })
         return response["content"]
 
-    def assignUser(self, userUuid, projectUuid):
+    def assignUser(self, userUuid:str, projectUuid:str):
         self.__get("assignUser", {
             "user": userUuid,
             "project": projectUuid
         })
 
-    def unassignUser(self, userUuid, projectUuid):
+    def unassignUser(self, userUuid:str, projectUuid:str):
         self.__get("unassignUser", {
             "user": userUuid,
             "project": projectUuid
+        })
+
+    def createUsers(self, users:list):
+        self.__get("createUsers", {
+            "users": users
         })
 
     def __hashPassword(self, password:str):
@@ -132,10 +137,15 @@ class RamClient(object):
             headers= {"Content-Type":"application/json"},
             timeout=60
             )
-        
+
         if self._showData:
             print("\n======== " + query.upper() + " =======")
+            print(str(response.status_code) + " | " + response.reason)
             print(response.text)
             print("===============\n")
 
-        return response.json()
+        try:
+            return response.json()
+        except:
+            return {}
+
