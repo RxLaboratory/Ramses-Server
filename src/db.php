@@ -428,17 +428,58 @@
 		}
 
 		public function unassignUser( $userId, $projectId) {
-			global $tablePrefix, $log;
+			$userIds = array();
+			$userIds[] = $userId;
+			$this->unassignUsers($userIds, $projectId);
+		}
 
+		public function unassignUsers( $userIds, $projectId) {
+			global $SQLMaxRowPerRequest, $tablePrefix, $log;
+
+			$update = 0;
+			$updateCount = count($userIds);
 			$table = "ServerProjectUser";
 
-			$log->debugLog("Unassigning user $userId from project $projectId.", "DEBUG");
+			$log->debugLog("Unassigning users from project. There are $updateCount assignments.", "DEBUG");
 
-			$this->prepare("DELETE FROM `{$tablePrefix}$table` WHERE `user_id` = :userid AND `project_id` = :projectid ;");
-			$this->bindInt("userid", $userId);
-			$this->bindInt("projectid", $projectId);
-			$this->execute();
-			$this->close();
+            while ($update < $updateCount)
+            {
+                // The values to be added to the request
+                $vals = [];
+                $keys = [];
+
+                // The array of values for building the request
+                $valuesStr = [];
+
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    // Got all
+                    if ($update == $updateCount) break;
+
+					$useridkey = "userid$update";
+                    $keys[] = $useridkey;
+                    $vals[] = $userIds[$update];
+
+					$projectidkey = "projectid$update";
+                    $keys[] = $projectidkey;
+                    $vals[] = $projectId;
+
+                    $valuesStr[] = "( `user_id` = :$useridkey AND `project_id` = :$projectidkey )";
+
+                    $update++;
+                }
+
+                $valuesStr = implode(" OR ", $valuesStr);
+				$qStr = "DELETE FROM `{$tablePrefix}$table` WHERE $valuesStr ;";
+               
+                $this->prepare($qStr);
+                $this->bindInts($keys, $vals);
+                $this->execute();
+                $this->close();
+            }
+
+			$elapsed = $this->elapsed();
+			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
 		}
 
 		/**
