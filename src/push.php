@@ -91,7 +91,7 @@
                 $qStr = "SELECT `uuid`, `data`, `modified`, `removed` ";
 
                 if ($table == "RamUser")
-                    $qStr = $qStr. ", `userName` ";
+                    $qStr = $qStr. ", `role` ";
 
                 $qStr .= " FROM `{$tablePrefix}{$table}`
                                 WHERE `modified` >= :modified ";
@@ -118,8 +118,8 @@
                     $row["removed"] = (int)$r["removed"];
                     if ($table == "RamUser")
                     {
-                        $row["userName"] = $r["userName"];
                         $row["data"] = decrypt($row["data"]);
+                        $row["role"] = decrypt($row["role"]);
                     }
                     $current[$row["uuid"]] = $row;
                 }
@@ -259,10 +259,8 @@
                         $data = $db->quote(
                             encrypt($data)
                         );
-                        // Escape user name
-                        $userName = $db->quote($newRow["userName"]);
 
-                        $values[] = "( $uuid, $data, $modified, $removed, '-', $userName )";
+                        $values[] = "( $uuid, $data, $modified, $removed, '-', '-' )";
                     }
                     else if ($tableName == "RamProject")
                     {
@@ -287,10 +285,8 @@
                 if ($sqlMode == 'sqlite') $qStr = $qStr . " ON CONFLICT(uuid) DO UPDATE SET ";
                 else if ($sqlMode == 'mysql') $qStr = $qStr . " AS excluded ON DUPLICATE KEY UPDATE ";
                 else $qStr = $qStr . " ON DUPLICATE KEY UPDATE ";
-               
-                if ($tableName == "RamUser" && $sqlMode != 'mariadb') $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed, `userName` = excluded.userName ;";
-                else if ($tableName == "RamUser" && $sqlMode == 'mariadb') $qStr = $qStr . "`data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`), `userName` = VALUES(`userName`) ;";
-                else if ($sqlMode == 'mariadb') $qStr = $qStr . "`data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`) ;";
+
+                if ($sqlMode == 'mariadb') $qStr = $qStr . "`data` = VALUES(`data`), `modified` = VALUES(`modified`), `removed` = VALUES(`removed`) ;";
                 else $qStr = $qStr . "`data` = excluded.data, `modified` = excluded.modified, `removed` = excluded.removed ;";
         
                 $q = new DBQuery();
