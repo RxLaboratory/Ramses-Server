@@ -236,9 +236,11 @@
 					// Data must be encrypted
                     $vals[] = encrypt($user['data']);
 
-					$role = encrypt("standard");
-
-                    $valuesStr[] = "( :$uuidkey, :$passwordkey, :$emailkey, :$datakey, '$modified', '$role' )";
+					$rolekey = "role$update";
+                    $keys[] = $rolekey;
+					// Data must be encrypted
+                    $vals[] = encrypt($user['role'] ?? 'standard');
+                    $valuesStr[] = "( :$uuidkey, :$passwordkey, :$emailkey, :$datakey, '$modified', :$rolekey )";
 
                     $update++;
                 }

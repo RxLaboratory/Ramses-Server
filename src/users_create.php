@@ -39,6 +39,7 @@
         }
 
         $users = getArg("users", array());
+
         if (!is_array($users)) {
             $reply["success"] = false;
             $reply["message"] = "Warning! You must provide a user list (a JSON Array) to create users.";
@@ -61,18 +62,9 @@
             // Parse user data
             $userPassword = $user['password'] ?? "";
             $userMail = $user['email'] ?? "";
-            $userName = "";
             $userData = $user['data'] ?? "";
             $userUuid = $user['uuid'] ?? uuid();
-
-            if ($userData != "") {
-                $userData = json_decode($userData, true);
-                if ($userMail =="")
-                    $userMail = $userData["email"] ?? "";
-                $userName = $userData["name"] ?? "";
-            }
-            else
-                $userData = array();
+            $userRole = $user['role'] ?? 'standard';
 
             if ($userMail == "") {
                 $reply["success"] = false;
@@ -84,15 +76,20 @@
             // Generate a password if needed
             if ($userPassword == "") {
 
+                // get the name
+                if ($userData != "") {
+                    $d = json_decode($userData, true);
+                    $userName = $d["name"] ?? "";
+                    $userName = " ".$userName;
+                }
+
                 $userPassword = generatePassword(5);
                 // Send email
-                if ($userMail != "")
-                {
-                    sendMail(
-                        $userMail,
-                        $userName,
-                        "Welcome to Ramses",
-"Saluton $userName!
+                sendMail(
+                    $userMail,
+                    $userName,
+                    "Welcome to Ramses",
+"Saluton$userName!
 
 You've been invited to a Ramses server at $serverAddress.
 
@@ -103,16 +100,15 @@ Do not forget to change this password!
 
 Koran dankon,
 Via Ramses Server."
-                    );
-                }
-                
+                );
             }
 
             $parsedUser = array();
             $parsedUser['uuid'] = $userUuid;
             $parsedUser['password'] = preHashPassword($userPassword);
             $parsedUser['email'] = $userMail;
-            $parsedUser['data'] = json_encode($userData);
+            $parsedUser['data'] = $userData;
+            $parsedUser['role'] = $userRole;
             $parsedUsers[] = $parsedUser;
 
             $uuids[] = $userUuid;
