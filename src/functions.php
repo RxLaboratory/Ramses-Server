@@ -221,6 +221,9 @@
         // Keep session info
         $_SESSION["userid"] = $userid;
         $_SESSION["userUuid"] = $uuid;
+        // Reset project
+        $_SESSION["projectUuid"] = "";
+        $_SESSION["projectid"] = -1;
         // Generate a new token
         $_SESSION["token"] = bin2hex(openssl_random_pseudo_bytes(20));
         //Log
@@ -245,6 +248,8 @@
 
         $_SESSION["userid"] = -1;
         $_SESSION["userUuid"] = "unknown";
+        $_SESSION["projectUuid"] = "";
+        $_SESSION["projectid"] = -1;
 
         SessionManager::sessionEnd();
         

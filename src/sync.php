@@ -30,17 +30,16 @@
     if ( acceptReply( "sync" ) )
     {
         // Make sure we're working on the right project
-        $projectUuid = getArg("project");
-        if ($projectUuid == "" && $_SESSION["projectUuid"] == "") {
+        $projectUuid = getArg("project", $_SESSION["projectUuid"]);
+        
+        if ($projectUuid == "") {
             $reply["message"] = "The project UUID is required, or you must set the current project.";
             $reply["success"] = false;
             $log->debugLog("Missing project", "WARNING");
             printAndDie();
         }
 
-        if ($projectUuid == "")
-            $projectUuid = $_SESSION["projectUuid"];
-        else if ($projectUuid != $_SESSION["projectUuid"]) {
+        if ($projectUuid != $_SESSION["projectUuid"]) {
             setCurrentProject($projectUuid);
         }
 
