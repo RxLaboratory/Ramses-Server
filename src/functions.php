@@ -292,7 +292,7 @@
         $project = $q->fetch();
         $q->close();
         if (!$project) {
-            $reply["message"] = "Sorry, either this project doesn't exist or you're not assigned to it ($projectUuid).";
+            $reply["message"] = "Sorry, either this project doesn't exist on this server or you're not assigned to it ($projectUuid).";
             $reply["success"] = false;
             $log->debugLog("User not assigned to project, or missing project $projectUuid", "WARNING");
             printAndDie();
