@@ -99,6 +99,12 @@
                 if ($table != "RamUser" && $table != "RamProject")
                     $qStr .= " AND `project_id` = :projectid ";
 
+
+                // Pull only the current project!
+                // Admins can get the list of project with getProjects
+                if ($table == 'RamProject')
+                    $qStr .= " AND `uuid` = :projectUuid ";
+
                 $qStr .= ";";
 
                 $q = new DBQuery();
@@ -106,6 +112,8 @@
                 $q->bindStr("modified", $prevSync, true, true);
                 if ($table != "RamUser" && $table != "RamProject")
                     $q->bindInt("projectid", $_SESSION["projectid"]);
+                if ($table == 'RamProject')
+                    $q->bindStr("projectUuid", $_SESSION["projectUuid"]);
                 $q->execute();
 
                 // Store
@@ -166,6 +174,12 @@
 
                     continue;
                 }
+
+                // If this is a project, accept only the current project updates
+                if ( $table == 'RamProject' &&
+                    $uuid != $_SESSION["projectUuid"] )
+                    continue;
+
 
                 // Check modification date
                 $currentRow = $current[$uuid];
