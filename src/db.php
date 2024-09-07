@@ -538,6 +538,51 @@
 				return $email;
 		}
 
+		public function getUsers($includeRemoved = false) {
+			global $tablePrefix, $log;
+
+			$this->start_timer();
+
+			$qStr = "SELECT `id`, `uuid`, `data`, `role`, `modified`, `removed`
+					FROM {$tablePrefix}RamUser ";
+
+			if (!$includeRemoved)
+				$qStr .= "WHERE `removed` = 0 ";
+
+			$qStr .= ";";
+
+			$users = array();
+
+			$this->prepare($qStr);
+			$this->execute();
+			while($r = $this->fetch()) {
+				
+				$uuid = $r["uuid"];
+				if ($uuid == "")
+					continue;
+
+				$dataStr = $r["data"];
+				if ($dataStr == "")
+					continue;
+
+				$user = array();
+				$user["data"] = decrypt($dataStr);
+				$user["modified"] = $r["modified"];
+				$user["role"] = $r["role"];
+				$user["removed"] = (int)$r["removed"] == 1;
+				
+				$users[$uuid] = $user;
+			}
+
+			$this->close();
+
+			$count = count($users);
+			$elapsed = $this->elapsed();
+			$log->debugLog("Retrieved {$count} items from RamUser in $elapsed ms", "DEBUG");
+
+			return $users;
+		}
+
 		/**
 		 * Get all items from a table
 		 * @param string $table The name of the table
