@@ -221,12 +221,15 @@
 					$userUuid = $user['uuid'] ?? uuid();
                     $vals[] = $userUuid;
 
-					if ($user['email'] != "") {
-						$emailkey = "email$update";
-						$keys[] = $emailkey;
-						// Email must be encrypted
-						$vals[] = encrypt($user['email']);
-					}
+					$emailkey = "email$update";
+					$keys[] = $emailkey;
+					// Email must be encrypted
+					$vals[] = encrypt($user['email']);
+
+					$passwordkey = "password$update";
+                    $keys[] = $passwordkey;
+					// Password must be encrypted
+                    $vals[] = hashPassword($user['password'], $userUuid);
 
 					$datakey = "data$update";
                     $keys[] = $datakey;
@@ -237,7 +240,8 @@
                     $keys[] = $rolekey;
 					// Data must be encrypted
                     $vals[] = encrypt($user['role'] ?? 'standard');
-                    $valuesStr[] = "( :$uuidkey, :$passwordkey, :$emailkey, :$datakey, '$modified', :$rolekey )";
+
+					$valuesStr[] = "( :$uuidkey, :$passwordkey , :$emailkey, :$datakey, '$modified', :$rolekey )";
 
                     $update++;
                 }
@@ -248,16 +252,16 @@
                     $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `password`, `email`, `data`, `modified`, `role`)
 							VALUES {$valuesStr}
                             ON CONFLICT(uuid) DO UPDATE SET 
-                            `data` = excluded.data, `modified` = excluded.modified ;";
+                            `data` = excluded.data, `modified` = excluded.modified, `role` = excluded.role ;";
                 else if ($sqlMode == 'mysql')
                     $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `password`, `email`, `data`, `modified`, `role`)
 							VALUES {$valuesStr}
 							AS new 
-                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified ;";
+                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified,  `role` = new.role ;";
                 else
                     $qStr = "INSERT INTO `{$tablePrefix}RamUser` (`uuid`, `password`, `email`, `data`, `modified`, `role`)
 							VALUES {$valuesStr}
-                        	ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`) ;";
+                        	ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`), `role` = VALUES(`role`) ;";
 
                 $this->prepare($qStr);
                 $this->bindStrings($keys, $vals);

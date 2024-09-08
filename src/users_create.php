@@ -64,6 +64,7 @@
             $userData = $user['data'] ?? "";
             $userUuid = $user['uuid'] ?? "";
             $userRole = $user['role'] ?? 'standard';
+            $userPassword = "";
 
             // Check if the user exists; in this case just update,
             // (don't check password and email)
@@ -89,22 +90,21 @@
                     printAndDie();
                 }
     
-                // Generate a password if needed
-                if ($userPassword == "") {
+                // Generate a password
     
-                    // get the name
-                    if ($userData != "") {
-                        $d = json_decode($userData, true);
-                        $userName = $d["name"] ?? "";
-                        $userName = " ".$userName;
-                    }
-    
-                    $userPassword = generatePassword(5);
-                    // Send email
-                    sendMail(
-                        $userMail,
-                        $userName,
-                        "Welcome to Ramses",
+                // get the name
+                if ($userData != "") {
+                    $d = json_decode($userData, true);
+                    $userName = $d["name"] ?? "";
+                    $userName = " ".$userName;
+                }
+
+                $userPassword = generatePassword(5);
+                // Send email
+                sendMail(
+                    $userMail,
+                    $userName,
+                    "Welcome to Ramses",
 "Saluton$userName!
 
 You've been invited to a Ramses server at $serverAddress.
@@ -116,13 +116,14 @@ Do not forget to change this password!
 
 Koran dankon,
 Via Ramses Server."
-                    );
-                }
+                );
+
             }
 
             $parsedUser = array();
             $parsedUser['uuid'] = $userUuid;
             $parsedUser['email'] = $userMail;
+            $parsedUser['password'] = preHashPassword($userPassword);
             $parsedUser['data'] = $userData;
             $parsedUser['role'] = $userRole;
             $parsedUsers[] = $parsedUser;
