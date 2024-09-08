@@ -568,12 +568,13 @@
 					continue;
 
 				$user = array();
+				$user["uuid"] = $uuid;
 				$user["data"] = decrypt($dataStr);
 				$user["modified"] = $r["modified"];
-				$user["role"] = $r["role"];
+				$user["role"] = decrypt($r["role"]);
 				$user["removed"] = (int)$r["removed"] == 1;
 				
-				$users[$uuid] = $user;
+				$users[] = $user;
 			}
 
 			$this->close();
