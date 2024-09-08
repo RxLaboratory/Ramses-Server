@@ -43,7 +43,7 @@
 
         // We need to check the role: only admins can get emails
         // or a user if it's his own
-        if ($_SESSION["userUuid"] != $uuid || !isAdmin())
+        if ($_SESSION["userUuid"] != $uuid && !isAdmin())
         {
             $reply["message"] = "You need to be an administrator to get the email of another user.";
             $reply["success"] = false;
@@ -85,7 +85,7 @@
 
         // We need to check the role: only admins can set emails
         // or a user if it's his own
-        if ($_SESSION["userUuid"] != $uuid || !isAdmin())
+        if ($_SESSION["userUuid"] != $uuid && !isAdmin())
         {
             $reply["message"] = "You need to be an administrator to change the email of another user.";
             $reply["success"] = false;
