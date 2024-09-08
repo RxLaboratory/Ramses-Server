@@ -60,35 +60,51 @@
         foreach($users as $user) {
             
             // Parse user data
-            $userPassword = $user['password'] ?? "";
             $userMail = $user['email'] ?? "";
             $userData = $user['data'] ?? "";
-            $userUuid = $user['uuid'] ?? uuid();
+            $userUuid = $user['uuid'] ?? "";
             $userRole = $user['role'] ?? 'standard';
 
-            if ($userMail == "") {
-                $reply["success"] = false;
-                $reply["message"] = "Warning! Missing email.";
-                $log->debugLog("createUsers: Some users are missing their email.", "WARNING");
-                printAndDie();
+            // Check if the user exists; in this case just update,
+            // (don't check password and email)
+            $exists = false;
+            if ($userUuid != "") {
+                $q = new DBQuery();
+                $q->prepare("SELECT `uuid` FROM {$tablePrefix}RamUser WHERE `uuid` = :uuid ;");
+                $q->bindStr("uuid", $userUuid);
+                $q->execute();
+                if ($q->fetch())
+                    $exists = true;
+                $q->close();
             }
+            else
+                $userUuid = uuid();
 
-            // Generate a password if needed
-            if ($userPassword == "") {
+            if (!$exists) {
 
-                // get the name
-                if ($userData != "") {
-                    $d = json_decode($userData, true);
-                    $userName = $d["name"] ?? "";
-                    $userName = " ".$userName;
+                if ($userMail == "") {
+                    $reply["success"] = false;
+                    $reply["message"] = "Warning! Missing email.";
+                    $log->debugLog("createUsers: Some users are missing their email.", "WARNING");
+                    printAndDie();
                 }
-
-                $userPassword = generatePassword(5);
-                // Send email
-                sendMail(
-                    $userMail,
-                    $userName,
-                    "Welcome to Ramses",
+    
+                // Generate a password if needed
+                if ($userPassword == "") {
+    
+                    // get the name
+                    if ($userData != "") {
+                        $d = json_decode($userData, true);
+                        $userName = $d["name"] ?? "";
+                        $userName = " ".$userName;
+                    }
+    
+                    $userPassword = generatePassword(5);
+                    // Send email
+                    sendMail(
+                        $userMail,
+                        $userName,
+                        "Welcome to Ramses",
 "Saluton$userName!
 
 You've been invited to a Ramses server at $serverAddress.
@@ -100,12 +116,12 @@ Do not forget to change this password!
 
 Koran dankon,
 Via Ramses Server."
-                );
+                    );
+                }
             }
 
             $parsedUser = array();
             $parsedUser['uuid'] = $userUuid;
-            $parsedUser['password'] = preHashPassword($userPassword);
             $parsedUser['email'] = $userMail;
             $parsedUser['data'] = $userData;
             $parsedUser['role'] = $userRole;

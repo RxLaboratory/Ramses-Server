@@ -221,15 +221,12 @@
 					$userUuid = $user['uuid'] ?? uuid();
                     $vals[] = $userUuid;
 
-					$passwordkey = "password$update";
-                    $keys[] = $passwordkey;
-					// Password must be encrypted
-                    $vals[] = hashPassword($user['password'], $userUuid);
-
-					$emailkey = "email$update";
-                    $keys[] = $emailkey;
-					// Email must be encrypted
-                    $vals[] = encrypt($user['email']);
+					if ($user['email'] != "") {
+						$emailkey = "email$update";
+						$keys[] = $emailkey;
+						// Email must be encrypted
+						$vals[] = encrypt($user['email']);
+					}
 
 					$datakey = "data$update";
                     $keys[] = $datakey;
