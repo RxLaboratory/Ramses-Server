@@ -73,18 +73,19 @@
 		printAndDie();
 	}
 
+	//connect to database
+	require_once('db.php');
+
+	//login
+	include("users_reset_password.php");
+	include("login.php");
+
 	// this session has worn out its welcome; kill it and start a brand new one
 	if ($sessionTimeout >= 0 && time() > $_SESSION['discard_after'])
 	{
 		$log->debugLog("Session has expired.", "WARNING");
 		logout("Your session has expired, you need to log-in.");
 	}
-
-	//connect to database
-	require_once('db.php');
-
-	//login
-	include("login.php");
 
 	// ======== START PRIVATE INTERFACE ========
 	// >>>>>>>> Check token to get into the private area
@@ -99,7 +100,6 @@
 
 	// projects and users management
 	include("users_set_password.php");
-	include("users_reset_password.php");
 	include("users_email.php");
 	include("projects_get.php");
 	include("projects_get_users.php");

@@ -110,6 +110,53 @@
             printAndDie();
         }
 
+        // Get user details to send the email
+        $q = new DBQuery();
+        $user = $q->userDetails($uuid);
+        if ($user && $user['email'] != "") {
+
+            $userName = $user['name'];
+            $userEmail = $user['email'];
+            $ramsesAdminEmail = EMAIL_ADMIN;
+
+            // Send user email
+            sendMail(
+                $userEmail,
+                $userName,
+                "Ramses server password reset",
+"Saluton $userName!
+
+Your password to access your Ramses server at $serverAddress has been changed.
+As a reminder, the email associated to your account is: $userEmail
+
+If you did not request this change,
+please contact your Ramses administrator ($ramsesAdminEmail) as soon as possible.
+
+Koran dankon,
+Via Ramses Server."
+        );
+
+            // Send admin email
+            sendMail(
+                EMAIL_ADMIN,
+                "Ramses Administrator",
+                "Security notice: A user password has been changed",
+"Saluton administrator,
+
+This is a security notice.
+
+The password for user $userName ($userEmail) with UUID: $uuid
+has been changed.
+
+If you receive lots of security notices like this one, there may be an issue with your server,
+or worse, someone trying to attack it.
+You should contact the users to confirm they've asked to reset their passwords.
+
+Koran dankon,
+Via Ramses Server."
+        );
+    }
+
         $reply["content"] = array();
         $reply["success"] = true;
         $reply["message"] = "Password changed!";

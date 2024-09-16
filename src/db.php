@@ -541,6 +541,32 @@
 			return $email;
 		}
 
+		public function userUuidFromEmail( $email, $includeRemoved=false ) {
+			global $tablePrefix;
+
+			$qstr = "SELECT `uuid`,`email` FROM `{$tablePrefix}RamUser` ";
+			if (!$includeRemoved)
+				$qstr .= " WHERE `removed` = 0 ";
+			$qstr .= ";";
+
+
+			$q = new DBQuery();
+			$q->prepare($qstr);
+			$q->execute();
+
+			$uuid = "";
+			while( $row = $q->fetch() ) {
+				$test = decrypt($row['email']);
+				if ($test == $email) {
+					$uuid = $row['uuid'];
+					break;
+				}
+			}
+			$q->close();
+
+			return $uuid;
+		}
+
 		public function userDetails( $userUuid ) {
 			global $tablePrefix;
 

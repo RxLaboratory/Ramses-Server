@@ -31,26 +31,42 @@
     if ( acceptReply( "resetPassword" ) )
     {
         $uuid = getArg("uuid");
+        $email = getArg("email");
 
         $log->debugLog("Reseting password for {$uuid}.", "INFO");
 
-        if ($uuid == "")
+        if ($uuid == "" && $email == "")
         {
-            $reply["message"] = "The uuid can't be empty, sorry!";
+            $reply["message"] = "You must provide either an email or a uuid, sorry!";
             $reply["success"] = false;
             $log->debugLog("Refused: empty uuid.", "WARNING");
             printAndDie();
         }
 
+
         // We need to check the role: only admins can reset passwords for anyone
+        // Using the uuid
         // and users can reset their only their own
-        if ($_SESSION["userUuid"] != $uuid && !isAdmin())
+        if ($uuid != "" && $_SESSION["userUuid"] != $uuid && !isAdmin())
         {
             if ($currentPassword == "")
             {
                 $reply["message"] = "Only administrators can reset other people's password.";
                 $reply["success"] = false;
                 $log->debugLog("Refused: not an admin.", "WARNING");
+                printAndDie();
+            }
+        }
+
+        // Get the UUID from the email
+        if ($uuid == "") {
+            $q = new DBQuery();
+            $uuid = $q->userUuidFromEmail($email);
+
+            if ($uuid == "") {
+                $reply["message"] = "Can't find any user with this email ($email), sorry!";
+                $reply["success"] = false;
+                $log->debugLog("Refused: no UUID corresponding to this email ($email).", "WARNING");
                 printAndDie();
             }
         }
@@ -78,7 +94,29 @@
         $userName = $user['name'];
         $userEmail = $user['email'];
         $ramsesAdminEmail = EMAIL_ADMIN;
-        // Send email
+
+        // Hash
+        $newPassword = hashPassword(
+            preHashPassword($userPassword),
+            $uuid
+        );
+
+        // Save it
+        $qStr = "UPDATE `{$tablePrefix}RamUser` SET `password` = :password WHERE `uuid` = :uuid ;";
+        $q->prepare($qStr);
+        $q->bindStr("uuid", $uuid);
+        $q->bindStr("password", $newPassword);
+        $q->execute();
+        $q->close();
+
+        if (!$q->isOK())
+        {
+            $reply["message"] = "An SQL Error has occured, the password hasn't been changed, sorry.";
+            $reply["success"] = false;
+            printAndDie();
+        }
+
+        // Send user email
         sendMail(
             $userEmail,
             $userName,
@@ -99,10 +137,30 @@ Koran dankon,
 Via Ramses Server."
         );
 
+        // Send admin email
+        sendMail(
+            EMAIL_ADMIN,
+            "Ramses Administrator",
+            "Security notice: A user password has been reset",
+"Saluton administrator,
+
+This is a security notice.
+
+The password for user $userName ($userEmail) with UUID: $uuid
+has been reset.
+
+If you receive lots of security notices like this one, there may be an issue with your server,
+or worse, someone trying to attack it.
+You should contact the users to confirm they've asked to reset their passwords.
+
+Koran dankon,
+Via Ramses Server."
+        );
+    
 
         $reply["content"] = array();
         $reply["success"] = true;
-        $reply["message"] = "Password changed!";
+        $reply["message"] = "A new password has been sent to: $userEmail";
         $log->debugLog("Password changed.", "INFO");
         printAndDie();
     }
