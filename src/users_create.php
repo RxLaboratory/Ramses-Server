@@ -99,7 +99,7 @@
                     $userName = " ".$userName;
                 }
 
-                $userPassword = generatePassword(5);
+                $userPassword = generatePassword(6);
                 // Send email
                 sendMail(
                     $userMail,

@@ -528,17 +528,44 @@
 			global $tablePrefix;
 
 			$q = new DBQuery();
-				$q->prepare("SELECT `email` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid ;");
-				$q->bindStr("userUuid", $userUuid);
-				$q->execute();
-				$row = $q->fetch();
-				$q->close();
+			$q->prepare("SELECT `email` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid ;");
+			$q->bindStr("userUuid", $userUuid);
+			$q->execute();
+			$row = $q->fetch();
+			$q->close();
 
-				if (!$row)
-					return "";
-				
-				$email = decrypt( $row['email'] );
-				return $email;
+			if (!$row)
+				return "";
+			
+			$email = decrypt( $row['email'] );
+			return $email;
+		}
+
+		public function userDetails( $userUuid ) {
+			global $tablePrefix;
+
+			$q = new DBQuery();
+			$q->prepare("SELECT `email`, `role`, `data` FROM `{$tablePrefix}RamUser` WHERE `uuid` = :userUuid ;");
+			$q->bindStr("userUuid", $userUuid);
+			$q->execute();
+			$row = $q->fetch();
+			$q->close();
+
+			$user = array();
+
+			if (!$row) {
+				return false;
+			}
+			
+			$userDataStr = decrypt( $row['data'] );
+			$userData = json_decode($userDataStr, true);
+
+			$user['email'] = decrypt( $row['email'] );
+			$user['shortName'] = $userData["shortName"] ?? "";
+			$user['name'] = $userData["name"] ?? $user['shortName'];
+			$user['role'] =  decrypt( $row['role'] );;
+
+			return $user;
 		}
 
 		public function getUsers($includeRemoved = false) {
