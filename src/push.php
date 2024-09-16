@@ -192,7 +192,7 @@
 
                 // Same date, ignore
                 if ($inDate == $currentDate) continue;
-                // Newer, to update later
+                // Newer, to be updated on commit
                 if ($inDate > $currentDate) $in[] = $inRow;
                 // Older, send ours
                 else $out[] = $currentRow;
@@ -331,6 +331,10 @@
             foreach ($current as $currentRow)
             {
                 $currentUuid = $currentRow["uuid"];
+                // Don't send new rows which are removed
+                if ($currentRow['removed'] == 1)
+                    continue;
+                // And send it if it's actually a new one (not in the in uuids)
                 if (!in_array($currentUuid, $inUuids))
                 {
                     $out[] = $currentRow;
