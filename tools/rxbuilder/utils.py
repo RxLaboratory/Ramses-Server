@@ -1,101 +1,101 @@
-"""! @brief Misc. useful functions
- @file utils.py
- @section libs Librairies/Modules
- @section authors Author(s)
-  - Created by Nicolas Dufresne on 1/3/2024 .
-"""
-
 import os
-from .environment import Environment
+import shutil
+import platform
+import zipfile
 
-E = Environment.instance()
-
-def abs_path( rel_path ):
+def normpath(path):
     """!
-    @brief Returns the absolute path of a path relative to this py file
+    @brief Normalizes a path
 
     Parameters : 
-        @param rel_path => The relative path to convert
+        @param path => The path to normalize
 
     """
-    return os.path.abspath(
-        os.path.join( E.THIS_DIR, rel_path)
-        ).replace('/', os.sep)
+    path = os.path.abspath(path)
+    if platform.system() != 'Windows':
+        return path
 
-def add_to_PATH( p:str ): # pylint: disable=invalid-name
+    if not path.startswith('\\\\') and not path.startswith('//'):
+        return path
+
+    drives = { os.path.splitdrive(os.path.realpath(chr(x) + ":"))[0].lower(): chr(x) + ":" for x in range(65,91) if os.path.exists(chr(x) + ":") } #reverse map available drives to realpath
+    drive, tail = os.path.splitdrive(path)
+    if drive.lower() in drives:
+        return os.path.join(drives[drive.lower()], tail) #apply letter drive instead of realpath to wdir
+
+def get_dir_size( dir ):
     """!
-    @brief Adds a path to the PATH environment variable
-    @param p The path to add
-    """
-    os.environ["PATH"] = (
-            p +
-            os.pathsep +
-            os.environ["PATH"]
-        )
+    @brief Computes the total size of a given dir
 
-def get_build_path(subdir:str):
+    Parameters : 
+        @param dir => the dir path
+    """
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(dir):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
+
+def replace_in_file( replacements, file ):
     """!
-    @brief Gets the build path
+    @brief Replaces strings in a file
+
+    Parameters : 
+        @param replacements => Dict in the form { 'from': 'to' }
+        @param file => The path to the file
+
     """
-    build_path = os.path.join(E.REPO_DIR, 'build')
+    lines = []
+    with open( file, 'r', encoding='utf8' ) as infile:
+        for line in infile:
+            for src, target in replacements.items():
+                line = line.replace(src, target)
+            lines.append(line)
+    with open( file , 'w', encoding='utf8' ) as outfile:
+        for line in lines:
+            outfile.write(line)
 
-    if E.IS_WIN:
-        build_path = os.path.join(build_path, "windows", subdir)
-    elif E.IS_LINUX:
-        build_path = os.path.join(build_path, "linux", subdir)
-    elif E.IS_MAC:
-        build_path = os.path.join(build_path, "mac", subdir)
-
-    return abs_path(build_path)
-
-def get_deploy_path(subdir:str):
+def wipe(folder):
     """!
-    @brief Gets the deploy path
+        Wipes the folder
     """
-    deploy_path = os.path.join(E.REPO_DIR, 'build', )
+    print("> Wiping "+folder+" ...")
+    if os.path.isdir(folder):
+        shutil.rmtree(folder)
+    print("> Wiped!")
 
-    if E.IS_WIN:
-        deploy_path = os.path.join(deploy_path, "windows", 'deploy', subdir)
-    elif E.IS_LINUX:
-        deploy_path = os.path.join(deploy_path, "linux", 'deploy', subdir)
-    elif E.IS_MAC:
-        deploy_path = os.path.join(deploy_path, "mac", 'deploy', subdir)
+def zip_dir( dir, zip_file_path ):
+    """!
+    @brief Zips a given folder
 
-    return deploy_path
+    Parameters : 
+        @param dir => The path
+        @param zip_file_handler => The zip file handler
 
-def replace_vars(src_f:str, dest_f:str):
-    """Copies a text file while replacing the environment vars"""
-    with open(src_f, 'r', encoding='utf8') as in_file:
-        content = in_file.read()
+    """
+    with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as z:
+        for root, dirs, files in os.walk(dir):
+            for file in files:
+                file_path = os.path.join(root, file)
+                if (file_path == zip_file_path):
+                    continue
+                z.write(
+                    file_path,
+                    os.path.join(root.replace(dir, ''), file)
+                    )
 
-    # Replace vars
-    if 'meta' in E.ENV:
-        for key, value in E.ENV['meta'].items():
-            content = content.replace("%"+key+"%", str(value))
+def write_version(build_path, version):
+    v_file = os.path.join(build_path, 'version')
+    with open(v_file, 'w', encoding='utf8') as f:
+        f.write(version)
 
-    with open(dest_f, 'w', encoding='utf8') as out_file:
-        out_file.write(content)
-
-def replace_in_file(file:str, what_str:str, with_str:str):
-    """Replaces an exact substring in a file"""
-    content = ""
-    with open(file, 'r', encoding='utf8') as in_file:
-        content = in_file.read()
-    content = content.replace(what_str, with_str)
-    with open(file, 'w', encoding='utf8') as out_file:
-        out_file.write(content)
-
-def zip_dir( dir, zip_file_handler ):
-    for root, dirs, files in os.walk(dir):
-        for file in files:
-            zip_file_handler.write(os.path.join(root, file),
-                                  os.path.join(root.replace(dir, ''), file)
-                                  )
-
-def get_project_name():
-    p = E.ENV['meta'].get("name","")
-    if p == "":
-        p = E.ENV['src'].get("project", "")
-    p = os.path.basename(p)
-    p = os.path.splitext(p)[0]
-    return p
+def read_version(path, default='0.0.0'):
+    version_file = os.path.join(path, 'version')
+    version = default
+    with open(version_file, encoding='utf8') as f:
+        version = f.read()
+    return version
