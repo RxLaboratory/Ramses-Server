@@ -55,6 +55,8 @@
         }
 
         $q = new DBQuery();
+        // Don't remove ourselves!
+        $users = array_diff($users, array($_SESSION['userUuid']));
         $usersData = $q->removeUsers($users);
 
         if ($usersData === false) {
