@@ -79,6 +79,7 @@
 	//login
 	include("users_reset_password.php");
 	include("login.php");
+	include("logout.php");
 
 	// this session has worn out its welcome; kill it and start a brand new one
 	if ($sessionTimeout >= 0 && time() > $_SESSION['discard_after'])

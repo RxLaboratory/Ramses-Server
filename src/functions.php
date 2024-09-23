@@ -237,14 +237,13 @@
     /**
      * Logs out and reset the session token
      */
-    function logout($message = "Logged out.")
+    function logout($message = "Logged out.", $user_logout = false)
     {
         global $reply, $_SESSION;
 
         $reply["message"] = $message;
-        $reply["query"] = "loggedout";
-        $reply["success"] = false;
-        $reply["accepted"] = false;
+        $reply["success"] = $user_logout;
+        $reply["accepted"] = $user_logout;
 
         $_SESSION["userid"] = -1;
         $_SESSION["userUuid"] = "unknown";
