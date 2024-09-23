@@ -270,6 +270,114 @@
             }
 		}
 
+		public function removeUsers($userUuids) {
+			global $tablePrefix;
+
+			if (empty($userUuids))
+				return array();
+
+			$keys = array();
+			$conditions = array();
+			$i = 1;
+			foreach( $userUuids as $uuid) {
+				$key = "uuid$i";
+				$keys[] = $key;
+				$conditions[] = "`uuid` = :$key";
+				$i++;
+			}
+
+			// Collect user data
+
+			$qStr = "SELECT `data`,`email`,`uuid` FROM `{$tablePrefix}RamUser`
+					WHERE ". implode(" OR ", $conditions) . " ;";
+			$this->prepare($qStr);
+			$this->bindStrings($keys, $userUuids);
+			$this->execute();
+			$usersData = array();
+			while($row = $this->fetch()) {
+				$userData = array();
+				$userData['uuid'] = $row['uuid'];
+				$userData['email'] = decrypt($row['email']);
+				$userData['data'] = decrypt($row['data']);
+				$usersData[] = $userData;
+			}
+			$this->close();
+
+			// Remove users
+
+			$qStr = "UPDATE `{$tablePrefix}RamUser`
+					SET `removed` = 1
+					WHERE ". implode(" OR ", $conditions) . " ;";
+			$this->prepare($qStr);
+			$this->bindStrings($keys, $userUuids);
+			$this->execute();
+			$this->close();
+
+			// Un assign users
+
+			if (!$this->isOK())
+				return false;
+			$qStr = "DELETE `{$tablePrefix}ServerProjectUser`
+				FROM `{$tablePrefix}ServerProjectUser`
+				LEFT JOIN `{$tablePrefix}RamUser`
+					ON `{$tablePrefix}ServerProjectUser`.`user_id` = `{$tablePrefix}RamUser`.`id`
+				WHERE ". join(" OR ", $conditions) . " ;";
+			$this->prepare($qStr);
+			$this->bindStrings($keys, $userUuids);
+			$this->execute();
+			$this->close();
+
+			return $usersData;
+		}
+
+		public function removeProjects($projectUuids) {
+			global $tablePrefix;
+
+			if (empty($projectUuids))
+				return array();
+
+			$keys = array();
+			$conditions = array();
+			$i = 1;
+			foreach( $projectUuids as $uuid) {
+				$key = "uuid$i";
+				$keys[] = $key;
+				$conditions[] = "`uuid` = :$key";
+				$i++;
+			}
+
+			// Collect project data
+
+			$qStr = "SELECT `data`,`uuid` FROM `{$tablePrefix}RamProject`
+					WHERE ". implode(" OR ", $conditions) . " ;";
+			$this->prepare($qStr);
+			$this->bindStrings($keys, $projectUuids);
+			$this->execute();
+			$projectsData = array();
+			while($row = $this->fetch()) {
+				$projectData = array();
+				$projectData['uuid'] = $row['uuid'];
+				$projectData['data'] = $row['data'];
+				$projectsData[] = $projectData;
+			}
+			$this->close();
+
+			// Remove projects
+
+			$qStr = "UPDATE `{$tablePrefix}RamProject`
+					SET `removed` = 1
+					WHERE ". implode(" OR ", $conditions) . " ;";
+			$this->prepare($qStr);
+			$this->bindStrings($keys, $projectUuids);
+			$this->execute();
+			$this->close();
+
+			if (!$this->isOK())
+				return false;
+
+			return $projectsData;
+		}
+
 		public function createProject($uuid, $data) {
 			global $tablePrefix, $sqlMode;
 

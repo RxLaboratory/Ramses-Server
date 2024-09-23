@@ -120,9 +120,11 @@
 
 	include("clean.php");
 	include("projects_create.php");
+	include("projects_remove.php");
 	include("projects_assign.php");
 	include("projects_unassign.php");
 	include("users_create.php");
+	include("users_remove.php");
 	include("users_role.php");
 	include("users_get.php");
 
