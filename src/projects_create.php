@@ -33,7 +33,7 @@
         if (!isAdmin())
         {
             $reply["success"] = false;
-            $reply["message"] = "Warning! Missing privileges. You must be an administrator to create users.";
+            $reply["message"] = "Warning! Missing privileges. You must be an administrator to create projects.";
             $log->debugLog("Refused: not admin.", "WARNING");
             printAndDie();
         }
@@ -58,5 +58,56 @@
         $reply["success"] = true;
         $reply["message"] = "New project succesfully created.";
         $reply["content"] = $projectUuid;
+        printAndDie();
+    }
+
+    if ( acceptReply(( "createProjects" )))
+    {
+        if (!isAdmin())
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! Missing privileges. You must be an administrator to create projects.";
+            $log->debugLog("Refused: not admin.", "WARNING");
+            printAndDie();
+        }
+
+        $projects = getArg("projects", array());
+
+        if (!is_array($projects)) {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! You must provide a user list (a JSON Array) to create projects.";
+            $log->debugLog("createProjects: 'users' is not an Array.", "WARNING");
+            printAndDie();
+        }
+
+        if (empty($projects)) {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! You must provide a non-empty user list (a JSON Array) to create projects.";
+            $log->debugLog("createProjects: 'projects' is empty.", "WARNING");
+            printAndDie();
+        }
+
+        $parsedProjects = array();
+        $uuids = array();
+
+        foreach( $projects as $project) {
+            $projectUuid = $project['uuid'] ?? "";
+            if ($projectUuid == "") {
+                $projectUuid = uuid();
+            }
+
+            $uuids[] = $projectUuid;
+            $parsedProject = array();
+            $parsedProject['uuid'] = $projectUuid;
+            $parsedProject['data'] = $project['data'] ?? "";
+            $parsedProjects[] = $parsedProject;
+        }
+
+        $q = new DBQuery();
+        $q->createProjects($parsedProjects);
+
+        $reply["success"] = true;
+        $reply["message"] = "Projects succesfully created.";
+        $reply["content"] = $uuids;
         printAndDie();
     }

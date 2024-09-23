@@ -105,17 +105,19 @@
                     $userMail,
                     $userName,
                     "Welcome to Ramses",
-"Saluton$userName!
+                    <<<BODY
+                    Saluton$userName!
 
-You've been invited to a Ramses server at $serverAddress.
+                    You've been invited to a Ramses server at $serverAddress.
 
-Your username is: $userMail
-Your temporary password is: $userPassword
+                    Your username is: $userMail
+                    Your temporary password is: $userPassword
 
-Do not forget to change this password!
+                    Do not forget to change this password!
 
-Koran dankon,
-Via Ramses Server."
+                    Koran dankon,
+                    Via Ramses Server.
+                    BODY
                 );
 
             }

@@ -330,6 +330,72 @@
 			return $usersData;
 		}
 
+		public function createProjects($projects) {
+			global $SQLMaxRowPerRequest, $tablePrefix, $sqlMode, $log;
+
+			$this->start_timer();
+
+			$update = 0;
+			$updateCount = count($projects);
+
+			$log->debugLog("Updating {$updateCount} items from RamProject.", "DEBUG");
+
+			$modified = gmdate("Y-m-d H:i:s", time());
+
+			while ($update < $updateCount)
+            {
+                // The values to be added to the request
+                $vals = [];
+                $keys = [];
+
+                // The array of values for building the request
+                $valuesStr = [];
+
+                for ($i = 0; $i < $SQLMaxRowPerRequest; $i++)
+                {
+                    // Got all
+                    if ($update == $updateCount) break;
+
+					$project = $projects[$update];
+
+					$uuidkey = "uuid$update";
+                    $keys[] = $uuidkey;
+					$projectUuid = $project['uuid'] ?? uuid();
+                    $vals[] = $projectUuid;
+
+					$datakey = "data$update";
+                    $keys[] = $datakey;
+                    $vals[] = $project['data'];
+
+					$valuesStr[] = "( :$uuidkey, :$datakey, '$modified' )";
+
+                    $update++;
+                }
+
+                $valuesStr = implode(", ", $valuesStr);
+
+                if ($sqlMode == 'sqlite') 
+                    $qStr = "INSERT INTO `{$tablePrefix}RamProject` (`uuid`, `data`, `modified` )
+							VALUES {$valuesStr}
+                            ON CONFLICT(uuid) DO UPDATE SET 
+                            `data` = excluded.data, `modified` = excluded.modified ;";
+                else if ($sqlMode == 'mysql')
+                    $qStr = "INSERT INTO `{$tablePrefix}RamProject` (`uuid`, `data`, `modified` )
+							VALUES {$valuesStr}
+							AS new 
+                            ON DUPLICATE KEY UPDATE `data` = new.data, `modified` = new.modified ;";
+                else
+                    $qStr = "INSERT INTO `{$tablePrefix}RamProject` (`uuid`, `data`, `modified` )
+							VALUES {$valuesStr}
+                        	ON DUPLICATE KEY UPDATE `data` = VALUES(`data`), `modified` = VALUES(`modified`) ;";
+
+                $this->prepare($qStr);
+                $this->bindStrings($keys, $vals);
+                $this->execute();
+                $this->close();
+            }
+		}
+
 		public function removeProjects($projectUuids) {
 			global $tablePrefix;
 
