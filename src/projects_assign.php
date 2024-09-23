@@ -50,7 +50,7 @@
         }
 
         $projectId = $q->getProjectId($projectUuid);
-        if ($projectId < 0) {
+        if ($projectId <= 0) {
             $reply["success"] = false;
             $reply["message"] = "Warning! Can't find the project $projectUuid in the database, sorry.";
             $log->debugLog("Can't find project $projectUuid.", "WARNING");
@@ -116,6 +116,38 @@
             printAndDie();
         }
 
+        assignUsers($users, $projectUuid);
+    }
+
+    if ( acceptReply( "setUserAssignments" ) )
+    {
+        if (!isAdmin())
+        {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! Missing privileges. You must be an administrator to assign users to projects.";
+            $log->debugLog("Refused: not admin.", "WARNING");
+            printAndDie();
+        }
+
+        $users = getArg("users", array());
+        $projectUuid = getArg("project");
+
+        if (!is_array($users)) {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! You must provide a user list (a JSON Array) to assign users.";
+            $log->debugLog("createUsers: 'users' is not an Array.", "WARNING");
+            printAndDie();
+        }
+
+        if (empty($users)) {
+            $reply["success"] = false;
+            $reply["message"] = "Warning! You must provide a non-empty user list (a JSON Array) to assign users.";
+            $log->debugLog("createUsers: 'users' is empty.", "WARNING");
+            printAndDie();
+        }
+
+        $q = new DBQuery();
+        $q->clearUserAssignments($projectUuid);
         assignUsers($users, $projectUuid);
     }
 

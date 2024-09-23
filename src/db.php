@@ -657,6 +657,18 @@
 			$log->debugLog("Updated {$updateCount} items in $table in $elapsed ms", "DEBUG");
 		}
 
+		public function clearUserAssignments( $projectUuid ) {
+			global $tablePrefix;
+
+			$this->prepare("DELETE `{$tablePrefix}ServerProjectUser` FROM `{$tablePrefix}ServerProjectUser`
+							LEFT JOIN `{$tablePrefix}RamProject`
+								ON `{$tablePrefix}ServerProjectUser`.`project_id` = `{$tablePrefix}RamProject`.`id`
+							WHERE `{$tablePrefix}RamProject`.`uuid` = :uuid ;");
+			$this->bindStr("uuid", $projectUuid);
+			$this->execute();
+			$this->close();
+		}
+
 		public function setUserRole( $userUuid, $userRole) {
 			global $tablePrefix;
 
